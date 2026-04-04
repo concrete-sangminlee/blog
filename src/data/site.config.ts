@@ -1,5 +1,5 @@
 export const SITE = {
-  title: "Sang Min Lee",
+  title: "Sang Min Lee's Tech Blog",
   description: "AI 연구와 개발에 관한 이야기",
   author: "Sang Min Lee",
   url: "https://concrete-sangminlee.github.io",
