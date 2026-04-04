@@ -3,6 +3,7 @@ import BaseHead from "@/components/BaseHead.astro";
 import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
 import ScrollProgress from "@/components/ScrollProgress.astro";
+import SearchModal from "@/components/SearchModal";
 import { ClientRouter } from "astro:transitions";
 import { SITE } from "@/data/site.config";
 
@@ -29,6 +30,7 @@ const {
   <body>
     <ScrollProgress />
     <Header />
+    <SearchModal client:idle basePath={SITE.base} />
 
     <main class="mx-auto max-w-[1200px] px-6 py-8">
       <slot />

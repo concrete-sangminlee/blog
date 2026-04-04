@@ -275,6 +275,18 @@ const currentPath = Astro.url.pathname;
     });
   }
 
+  // Search button triggers SearchModal via custom event
+  function initSearch() {
+    const searchBtn = document.getElementById("search-btn");
+    searchBtn?.addEventListener("click", () => {
+      document.dispatchEvent(new CustomEvent("open-search"));
+    });
+  }
+
   initHeader();
-  document.addEventListener("astro:after-swap", initHeader);
+  initSearch();
+  document.addEventListener("astro:after-swap", () => {
+    initHeader();
+    initSearch();
+  });
 </script>

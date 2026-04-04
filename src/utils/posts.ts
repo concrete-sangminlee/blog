@@ -3,12 +3,16 @@ import { getCollection, type CollectionEntry } from "astro:content";
 export type BlogPost = CollectionEntry<"blog">;
 
 export async function getAllPosts(): Promise<BlogPost[]> {
-  const posts = await getCollection("blog", ({ data }) => {
-    return import.meta.env.PROD ? !data.draft : true;
-  });
-  return posts.sort(
-    (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
-  );
+  try {
+    const posts = await getCollection("blog", ({ data }) => {
+      return import.meta.env.PROD ? !data.draft : true;
+    });
+    return posts.sort(
+      (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+    );
+  } catch {
+    return [];
+  }
 }
 
 export async function getFeaturedPosts(): Promise<BlogPost[]> {
