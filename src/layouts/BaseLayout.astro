@@ -21,22 +21,12 @@ const {
 } = Astro.props;
 ---
 
-<html lang={SITE.lang} data-theme="light">
+<html lang={SITE.lang}>
   <head>
     <BaseHead title={title} description={description} image={image} math={math} />
     <ClientRouter />
   </head>
   <body>
-    {/* Inline FOUC-prevention script — runs synchronously before paint */}
-    <script is:inline>
-      (function () {
-        const stored = localStorage.getItem("theme");
-        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-        const theme = stored || (prefersDark ? "dark" : "light");
-        document.documentElement.setAttribute("data-theme", theme);
-      })();
-    </script>
-
     <ScrollProgress />
     <Header />
 

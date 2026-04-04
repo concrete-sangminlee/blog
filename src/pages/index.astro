@@ -6,60 +6,40 @@ import { SITE } from "@/data/site.config";
 
 const allPosts = await getAllPosts();
 const featuredPosts = await getFeaturedPosts();
-const recentPosts = allPosts.slice(0, 6);
+const recentPosts = allPosts.slice(0, 8);
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 ---
 
 <BaseLayout title={SITE.title} description={SITE.description}>
-  <!-- Hero Section -->
-  <section class="mb-20 pt-8 sm:pt-16">
+  <!-- Hero -->
+  <section class="hero">
     <div class="max-w-2xl">
-      <h1
-        class="text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl"
-        style="font-family: var(--font-heading); color: var(--text-primary); letter-spacing: -0.03em;"
-      >
-        Thoughts on <br />
-        <span style="color: var(--accent);">AI</span> & Beyond
+      <p class="hero-label">Blog</p>
+      <h1 class="hero-title">
+        Thoughts on<br />
+        <span class="hero-accent">AI</span> & Beyond
       </h1>
-      <p
-        class="mt-6 text-lg leading-relaxed sm:text-xl"
-        style="color: var(--text-secondary); max-width: 540px;"
-      >
-        AI 연구, 딥러닝, 그리고 개발에 대한 생각과 기록을 나눕니다.
+      <p class="hero-desc">
+        AI 연구, 딥러닝, 그리고 개발에 대한 생각과 기록.
       </p>
-      <div class="mt-8 flex gap-4">
-        <a
-          href={`${base}/posts/`}
-          class="inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium transition-all duration-200"
-          style="background: var(--accent); color: var(--bg); hover: var(--accent-hover);"
-        >
+      <div class="mt-8 flex gap-3">
+        <a href={`${base}/posts/`} class="btn-primary">
           All Posts
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M5 12h14M12 5l7 7-7 7"/>
           </svg>
         </a>
-        <a
-          href={`${base}/about/`}
-          class="inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium transition-all duration-200"
-          style="border: 1px solid var(--border); color: var(--text-secondary);"
-        >
-          About Me
-        </a>
+        <a href={`${base}/about/`} class="btn-ghost">About</a>
       </div>
     </div>
   </section>
 
-  <!-- Featured Posts -->
+  <!-- Featured -->
   {featuredPosts.length > 0 && (
-    <section class="mb-20">
-      <div class="mb-8 flex items-center gap-4">
-        <h2
-          class="text-sm font-semibold uppercase tracking-widest"
-          style="color: var(--text-muted); letter-spacing: 0.1em;"
-        >
-          Featured
-        </h2>
-        <div class="h-px flex-1" style="background: var(--border);"></div>
+    <section class="mb-16">
+      <div class="section-header">
+        <h2 class="section-title">Featured</h2>
+        <div class="section-line"></div>
       </div>
       <div class="space-y-1">
         {featuredPosts.slice(0, 3).map((post, i) => (
@@ -69,16 +49,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
     </section>
   )}
 
-  <!-- Recent Posts -->
-  <section class="mb-20">
-    <div class="mb-8 flex items-center gap-4">
-      <h2
-        class="text-sm font-semibold uppercase tracking-widest"
-        style="color: var(--text-muted); letter-spacing: 0.1em;"
-      >
-        Recent Posts
-      </h2>
-      <div class="h-px flex-1" style="background: var(--border);"></div>
+  <!-- Recent -->
+  <section class="mb-16">
+    <div class="section-header">
+      <h2 class="section-title">Recent</h2>
+      <div class="section-line"></div>
     </div>
     {recentPosts.length > 0 ? (
       <div class="space-y-1">
@@ -87,20 +62,14 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         ))}
       </div>
     ) : (
-      <p class="py-12 text-center" style="color: var(--text-muted); font-family: var(--font-heading); font-style: italic;">
-        No posts yet. Check back soon.
-      </p>
+      <p class="empty-state">No posts yet.</p>
     )}
 
-    {allPosts.length > 6 && (
+    {allPosts.length > 8 && (
       <div class="mt-8 text-center">
-        <a
-          href={`${base}/posts/`}
-          class="inline-flex items-center gap-2 text-sm font-medium transition-colors duration-200"
-          style="color: var(--accent);"
-        >
+        <a href={`${base}/posts/`} class="view-all">
           View all posts
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M5 12h14M12 5l7 7-7 7"/>
           </svg>
         </a>
@@ -110,12 +79,137 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 </BaseLayout>
 
 <style>
-  a[style*="background: var(--accent)"]:hover {
+  .hero {
+    padding: 3rem 0 4rem;
+  }
+
+  @media (min-width: 640px) {
+    .hero { padding: 5rem 0 6rem; }
+  }
+
+  .hero-label {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+
+  .hero-title {
+    font-family: var(--font-heading);
+    font-size: 2.75rem;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    color: var(--text-primary);
+  }
+
+  @media (min-width: 640px) {
+    .hero-title { font-size: 3.5rem; }
+  }
+
+  @media (min-width: 1024px) {
+    .hero-title { font-size: 4.25rem; }
+  }
+
+  .hero-accent {
+    color: var(--accent);
+  }
+
+  .hero-desc {
+    margin-top: 1.25rem;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    max-width: 460px;
+  }
+
+  /* Buttons */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.25rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-radius: 8px;
+    background: var(--accent);
+    color: var(--bg);
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+
+  .btn-primary:hover {
     opacity: 0.9;
+    color: var(--bg);
     transform: translateY(-1px);
   }
-  a[style*="border: 1px solid"]:hover {
-    border-color: var(--border-hover) !important;
-    color: var(--text-primary) !important;
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.6rem 1.25rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+
+  .btn-ghost:hover {
+    border-color: var(--border-hover);
+    color: var(--text-primary);
+  }
+
+  /* Section */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .section-title {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .empty-state {
+    padding: 4rem 0;
+    text-align: center;
+    font-family: var(--font-heading);
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--text-muted);
+  }
+
+  .view-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--accent);
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .view-all:hover {
+    color: var(--accent-hover);
+    gap: 0.6rem;
   }
 </style>
