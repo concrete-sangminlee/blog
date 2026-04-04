@@ -1,0 +1,121 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PostCard from "@/components/PostCard.astro";
+import { getAllPosts, getFeaturedPosts } from "@/utils/posts";
+import { SITE } from "@/data/site.config";
+
+const allPosts = await getAllPosts();
+const featuredPosts = await getFeaturedPosts();
+const recentPosts = allPosts.slice(0, 6);
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+---
+
+<BaseLayout title={SITE.title} description={SITE.description}>
+  <!-- Hero Section -->
+  <section class="mb-20 pt-8 sm:pt-16">
+    <div class="max-w-2xl">
+      <h1
+        class="text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl"
+        style="font-family: var(--font-heading); color: var(--text-primary); letter-spacing: -0.03em;"
+      >
+        Thoughts on <br />
+        <span style="color: var(--accent);">AI</span> & Beyond
+      </h1>
+      <p
+        class="mt-6 text-lg leading-relaxed sm:text-xl"
+        style="color: var(--text-secondary); max-width: 540px;"
+      >
+        AI 연구, 딥러닝, 그리고 개발에 대한 생각과 기록을 나눕니다.
+      </p>
+      <div class="mt-8 flex gap-4">
+        <a
+          href={`${base}/posts/`}
+          class="inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium transition-all duration-200"
+          style="background: var(--accent); color: var(--bg); hover: var(--accent-hover);"
+        >
+          All Posts
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+        <a
+          href={`${base}/about/`}
+          class="inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium transition-all duration-200"
+          style="border: 1px solid var(--border); color: var(--text-secondary);"
+        >
+          About Me
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Posts -->
+  {featuredPosts.length > 0 && (
+    <section class="mb-20">
+      <div class="mb-8 flex items-center gap-4">
+        <h2
+          class="text-sm font-semibold uppercase tracking-widest"
+          style="color: var(--text-muted); letter-spacing: 0.1em;"
+        >
+          Featured
+        </h2>
+        <div class="h-px flex-1" style="background: var(--border);"></div>
+      </div>
+      <div class="space-y-1">
+        {featuredPosts.slice(0, 3).map((post, i) => (
+          <PostCard post={post} index={i} />
+        ))}
+      </div>
+    </section>
+  )}
+
+  <!-- Recent Posts -->
+  <section class="mb-20">
+    <div class="mb-8 flex items-center gap-4">
+      <h2
+        class="text-sm font-semibold uppercase tracking-widest"
+        style="color: var(--text-muted); letter-spacing: 0.1em;"
+      >
+        Recent Posts
+      </h2>
+      <div class="h-px flex-1" style="background: var(--border);"></div>
+    </div>
+    {recentPosts.length > 0 ? (
+      <div class="space-y-1">
+        {recentPosts.map((post, i) => (
+          <PostCard post={post} index={i} />
+        ))}
+      </div>
+    ) : (
+      <p class="py-12 text-center" style="color: var(--text-muted); font-family: var(--font-heading); font-style: italic;">
+        No posts yet. Check back soon.
+      </p>
+    )}
+
+    {allPosts.length > 6 && (
+      <div class="mt-8 text-center">
+        <a
+          href={`${base}/posts/`}
+          class="inline-flex items-center gap-2 text-sm font-medium transition-colors duration-200"
+          style="color: var(--accent);"
+        >
+          View all posts
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+    )}
+  </section>
+</BaseLayout>
+
+<style>
+  a[style*="background: var(--accent)"]:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+  a[style*="border: 1px solid"]:hover {
+    border-color: var(--border-hover) !important;
+    color: var(--text-primary) !important;
+  }
+</style>

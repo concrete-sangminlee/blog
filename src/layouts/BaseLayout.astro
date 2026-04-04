@@ -1,0 +1,49 @@
+---
+import BaseHead from "@/components/BaseHead.astro";
+import Header from "@/components/Header.astro";
+import Footer from "@/components/Footer.astro";
+import ScrollProgress from "@/components/ScrollProgress.astro";
+import { ClientRouter } from "astro:transitions";
+import { SITE } from "@/data/site.config";
+
+interface Props {
+  title: string;
+  description: string;
+  image?: string;
+  math?: boolean;
+}
+
+const {
+  title,
+  description = SITE.description,
+  image,
+  math = false,
+} = Astro.props;
+---
+
+<html lang={SITE.lang} data-theme="light">
+  <head>
+    <BaseHead title={title} description={description} image={image} math={math} />
+    <ClientRouter />
+  </head>
+  <body>
+    {/* Inline FOUC-prevention script — runs synchronously before paint */}
+    <script is:inline>
+      (function () {
+        const stored = localStorage.getItem("theme");
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        const theme = stored || (prefersDark ? "dark" : "light");
+        document.documentElement.setAttribute("data-theme", theme);
+      })();
+    </script>
+
+    <ScrollProgress />
+    <Header />
+
+    <main class="mx-auto max-w-[1200px] px-6 py-8">
+      <slot />
+    </main>
+
+    <Footer />
+  </body>
+</html>

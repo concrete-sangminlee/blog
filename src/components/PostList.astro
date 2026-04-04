@@ -1,0 +1,38 @@
+---
+import PostCard from "@/components/PostCard.astro";
+import type { BlogPost } from "@/utils/posts";
+
+interface Props {
+  posts: BlogPost[];
+}
+
+const { posts } = Astro.props;
+---
+
+{posts.length > 0 ? (
+  <section class="post-list" role="feed" aria-label="Blog posts">
+    {posts.map((post, index) => (
+      <PostCard post={post} index={index} />
+    ))}
+  </section>
+) : (
+  <div class="empty-state">
+    <p>No posts found.</p>
+  </div>
+)}
+
+<style>
+  .post-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 4rem 1rem;
+    color: var(--text-muted);
+    font-family: var(--font-heading);
+    font-style: italic;
+    font-size: 1.125rem;
+  }
+</style>

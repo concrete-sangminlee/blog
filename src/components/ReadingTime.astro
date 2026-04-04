@@ -1,0 +1,45 @@
+---
+import { getReadingTime } from "@/utils/reading-time";
+
+interface Props {
+  content: string;
+}
+
+const { content } = Astro.props;
+const readingTime = getReadingTime(content);
+---
+
+<span class="reading-time" aria-label={`Estimated reading time: ${readingTime}`}>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />
+  </svg>
+  {readingTime}
+</span>
+
+<style>
+  .reading-time {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    letter-spacing: 0.02em;
+  }
+
+  .reading-time svg {
+    flex-shrink: 0;
+  }
+</style>

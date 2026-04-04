@@ -1,0 +1,45 @@
+---
+import ListLayout from "@/layouts/ListLayout.astro";
+import { getAllTags } from "@/utils/posts";
+
+const tags = await getAllTags();
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+---
+
+<ListLayout title="Tags" description="주제별로 글을 찾아보세요">
+  {tags.size > 0 ? (
+    <div class="flex flex-wrap gap-3">
+      {[...tags.entries()].map(([tag, count]) => (
+        <a
+          href={`${base}/tags/${tag}/`}
+          class="group inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200"
+          style="border: 1px solid var(--border); color: var(--text-secondary);"
+        >
+          <span class="transition-colors duration-200 group-hover:text-[var(--accent)]">
+            {tag}
+          </span>
+          <span
+            class="inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs"
+            style="background: var(--accent-subtle); color: var(--accent);"
+          >
+            {count}
+          </span>
+        </a>
+      ))}
+    </div>
+  ) : (
+    <p
+      class="py-20 text-center text-lg"
+      style="color: var(--text-muted); font-family: var(--font-heading); font-style: italic;"
+    >
+      No tags yet.
+    </p>
+  )}
+</ListLayout>
+
+<style>
+  a:hover {
+    border-color: var(--accent) !important;
+    background: var(--accent-subtle);
+  }
+</style>

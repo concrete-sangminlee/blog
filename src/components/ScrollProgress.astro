@@ -1,0 +1,34 @@
+---
+---
+
+<div
+  id="scroll-progress"
+  class="fixed top-0 left-0 h-[2px] z-[10000]"
+  style="width: 0%; background-color: var(--scroll-progress);"
+  aria-hidden="true"
+></div>
+
+<script>
+  function initScrollProgress() {
+    const bar = document.getElementById("scroll-progress");
+    if (!bar) return;
+
+    function updateProgress() {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (docHeight <= 0) {
+        bar!.style.width = "0%";
+        return;
+      }
+      const progress = Math.min((scrollTop / docHeight) * 100, 100);
+      bar!.style.width = `${progress}%`;
+    }
+
+    window.addEventListener("scroll", updateProgress, { passive: true });
+    updateProgress();
+  }
+
+  // Run on initial load and after view transitions
+  initScrollProgress();
+  document.addEventListener("astro:after-swap", initScrollProgress);
+</script>

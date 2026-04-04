@@ -1,0 +1,23 @@
+---
+import ListLayout from "@/layouts/ListLayout.astro";
+import PostCard from "@/components/PostCard.astro";
+import { getAllTags, getPostsByTag } from "@/utils/posts";
+
+export async function getStaticPaths() {
+  const tags = await getAllTags();
+  return [...tags.keys()].map((tag) => ({
+    params: { tag },
+  }));
+}
+
+const { tag } = Astro.params;
+const posts = await getPostsByTag(tag!);
+---
+
+<ListLayout title={`#${tag}`} description={`${posts.length}개의 글`}>
+  <div class="space-y-1">
+    {posts.map((post, i) => (
+      <PostCard post={post} index={i} />
+    ))}
+  </div>
+</ListLayout>

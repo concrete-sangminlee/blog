@@ -1,0 +1,261 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+import { getReadingTime } from "@/utils/reading-time";
+import { getAllPosts } from "@/utils/posts";
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  post: CollectionEntry<"blog">;
+}
+
+const { post } = Astro.props;
+const { title, description, pubDate, updatedDate, tags, math, image } = post.data;
+
+const { Content, headings } = await post.render();
+
+// Reading time
+const readingTime = getReadingTime(post.body ?? "");
+
+// Previous / Next posts
+const allPosts = await getAllPosts();
+const currentIndex = allPosts.findIndex((p) => p.id === post.id);
+const prevPost = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null;
+const nextPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
+
+const base = import.meta.env.BASE_URL;
+const cleanBase = base.endsWith("/") ? base.slice(0, -1) : base;
+
+function formatDate(date: Date): string {
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+---
+
+<BaseLayout title={title} description={description} image={image?.url} math={math}>
+  <article class="post-layout relative">
+    <!-- Post Header -->
+    <header class="mb-12 max-w-[720px]">
+      {/* Tags */}
+      {tags.length > 0 && (
+        <div class="mb-4 flex flex-wrap gap-2">
+          {tags.map((tag) => (
+            <a
+              href={`${cleanBase}/tags/${tag.toLowerCase()}/`}
+              class="inline-block rounded-full px-3 py-1 text-xs font-medium tracking-wide uppercase transition-colors duration-200"
+              style="color: var(--accent); background: var(--accent-subtle); letter-spacing: 0.05em;"
+            >
+              {tag}
+            </a>
+          ))}
+        </div>
+      )}
+
+      {/* Title */}
+      <h1
+        class="text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl"
+        style="font-family: var(--font-heading); color: var(--text-primary); letter-spacing: -0.02em;"
+        transition:name={`post-title-${post.slug}`}
+      >
+        {title}
+      </h1>
+
+      {/* Meta */}
+      <div class="mt-4 flex flex-wrap items-center gap-3 text-sm" style="color: var(--text-muted);">
+        <time datetime={pubDate.toISOString()}>
+          {formatDate(pubDate)}
+        </time>
+        {updatedDate && (
+          <>
+            <span aria-hidden="true">·</span>
+            <span>
+              Updated {formatDate(updatedDate)}
+            </span>
+          </>
+        )}
+        <span aria-hidden="true">·</span>
+        <span>{readingTime}</span>
+      </div>
+    </header>
+
+    <!-- Two-column layout: Content + TOC sidebar -->
+    <div class="flex gap-12">
+      <!-- Content -->
+      <div class="min-w-0 max-w-[720px] flex-1">
+        <div class="prose">
+          <Content />
+        </div>
+
+        <!-- Prev/Next Navigation -->
+        <nav class="mt-16 grid gap-4 sm:grid-cols-2" style="border-top: 1px solid var(--border); padding-top: 2rem;" aria-label="Post navigation">
+          {prevPost ? (
+            <a
+              href={`${cleanBase}/${prevPost.slug}/`}
+              class="group flex flex-col gap-1 rounded-lg p-4 transition-all duration-200"
+              style="border: 1px solid var(--border);"
+            >
+              <span class="text-xs font-medium uppercase tracking-wide" style="color: var(--text-muted);">
+                Previous
+              </span>
+              <span
+                class="text-sm font-medium transition-colors duration-200"
+                style="color: var(--text-primary); font-family: var(--font-heading);"
+              >
+                {prevPost.data.title}
+              </span>
+            </a>
+          ) : <div />}
+          {nextPost ? (
+            <a
+              href={`${cleanBase}/${nextPost.slug}/`}
+              class="group flex flex-col gap-1 rounded-lg p-4 text-right transition-all duration-200 sm:items-end"
+              style="border: 1px solid var(--border);"
+            >
+              <span class="text-xs font-medium uppercase tracking-wide" style="color: var(--text-muted);">
+                Next
+              </span>
+              <span
+                class="text-sm font-medium transition-colors duration-200"
+                style="color: var(--text-primary); font-family: var(--font-heading);"
+              >
+                {nextPost.data.title}
+              </span>
+            </a>
+          ) : <div />}
+        </nav>
+
+        <!-- Comments (Giscus) -->
+        <section class="mt-16" id="comments">
+          <h2
+            class="mb-6 text-lg font-bold"
+            style="font-family: var(--font-heading); color: var(--text-primary);"
+          >
+            Comments
+          </h2>
+          <div id="giscus-container"></div>
+        </section>
+      </div>
+
+      <!-- TOC Sidebar (desktop only) -->
+      {headings.length > 0 && (
+        <aside class="toc-sidebar hidden w-56 shrink-0 lg:block" aria-label="Table of contents">
+          <div class="sticky top-24">
+            <p
+              class="mb-3 text-xs font-semibold uppercase tracking-widest"
+              style="color: var(--text-muted); letter-spacing: 0.1em;"
+            >
+              On this page
+            </p>
+            <nav>
+              <ul class="space-y-1.5">
+                {headings
+                  .filter((h) => h.depth >= 2 && h.depth <= 3)
+                  .map((h) => (
+                    <li
+                      style={h.depth === 3 ? "padding-left: 0.75rem;" : ""}
+                    >
+                      <a
+                        href={`#${h.slug}`}
+                        class="toc-link block text-xs leading-relaxed transition-colors duration-200"
+                        style="color: var(--text-muted);"
+                        data-slug={h.slug}
+                      >
+                        {h.text}
+                      </a>
+                    </li>
+                  ))}
+              </ul>
+            </nav>
+          </div>
+        </aside>
+      )}
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .post-layout nav a:hover {
+    border-color: var(--border-hover) !important;
+    background: var(--bg-surface-hover);
+  }
+
+  .post-layout nav a:hover span:last-child {
+    color: var(--accent) !important;
+  }
+
+  .toc-link:hover,
+  .toc-link.active {
+    color: var(--accent) !important;
+  }
+
+  .toc-link.active {
+    font-weight: 600;
+  }
+</style>
+
+<script>
+  function initTOC() {
+    const tocLinks = document.querySelectorAll<HTMLAnchorElement>(".toc-link");
+    if (tocLinks.length === 0) return;
+
+    const headingEls = Array.from(tocLinks).map((link) => {
+      const slug = link.dataset.slug;
+      return slug ? document.getElementById(slug) : null;
+    }).filter(Boolean) as HTMLElement[];
+
+    function updateActive() {
+      let active = headingEls[0];
+      for (const el of headingEls) {
+        if (el.getBoundingClientRect().top <= 100) {
+          active = el;
+        }
+      }
+      tocLinks.forEach((link) => {
+        if (link.dataset.slug === active?.id) {
+          link.classList.add("active");
+        } else {
+          link.classList.remove("active");
+        }
+      });
+    }
+
+    window.addEventListener("scroll", updateActive, { passive: true });
+    updateActive();
+  }
+
+  function initGiscus() {
+    const container = document.getElementById("giscus-container");
+    if (!container || container.querySelector(".giscus")) return;
+
+    const theme = document.documentElement.getAttribute("data-theme") === "dark"
+      ? "dark_dimmed"
+      : "light";
+
+    const script = document.createElement("script");
+    script.src = "https://giscus.app/client.js";
+    script.setAttribute("data-repo", "concrete-sangminlee/blog");
+    script.setAttribute("data-repo-id", "");
+    script.setAttribute("data-category", "Comments");
+    script.setAttribute("data-category-id", "");
+    script.setAttribute("data-mapping", "pathname");
+    script.setAttribute("data-strict", "0");
+    script.setAttribute("data-reactions-enabled", "1");
+    script.setAttribute("data-emit-metadata", "0");
+    script.setAttribute("data-input-position", "top");
+    script.setAttribute("data-theme", theme);
+    script.setAttribute("data-lang", "ko");
+    script.setAttribute("data-loading", "lazy");
+    script.crossOrigin = "anonymous";
+    script.async = true;
+    container.appendChild(script);
+  }
+
+  initTOC();
+  initGiscus();
+  document.addEventListener("astro:after-swap", () => {
+    initTOC();
+    initGiscus();
+  });
+</script>
