@@ -1,0 +1,35 @@
+---
+---
+
+<section class="mt-16" id="comments">
+  <h2 class="heading-section mb-6 text-lg">Comments</h2>
+  <div id="giscus-container"></div>
+</section>
+
+<script>
+  function initGiscus() {
+    const container = document.getElementById("giscus-container");
+    if (!container || container.querySelector(".giscus")) return;
+
+    const script = document.createElement("script");
+    script.src = "https://giscus.app/client.js";
+    script.setAttribute("data-repo", "concrete-sangminlee/blog");
+    script.setAttribute("data-repo-id", "");
+    script.setAttribute("data-category", "Comments");
+    script.setAttribute("data-category-id", "");
+    script.setAttribute("data-mapping", "pathname");
+    script.setAttribute("data-strict", "0");
+    script.setAttribute("data-reactions-enabled", "1");
+    script.setAttribute("data-emit-metadata", "0");
+    script.setAttribute("data-input-position", "top");
+    script.setAttribute("data-theme", "dark_dimmed");
+    script.setAttribute("data-lang", "ko");
+    script.setAttribute("data-loading", "lazy");
+    script.crossOrigin = "anonymous";
+    script.async = true;
+    container.appendChild(script);
+  }
+
+  initGiscus();
+  document.addEventListener("astro:after-swap", initGiscus);
+</script>

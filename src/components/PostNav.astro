@@ -1,0 +1,61 @@
+---
+import { href } from "@/utils/paths";
+import type { BlogPost } from "@/utils/posts";
+
+interface Props {
+  prev: BlogPost | null;
+  next: BlogPost | null;
+}
+
+const { prev, next } = Astro.props;
+---
+
+<nav class="post-nav mt-16 grid gap-4 sm:grid-cols-2" aria-label="Post navigation">
+  {prev ? (
+    <a href={href(`/${prev.slug}/`)} class="post-nav-link">
+      <span class="post-nav-label">Previous</span>
+      <span class="heading-section text-sm">{prev.data.title}</span>
+    </a>
+  ) : <div />}
+  {next ? (
+    <a href={href(`/${next.slug}/`)} class="post-nav-link text-right sm:items-end">
+      <span class="post-nav-label">Next</span>
+      <span class="heading-section text-sm">{next.data.title}</span>
+    </a>
+  ) : <div />}
+</nav>
+
+<style>
+  .post-nav {
+    border-top: 1px solid var(--border);
+    padding-top: 2rem;
+  }
+
+  .post-nav-link {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border);
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .post-nav-link:hover {
+    border-color: var(--border-hover);
+    background: var(--bg-surface-hover);
+  }
+
+  .post-nav-link:hover .heading-section {
+    color: var(--accent);
+  }
+
+  .post-nav-label {
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+  }
+</style>

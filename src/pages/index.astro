@@ -3,11 +3,11 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import PostCard from "@/components/PostCard.astro";
 import { getAllPosts, getFeaturedPosts } from "@/utils/posts";
 import { SITE } from "@/data/site.config";
+import { href } from "@/utils/paths";
 
 const allPosts = await getAllPosts();
 const featuredPosts = await getFeaturedPosts();
 const recentPosts = allPosts.slice(0, 8);
-const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 ---
 
 <BaseLayout title={SITE.title} description={SITE.description}>
@@ -23,13 +23,13 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         구조공학과 인공지능의 교차점에서 배우고, 만들고, 기록합니다.
       </p>
       <div class="mt-8 flex gap-3">
-        <a href={`${base}/posts/`} class="btn-primary">
+        <a href={href("/posts/")} class="btn-primary">
           All Posts
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M5 12h14M12 5l7 7-7 7"/>
           </svg>
         </a>
-        <a href={`${base}/about/`} class="btn-ghost">About</a>
+        <a href={href("/about/")} class="btn-ghost">About</a>
       </div>
     </div>
   </section>
@@ -67,7 +67,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 
     {allPosts.length > 8 && (
       <div class="mt-8 text-center">
-        <a href={`${base}/posts/`} class="view-all">
+        <a href={href("/posts/")} class="view-all">
           View all posts
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M5 12h14M12 5l7 7-7 7"/>

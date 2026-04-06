@@ -1,15 +1,8 @@
 ---
 import { NAV_ITEMS } from "@/data/site.config";
+import { href as resolveHref } from "@/utils/paths";
 
-const base = import.meta.env.BASE_URL;
-
-function resolveHref(href: string): string {
-  if (href === "/") return base;
-  const cleanBase = base.endsWith("/") ? base.slice(0, -1) : base;
-  const cleanHref = href.startsWith("/") ? href : `/${href}`;
-  return `${cleanBase}${cleanHref}`;
-}
-
+const homeHref = resolveHref("/");
 const currentPath = Astro.url.pathname;
 ---
 
@@ -20,7 +13,7 @@ const currentPath = Astro.url.pathname;
   <div class="mx-auto flex max-w-[1200px] items-center justify-between px-6 py-4">
     <!-- Logo -->
     <a
-      href={base}
+      href={homeHref}
       class="logo-link flex items-center gap-2 transition-colors duration-200"
       aria-label="Home"
     >

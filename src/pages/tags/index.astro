@@ -1,9 +1,9 @@
 ---
 import ListLayout from "@/layouts/ListLayout.astro";
 import { getAllTags } from "@/utils/posts";
+import { href } from "@/utils/paths";
 
 const tags = await getAllTags();
-const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 ---
 
 <ListLayout title="Tags" description="주제별로 글을 찾아보세요">
@@ -11,7 +11,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
     <div class="flex flex-wrap gap-3">
       {[...tags.entries()].map(([tag, count]) => (
         <a
-          href={`${base}/tags/${tag}/`}
+          href={href(`/tags/${tag}/`)}
           class="group inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200"
           style="border: 1px solid var(--border); color: var(--text-secondary);"
         >

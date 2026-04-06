@@ -1,5 +1,6 @@
 ---
 import type { BlogPost } from "@/utils/posts";
+import { href } from "@/utils/paths";
 
 interface Props {
   post: BlogPost;
@@ -15,7 +16,7 @@ const formattedDate = pubDate.toLocaleDateString("en-US", {
   day: "numeric",
 });
 
-const href = `${import.meta.env.BASE_URL}${post.slug}/`;
+const postHref = href(`/${post.slug}/`);
 const truncatedDesc =
   description.length > 150 ? description.slice(0, 150) + "..." : description;
 ---
@@ -24,7 +25,7 @@ const truncatedDesc =
   class="post-card"
   style={`animation-delay: ${index * 80}ms;`}
 >
-  <a href={href} class="post-card-link">
+  <a href={postHref} class="post-card-link">
     <div class="post-card-inner">
       <div class="post-card-meta">
         <time datetime={pubDate.toISOString()}>{formattedDate}</time>
