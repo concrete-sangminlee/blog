@@ -1,0 +1,76 @@
+backend:
+  name: github
+  repo: concrete-sangminlee/blog
+  branch: main
+  auth_type: pkce
+  app_id: ""  # GitHub OAuth App Client ID 입력 필요
+
+site_url: https://concrete-sangminlee.github.io/blog
+display_url: https://concrete-sangminlee.github.io/blog
+
+media_folder: "public/images"
+public_folder: "/blog/images"
+
+collections:
+  - name: "blog"
+    label: "Posts"
+    label_singular: "Post"
+    folder: "src/content/blog"
+    create: true
+    delete: true
+    extension: "mdx"
+    format: "frontmatter"
+    slug: "{{slug}}"
+    sortable_fields:
+      fields: ["pubDate", "title"]
+      default:
+        field: "pubDate"
+        direction: "Descending"
+    summary: "{{title}} — {{pubDate}}"
+    fields:
+      - label: "Title"
+        name: "title"
+        widget: "string"
+
+      - label: "Description"
+        name: "description"
+        widget: "string"
+
+      - label: "Publish Date"
+        name: "pubDate"
+        widget: "datetime"
+        date_format: "YYYY-MM-DD"
+        time_format: false
+        format: "YYYY-MM-DD"
+
+      - label: "Updated Date"
+        name: "updatedDate"
+        widget: "datetime"
+        date_format: "YYYY-MM-DD"
+        time_format: false
+        format: "YYYY-MM-DD"
+        required: false
+
+      - label: "Tags"
+        name: "tags"
+        widget: "list"
+        default: []
+
+      - label: "Draft"
+        name: "draft"
+        widget: "boolean"
+        default: true
+
+      - label: "Featured"
+        name: "featured"
+        widget: "boolean"
+        default: false
+
+      - label: "Math (KaTeX)"
+        name: "math"
+        widget: "boolean"
+        default: false
+
+      - label: "Body"
+        name: "body"
+        widget: "markdown"
