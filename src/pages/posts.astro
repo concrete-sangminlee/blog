@@ -6,7 +6,7 @@ import { getAllPosts } from "@/utils/posts";
 const posts = await getAllPosts();
 ---
 
-<ListLayout title="All Posts" description="AI, 딥러닝, 개발에 대한 모든 글">
+<ListLayout title="All Posts" description="모든 글">
   {posts.length > 0 ? (
     <div class="space-y-1">
       {posts.map((post, i) => (
