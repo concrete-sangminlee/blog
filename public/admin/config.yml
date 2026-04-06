@@ -3,7 +3,7 @@ backend:
   repo: concrete-sangminlee/blog
   branch: main
   auth_type: pkce
-  app_id: ""  # GitHub OAuth App Client ID 입력 필요
+  app_id: "Ov23lir8lF9ExBADZNSf"
 
 site_url: https://concrete-sangminlee.github.io/blog
 display_url: https://concrete-sangminlee.github.io/blog
