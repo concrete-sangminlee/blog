@@ -21,11 +21,7 @@ collections:
     extension: "mdx"
     format: "frontmatter"
     slug: "{{slug}}"
-    sortable_fields:
-      fields: ["pubDate", "title"]
-      default:
-        field: "pubDate"
-        direction: "Descending"
+    sortable_fields: ["pubDate", "title"]
     summary: "{{title}} — {{pubDate}}"
     fields:
       - label: "Title"
