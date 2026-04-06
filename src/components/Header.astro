@@ -53,9 +53,11 @@ const currentPath = Astro.url.pathname;
         </svg>
       </button>
 
-      <!-- Admin (Write) Button -->
+      <!-- Write Button (opens GitHub editor) -->
       <a
-        href={resolveHref("/admin/")}
+        href="https://github.com/concrete-sangminlee/blog/new/main/src/content/blog"
+        target="_blank"
+        rel="noopener noreferrer"
         class="search-btn ml-1"
         aria-label="Write post"
         title="Write post"
