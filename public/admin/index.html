@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Write — Blog Admin</title>
+  <link rel="icon" type="image/png" href="/blog/favicon-32.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #08080a; --surface: #111114; --surface2: #19191d;
+      --text: #e4e0d9; --text2: #8b8680; --text3: #5c5955;
+      --accent: #e8a849; --accent2: #f0bc5e;
+      --border: #1a1a1e; --border2: #2a2a30;
+      --font-body: "Pretendard", system-ui, sans-serif;
+      --font-heading: "Newsreader", Georgia, serif;
+      --font-mono: "Consolas", monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-body); background: var(--bg); color: var(--text); min-height: 100vh; }
+    a { color: var(--accent); text-decoration: none; }
+
+    /* Layout */
+    .container { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem; }
+    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2.5rem; }
+    .header h1 { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 700; }
+    .header-actions { display: flex; gap: 0.5rem; }
+
+    /* Buttons */
+    .btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; font-size: 0.8rem;
+      font-weight: 500; border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s; font-family: var(--font-body); }
+    .btn-primary { background: var(--accent); color: var(--bg); }
+    .btn-primary:hover { background: var(--accent2); }
+    .btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border); }
+    .btn-ghost:hover { border-color: var(--border2); color: var(--text); }
+    .btn-danger { background: transparent; color: #ef4444; border: 1px solid #3b1111; }
+    .btn-danger:hover { background: #3b1111; }
+    .btn-sm { padding: 0.35rem 0.75rem; font-size: 0.75rem; }
+
+    /* Setup screen */
+    .setup { max-width: 480px; margin: 15vh auto; text-align: center; padding: 0 1.5rem; }
+    .setup h2 { font-family: var(--font-heading); font-size: 1.75rem; margin-bottom: 0.75rem; }
+    .setup p { color: var(--text2); font-size: 0.9rem; line-height: 1.6; margin-bottom: 1.5rem; }
+    .setup input { width: 100%; padding: 0.7rem 1rem; font-size: 0.9rem; font-family: var(--font-mono);
+      background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1rem; }
+    .setup input:focus { outline: none; border-color: var(--accent); }
+    .setup .hint { font-size: 0.75rem; color: var(--text3); margin-bottom: 1.5rem; }
+    .setup .hint a { color: var(--accent); }
+
+    /* Post list */
+    .post-item { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem;
+      border: 1px solid var(--border); border-radius: 10px; margin-bottom: 0.5rem; transition: all 0.2s; cursor: pointer; }
+    .post-item:hover { border-color: var(--border2); background: var(--surface); }
+    .post-title { font-family: var(--font-heading); font-weight: 600; font-size: 1rem; }
+    .post-meta { font-size: 0.75rem; color: var(--text3); margin-top: 0.25rem; font-family: var(--font-mono); }
+    .post-actions { display: flex; gap: 0.35rem; flex-shrink: 0; }
+    .draft-badge { font-size: 0.65rem; padding: 0.1rem 0.4rem; border-radius: 9999px;
+      background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); margin-left: 0.5rem; }
+    .empty { text-align: center; padding: 4rem 0; color: var(--text3); font-family: var(--font-heading); font-style: italic; }
+
+    /* Editor */
+    .editor { display: none; }
+    .editor.active { display: block; }
+    .field { margin-bottom: 1.25rem; }
+    .field label { display: block; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--text3); margin-bottom: 0.4rem; }
+    .field input, .field textarea, .field select {
+      width: 100%; padding: 0.6rem 0.9rem; font-size: 0.9rem; font-family: var(--font-body);
+      background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 8px; }
+    .field input:focus, .field textarea:focus { outline: none; border-color: var(--accent); }
+    .field textarea { min-height: 400px; resize: vertical; font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.7; }
+    .toggle-row { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+    .toggle { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.85rem; color: var(--text2); }
+    .toggle input { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+    .editor-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem;
+      padding-top: 1.5rem; border-top: 1px solid var(--border); }
+    .status { font-size: 0.8rem; color: var(--text3); }
+    .status.success { color: #22c55e; }
+    .status.error { color: #ef4444; }
+
+    /* Loading */
+    .loading { text-align: center; padding: 3rem; color: var(--text3); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid var(--border);
+      border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite; }
+  </style>
+</head>
+<body>
+
+<!-- Setup Screen -->
+<div id="setup" class="setup" style="display:none;">
+  <h2>Blog Admin</h2>
+  <p>처음 사용하려면 GitHub Personal Access Token이 필요합니다.</p>
+  <input type="password" id="token-input" placeholder="ghp_xxxxxxxxxxxx" />
+  <div class="hint">
+    <a href="https://github.com/settings/tokens/new?scopes=repo&description=Blog+Admin" target="_blank">
+      여기서 토큰 생성 →
+    </a>
+    (repo 권한 체크)
+  </div>
+  <button class="btn btn-primary" onclick="saveToken()">시작하기</button>
+</div>
+
+<!-- Post List -->
+<div id="list" class="container" style="display:none;">
+  <div class="header">
+    <h1>Posts</h1>
+    <div class="header-actions">
+      <a href="/blog/" class="btn btn-ghost btn-sm">← Blog</a>
+      <button class="btn btn-primary btn-sm" onclick="newPost()">+ 새 글</button>
+    </div>
+  </div>
+  <div id="post-list"></div>
+</div>
+
+<!-- Editor -->
+<div id="editor" class="editor container">
+  <div class="header">
+    <h1 id="editor-title">새 글 작성</h1>
+    <button class="btn btn-ghost btn-sm" onclick="showList()">← 목록</button>
+  </div>
+
+  <div class="field">
+    <label>제목</label>
+    <input type="text" id="ed-title" placeholder="글 제목을 입력하세요" />
+  </div>
+  <div class="field">
+    <label>설명</label>
+    <input type="text" id="ed-desc" placeholder="한 줄 설명" />
+  </div>
+  <div class="field">
+    <label>태그 (쉼표로 구분)</label>
+    <input type="text" id="ed-tags" placeholder="deep-learning, python, tips" />
+  </div>
+  <div class="field">
+    <div class="toggle-row">
+      <label class="toggle"><input type="checkbox" id="ed-draft" checked /> Draft</label>
+      <label class="toggle"><input type="checkbox" id="ed-featured" /> Featured</label>
+      <label class="toggle"><input type="checkbox" id="ed-math" /> Math (KaTeX)</label>
+    </div>
+  </div>
+  <div class="field">
+    <label>본문 (Markdown)</label>
+    <textarea id="ed-body" placeholder="마크다운으로 작성하세요..."></textarea>
+  </div>
+  <div class="editor-footer">
+    <span id="ed-status" class="status"></span>
+    <div style="display:flex;gap:0.5rem;">
+      <button class="btn btn-ghost" onclick="showList()">취소</button>
+      <button class="btn btn-primary" onclick="savePost()">저장</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const REPO = "concrete-sangminlee/blog";
+const BRANCH = "main";
+const CONTENT_PATH = "src/content/blog";
+const API = "https://api.github.com";
+
+let token = localStorage.getItem("blog_token");
+let posts = [];
+let editingFile = null; // { path, sha } when editing existing
+
+function getHeaders() {
+  return { Authorization: `Bearer ${token}`, Accept: "application/vnd.github.v3+json" };
+}
+
+// Init
+if (token) { showList(); } else { document.getElementById("setup").style.display = "block"; }
+
+function saveToken() {
+  const t = document.getElementById("token-input").value.trim();
+  if (!t) return;
+  token = t;
+  localStorage.setItem("blog_token", t);
+  document.getElementById("setup").style.display = "none";
+  showList();
+}
+
+async function showList() {
+  document.getElementById("list").style.display = "block";
+  document.getElementById("editor").classList.remove("active");
+  document.getElementById("setup").style.display = "none";
+  editingFile = null;
+
+  const container = document.getElementById("post-list");
+  container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+  try {
+    const res = await fetch(`${API}/repos/${REPO}/contents/${CONTENT_PATH}?ref=${BRANCH}`, { headers: getHeaders() });
+    if (res.status === 404) { container.innerHTML = '<div class="empty">아직 글이 없습니다.</div>'; posts = []; return; }
+    if (res.status === 401) { localStorage.removeItem("blog_token"); token = null; location.reload(); return; }
+    const files = await res.json();
+    posts = Array.isArray(files) ? files.filter(f => f.name.endsWith(".mdx") || f.name.endsWith(".md")) : [];
+
+    if (posts.length === 0) { container.innerHTML = '<div class="empty">아직 글이 없습니다.</div>'; return; }
+
+    // Fetch frontmatter for each post
+    const details = await Promise.all(posts.map(async f => {
+      const r = await fetch(f.url, { headers: getHeaders() });
+      const d = await r.json();
+      const content = atob(d.content);
+      const fm = parseFrontmatter(content);
+      return { ...f, fm, raw: content };
+    }));
+
+    details.sort((a, b) => (b.fm.pubDate || "").localeCompare(a.fm.pubDate || ""));
+
+    container.innerHTML = details.map(f => `
+      <div class="post-item" onclick="editPost('${f.path}')">
+        <div>
+          <div class="post-title">${f.fm.title || f.name}${f.fm.draft === true || f.fm.draft === "true" ? '<span class="draft-badge">Draft</span>' : ''}</div>
+          <div class="post-meta">${f.fm.pubDate || ""} · ${f.name}</div>
+        </div>
+        <div class="post-actions" onclick="event.stopPropagation()">
+          <button class="btn btn-ghost btn-sm" onclick="editPost('${f.path}')">편집</button>
+          <button class="btn btn-danger btn-sm" onclick="deletePost('${f.path}','${f.sha}','${f.fm.title || f.name}')">삭제</button>
+        </div>
+      </div>
+    `).join("");
+  } catch (e) {
+    container.innerHTML = `<div class="empty">오류: ${e.message}</div>`;
+  }
+}
+
+function parseFrontmatter(content) {
+  const match = content.match(/^---\n([\s\S]*?)\n---/);
+  if (!match) return {};
+  const fm = {};
+  match[1].split("\n").forEach(line => {
+    const idx = line.indexOf(":");
+    if (idx === -1) return;
+    const key = line.slice(0, idx).trim();
+    let val = line.slice(idx + 1).trim();
+    if (val === "true") val = true;
+    else if (val === "false") val = false;
+    else if (val.startsWith('"') && val.endsWith('"')) val = val.slice(1, -1);
+    else if (val.startsWith("[") && val.endsWith("]")) {
+      val = val.slice(1, -1).split(",").map(s => s.trim().replace(/"/g, "")).filter(Boolean);
+    }
+    fm[key] = val;
+  });
+  return fm;
+}
+
+function newPost() {
+  editingFile = null;
+  document.getElementById("editor-title").textContent = "새 글 작성";
+  document.getElementById("ed-title").value = "";
+  document.getElementById("ed-desc").value = "";
+  document.getElementById("ed-tags").value = "";
+  document.getElementById("ed-draft").checked = true;
+  document.getElementById("ed-featured").checked = false;
+  document.getElementById("ed-math").checked = false;
+  document.getElementById("ed-body").value = "";
+  document.getElementById("ed-status").textContent = "";
+  document.getElementById("list").style.display = "none";
+  document.getElementById("editor").classList.add("active");
+}
+
+async function editPost(path) {
+  const status = document.getElementById("ed-status");
+  document.getElementById("list").style.display = "none";
+  document.getElementById("editor").classList.add("active");
+  document.getElementById("editor-title").textContent = "글 수정";
+  status.textContent = "불러오는 중...";
+  status.className = "status";
+
+  const res = await fetch(`${API}/repos/${REPO}/contents/${path}?ref=${BRANCH}`, { headers: getHeaders() });
+  const data = await res.json();
+  const content = atob(data.content);
+  editingFile = { path, sha: data.sha };
+
+  const fm = parseFrontmatter(content);
+  const bodyMatch = content.match(/^---\n[\s\S]*?\n---\n([\s\S]*)$/);
+  const body = bodyMatch ? bodyMatch[1].trim() : content;
+
+  document.getElementById("ed-title").value = fm.title || "";
+  document.getElementById("ed-desc").value = fm.description || "";
+  document.getElementById("ed-tags").value = Array.isArray(fm.tags) ? fm.tags.join(", ") : (fm.tags || "");
+  document.getElementById("ed-draft").checked = fm.draft === true;
+  document.getElementById("ed-featured").checked = fm.featured === true;
+  document.getElementById("ed-math").checked = fm.math === true;
+  document.getElementById("ed-body").value = body;
+  status.textContent = "";
+}
+
+async function savePost() {
+  const status = document.getElementById("ed-status");
+  const title = document.getElementById("ed-title").value.trim();
+  const desc = document.getElementById("ed-desc").value.trim();
+  const tags = document.getElementById("ed-tags").value.split(",").map(s => s.trim()).filter(Boolean);
+  const draft = document.getElementById("ed-draft").checked;
+  const featured = document.getElementById("ed-featured").checked;
+  const math = document.getElementById("ed-math").checked;
+  const body = document.getElementById("ed-body").value;
+
+  if (!title) { status.textContent = "제목을 입력하세요"; status.className = "status error"; return; }
+  if (!desc) { status.textContent = "설명을 입력하세요"; status.className = "status error"; return; }
+
+  const today = new Date().toISOString().split("T")[0];
+  const slug = title.toLowerCase().replace(/[^\w\s가-힣-]/g, "").replace(/[\s_]+/g, "-").replace(/^-+|-+$/g, "");
+  const tagsStr = tags.length > 0 ? `[${tags.map(t => `"${t}"`).join(", ")}]` : "[]";
+
+  const content = `---
+title: "${title}"
+description: "${desc}"
+pubDate: ${today}
+tags: ${tagsStr}
+draft: ${draft}
+featured: ${featured}
+math: ${math}
+---
+
+${body}
+`;
+
+  const path = editingFile ? editingFile.path : `${CONTENT_PATH}/${slug}.mdx`;
+  const payload = {
+    message: editingFile ? `Update: ${title}` : `New post: ${title}`,
+    content: btoa(unescape(encodeURIComponent(content))),
+    branch: BRANCH,
+  };
+  if (editingFile) payload.sha = editingFile.sha;
+
+  status.textContent = "저장 중...";
+  status.className = "status";
+
+  try {
+    const res = await fetch(`${API}/repos/${REPO}/contents/${path}`, {
+      method: "PUT", headers: { ...getHeaders(), "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) { const e = await res.json(); throw new Error(e.message); }
+    status.textContent = "저장 완료! 자동 배포 중...";
+    status.className = "status success";
+    setTimeout(() => showList(), 1500);
+  } catch (e) {
+    status.textContent = `오류: ${e.message}`;
+    status.className = "status error";
+  }
+}
+
+async function deletePost(path, sha, title) {
+  if (!confirm(`"${title}" 글을 삭제하시겠습니까?`)) return;
+  try {
+    await fetch(`${API}/repos/${REPO}/contents/${path}`, {
+      method: "DELETE", headers: { ...getHeaders(), "Content-Type": "application/json" },
+      body: JSON.stringify({ message: `Delete: ${title}`, sha, branch: BRANCH }),
+    });
+    showList();
+  } catch (e) {
+    alert("삭제 실패: " + e.message);
+  }
+}
+</script>
+</body>
+</html>
