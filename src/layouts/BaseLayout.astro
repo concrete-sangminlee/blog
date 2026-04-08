@@ -28,6 +28,12 @@ const {
     <ClientRouter />
   </head>
   <body>
+    <script is:inline>
+      (function () {
+        const stored = localStorage.getItem("theme");
+        if (stored) document.documentElement.setAttribute("data-theme", stored);
+      })();
+    </script>
     <ScrollProgress />
     <Header />
     <SearchModal client:idle basePath={SITE.base} />
