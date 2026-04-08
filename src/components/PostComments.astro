@@ -3,33 +3,23 @@
 
 <section class="mt-16" id="comments">
   <h2 class="heading-section mb-6 text-lg">Comments</h2>
-  <div id="giscus-container"></div>
+  <div id="disqus_thread"></div>
 </section>
 
 <script>
-  function initGiscus() {
-    const container = document.getElementById("giscus-container");
-    if (!container || container.querySelector(".giscus")) return;
+  function initDisqus() {
+    const container = document.getElementById("disqus_thread");
+    if (!container || container.children.length > 0) return;
 
-    const script = document.createElement("script");
-    script.src = "https://giscus.app/client.js";
-    script.setAttribute("data-repo", "concrete-sangminlee/blog");
-    script.setAttribute("data-repo-id", "R_kgDOR5f1Fg");
-    script.setAttribute("data-category", "General");
-    script.setAttribute("data-category-id", "DIC_kwDOR5f1Fs4C6Vzr");
-    script.setAttribute("data-mapping", "pathname");
-    script.setAttribute("data-strict", "0");
-    script.setAttribute("data-reactions-enabled", "1");
-    script.setAttribute("data-emit-metadata", "0");
-    script.setAttribute("data-input-position", "top");
-    script.setAttribute("data-theme", "dark_dimmed");
-    script.setAttribute("data-lang", "ko");
-    script.setAttribute("data-loading", "lazy");
-    script.crossOrigin = "anonymous";
-    script.async = true;
-    container.appendChild(script);
+    const d = document;
+    const s = d.createElement("script");
+    s.src = "https://sangminlee-blog.disqus.com/embed.js";
+    s.setAttribute("data-timestamp", String(+new Date()));
+    (d.head || d.body).appendChild(s);
   }
 
-  initGiscus();
-  document.addEventListener("astro:after-swap", initGiscus);
+  initDisqus();
+  document.addEventListener("astro:after-swap", initDisqus);
 </script>
+
+<noscript>댓글을 보려면 JavaScript를 활성화해주세요.</noscript>
