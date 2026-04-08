@@ -10,7 +10,7 @@ interface Props {
 const { prev, next } = Astro.props;
 ---
 
-<nav class="post-nav mt-16 grid gap-4 sm:grid-cols-2" aria-label="Post navigation">
+<nav class="post-nav mt-16 grid grid-cols-2 gap-4" aria-label="Post navigation">
   {prev ? (
     <a href={href(`/${prev.slug}/`)} class="post-nav-link">
       <span class="post-nav-label">Previous</span>
