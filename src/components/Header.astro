@@ -17,9 +17,9 @@ const currentPath = Astro.url.pathname;
       class="logo-link flex items-center gap-2 transition-colors duration-200"
       aria-label="Home"
     >
-      <span class="logo-mark">S</span>
-      <span class="logo-text hidden sm:inline">Sang Min Lee's Tech Blog</span>
-      <span class="logo-text sm:hidden">SML Tech Blog</span>
+      <img src="/blog/favicon-32.png" alt="" class="logo-img" />
+      <span class="logo-text hidden sm:inline">Sang Min Lee's Blog</span>
+      <span class="logo-text sm:hidden">SML Blog</span>
     </a>
 
     <!-- Desktop Navigation -->
@@ -134,19 +134,10 @@ const currentPath = Astro.url.pathname;
     color: var(--text-primary);
   }
 
-  .logo-mark {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+  .logo-img {
     width: 28px;
     height: 28px;
-    border-radius: 6px;
-    background: var(--accent);
-    color: var(--bg);
-    font-family: var(--font-heading);
-    font-weight: 700;
-    font-size: 0.875rem;
-    letter-spacing: -0.02em;
+    border-radius: 50%;
     flex-shrink: 0;
   }
 
