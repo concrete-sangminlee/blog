@@ -19,6 +19,10 @@ const year = new Date().getFullYear();
         </svg>
       </a>
     </div>
+    <div class="badges">
+      <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fconcrete-sangminlee.github.io%2Fblog&count_bg=%232a2a30&title_bg=%23111114&icon=&icon_color=%23E7E7E7&title=visitors&edge_flat=true" alt="Visitors" />
+      <img src="https://img.shields.io/github/last-commit/concrete-sangminlee/blog?style=flat-square&color=e8a849&labelColor=111114&label=updated" alt="Last updated" />
+    </div>
     <p class="copyright">&copy; {year} Sang Min Lee</p>
   </div>
 </footer>
@@ -47,6 +51,16 @@ const year = new Date().getFullYear();
     color: var(--text-primary);
     border-color: var(--border-hover);
     background: var(--bg-surface);
+  }
+
+  .badges {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .badges img {
+    height: 20px;
   }
 
   .copyright {
