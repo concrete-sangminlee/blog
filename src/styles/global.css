@@ -1,33 +1,5 @@
 @import "tailwindcss";
 
-/* ── Fonts ── */
-@font-face {
-  font-family: "Newsreader";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("https://fonts.gstatic.com/s/newsreader/v21/cY9qfjOCX1hbuyalUrK439vogpaBrraw.woff2")
-    format("woff2");
-}
-
-@font-face {
-  font-family: "Newsreader";
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url("https://fonts.gstatic.com/s/newsreader/v21/cY9qfjOCX1hbuyalUrK439vogpaBrraw.woff2")
-    format("woff2");
-}
-
-@font-face {
-  font-family: "Newsreader";
-  font-style: italic;
-  font-weight: 400;
-  font-display: swap;
-  src: url("https://fonts.gstatic.com/s/newsreader/v21/cY9kfjOCX1hbuyalUrK49dLac06G1ZGsZBtoBCzBDXXD9JVF.woff2")
-    format("woff2");
-}
-
 /* ── Theme ── */
 @theme {
   --font-heading: "Newsreader", "Georgia", serif;

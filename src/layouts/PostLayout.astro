@@ -5,6 +5,7 @@ import PostComments from "@/components/PostComments.astro";
 import { getReadingTime } from "@/utils/reading-time";
 import { getAllPosts } from "@/utils/posts";
 import { href } from "@/utils/paths";
+import { getPostSocialImage, getPostSocialImageAlt } from "@/utils/social-image";
 import type { CollectionEntry } from "astro:content";
 
 interface Props {
@@ -12,10 +13,12 @@ interface Props {
 }
 
 const { post } = Astro.props;
-const { title, description, pubDate, updatedDate, tags, math, image } = post.data;
+const { title, description, pubDate, updatedDate, tags, math } = post.data;
 
 const { Content, headings } = await post.render();
 const readingTime = getReadingTime(post.body ?? "");
+const socialImage = getPostSocialImage(post);
+const socialImageAlt = getPostSocialImageAlt(post);
 
 const allPosts = await getAllPosts();
 const idx = allPosts.findIndex((p) => p.id === post.id);
@@ -29,9 +32,10 @@ function formatDate(date: Date): string {
 }
 ---
 
-<BaseLayout title={title} description={description} image={image?.url} math={math}>
-  <article class="post-layout">
+<BaseLayout title={title} description={description} image={socialImage} imageAlt={socialImageAlt} math={math}>
+  <article class="post-layout" data-pagefind-body>
     <header class="mb-12 max-w-[720px]">
+      <p class="sr-only" data-pagefind-meta="description">{description}</p>
       {tags.length > 0 && (
         <div class="mb-4 flex flex-wrap gap-2">
           {tags.map((tag) => (
@@ -45,6 +49,8 @@ function formatDate(date: Date): string {
       <h1
         class="heading-page text-3xl leading-tight tracking-tight sm:text-4xl lg:text-5xl"
         transition:name={`post-title-${post.slug}`}
+        data-pagefind-meta="title"
+        data-pagefind-weight="10"
       >
         {title}
       </h1>

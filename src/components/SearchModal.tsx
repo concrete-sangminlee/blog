@@ -3,7 +3,10 @@ import { useState, useEffect, useRef, useCallback } from "react";
 interface SearchResult {
   id: string;
   url: string;
-  meta?: { title?: string };
+  meta?: {
+    title?: string;
+    description?: string;
+  };
   excerpt?: string;
 }
 
@@ -11,7 +14,10 @@ interface PagefindResult {
   id: string;
   data: () => Promise<{
     url: string;
-    meta?: { title?: string };
+    meta?: {
+      title?: string;
+      description?: string;
+    };
     excerpt?: string;
   }>;
 }
@@ -19,6 +25,56 @@ interface PagefindResult {
 interface Pagefind {
   init: () => Promise<void>;
   search: (query: string) => Promise<{ results: PagefindResult[] }>;
+}
+
+function stripHtml(value = ""): string {
+  return value
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function normalize(value = ""): string {
+  return stripHtml(value).toLowerCase();
+}
+
+function scoreResult(result: SearchResult, query: string, rank: number): number {
+  const normalizedQuery = normalize(query);
+  const tokens = normalizedQuery.split(/\s+/).filter(Boolean);
+  const title = normalize(result.meta?.title);
+  const description = normalize(result.meta?.description);
+  const excerpt = normalize(result.excerpt);
+  let score = Math.max(0, 30 - rank);
+
+  if (title === normalizedQuery) score += 120;
+  if (title.startsWith(normalizedQuery)) score += 80;
+  if (title.includes(normalizedQuery)) score += 65;
+  if (description.includes(normalizedQuery)) score += 35;
+  if (excerpt.includes(normalizedQuery)) score += 20;
+
+  for (const token of tokens) {
+    if (title.includes(token)) score += 18;
+    if (description.includes(token)) score += 10;
+    if (excerpt.includes(token)) score += 6;
+  }
+
+  return score;
+}
+
+function displayPath(url: string, basePath: string): string {
+  try {
+    const parsed = new URL(url, window.location.origin);
+    const normalizedBase = basePath.replace(/\/$/, "");
+    const escapedBase = normalizedBase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const path = parsed.pathname.replace(new RegExp(`^${escapedBase}`), "") || "/";
+    return path;
+  } catch {
+    return url;
+  }
 }
 
 export default function SearchModal({ basePath = "/blog" }: { basePath?: string }) {
@@ -62,7 +118,7 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
         await pf.init();
         setPagefind(pf);
       } catch {
-        setError("Search is available after build.");
+        setError("검색은 빌드된 사이트에서 사용할 수 있습니다.");
       }
     })();
   }, [isOpen, pagefind, basePath]);
@@ -119,17 +175,30 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
       setIsLoading(true);
       try {
         const search = await pagefind.search(query);
-        const loaded = await Promise.all(
-          search.results.slice(0, 8).map(async (r) => {
+        const loadedWithRank = await Promise.all(
+          search.results.slice(0, 24).map(async (r, rank) => {
             const data = await r.data();
             return {
-              id: r.id,
-              url: data.url,
-              meta: data.meta,
-              excerpt: data.excerpt,
+              result: {
+                id: r.id,
+                url: data.url,
+                meta: data.meta,
+                excerpt: data.excerpt,
+              },
+              rank,
             };
           }),
         );
+        const loaded = loadedWithRank
+          .map(({ result, rank }) => ({
+            ...result,
+            score: scoreResult(result, query, rank),
+            rank,
+          }))
+          .sort((a, b) => b.score - a.score || a.rank - b.rank)
+          .slice(0, 8)
+          .map(({ score: _score, rank: _rank, ...result }) => result);
+
         setResults(loaded);
         setSelectedIndex(-1);
       } catch {
@@ -187,7 +256,7 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
       onKeyDown={handleModalKeyDown}
       role="dialog"
       aria-modal="true"
-      aria-label="Search posts"
+      aria-label="글 검색"
       style={{
         position: "fixed",
         inset: 0,
@@ -245,8 +314,8 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search posts..."
-            aria-label="Search posts"
+            placeholder="글 제목, 주제, 문장 검색..."
+            aria-label="글 검색"
             style={{
               flex: 1,
               background: "transparent",
@@ -305,7 +374,7 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
                 fontSize: "0.875rem",
               }}
             >
-              Searching...
+              검색 중...
             </div>
           )}
 
@@ -320,7 +389,7 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
                 fontStyle: "italic",
               }}
             >
-              No results for &ldquo;{query}&rdquo;
+              &ldquo;{query}&rdquo; 검색 결과가 없습니다.
             </div>
           )}
 
@@ -342,20 +411,43 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
               >
                 <div
                   style={{
+                    marginBottom: "0.2rem",
+                    fontSize: "0.6875rem",
+                    color: "var(--text-muted)",
+                    fontFamily: "var(--font-mono)",
+                  }}
+                >
+                  {displayPath(result.url, basePath)}
+                </div>
+                <div
+                  style={{
                     fontFamily: "var(--font-heading)",
                     fontSize: "0.9375rem",
                     fontWeight: 600,
                     color: "var(--text-primary)",
-                    marginBottom: "0.25rem",
+                    marginBottom: "0.3rem",
                   }}
                 >
                   {result.meta?.title || "Untitled"}
                 </div>
-                {result.excerpt && (
+                {result.meta?.description && (
                   <div
                     style={{
                       fontSize: "0.8125rem",
                       color: "var(--text-secondary)",
+                      lineHeight: 1.45,
+                      marginBottom: result.excerpt ? "0.25rem" : 0,
+                    }}
+                  >
+                    {result.meta.description}
+                  </div>
+                )}
+                {result.excerpt && (
+                  <div
+                    className="search-result-excerpt"
+                    style={{
+                      fontSize: "0.8125rem",
+                      color: "var(--text-muted)",
                       lineHeight: 1.5,
                       overflow: "hidden",
                       display: "-webkit-box",
@@ -383,7 +475,7 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
             }}
           >
             <span>
-              <kbd style={{ fontWeight: 600 }}>&uarr;&darr;</kbd> navigate
+              <kbd style={{ fontWeight: 600 }}>&uarr;&darr;</kbd> move
             </span>
             <span>
               <kbd style={{ fontWeight: 600 }}>&crarr;</kbd> open
@@ -403,6 +495,12 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
         @keyframes searchScaleIn {
           from { opacity: 0; transform: scale(0.96) translateY(-8px); }
           to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .search-result-excerpt mark {
+          background: var(--accent-subtle);
+          color: var(--accent);
+          border-radius: 0.2rem;
+          padding: 0.04rem 0.16rem;
         }
       `}</style>
     </div>

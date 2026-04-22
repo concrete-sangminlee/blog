@@ -2,6 +2,14 @@ import { getCollection, type CollectionEntry } from "astro:content";
 
 export type BlogPost = CollectionEntry<"blog">;
 
+const FEATURED_POST_ORDER = [
+  "paper-writing-tips",
+  "thinking-about-quitting",
+  "pre-phd-me-wouldnt-believe",
+  "dataset-error-discovery",
+  "beating-baseline",
+] as const;
+
 export async function getAllPosts(): Promise<BlogPost[]> {
   try {
     const posts = await getCollection("blog", ({ data }) => {
@@ -17,7 +25,16 @@ export async function getAllPosts(): Promise<BlogPost[]> {
 
 export async function getFeaturedPosts(): Promise<BlogPost[]> {
   const posts = await getAllPosts();
-  return posts.filter((post) => post.data.featured);
+  const featuredRank = new Map(FEATURED_POST_ORDER.map((slug, index) => [slug, index]));
+
+  return posts
+    .filter((post) => post.data.featured || featuredRank.has(post.slug))
+    .sort((a, b) => {
+      const aRank = featuredRank.get(a.slug) ?? Number.MAX_SAFE_INTEGER;
+      const bRank = featuredRank.get(b.slug) ?? Number.MAX_SAFE_INTEGER;
+      if (aRank !== bRank) return aRank - bRank;
+      return b.data.pubDate.valueOf() - a.data.pubDate.valueOf();
+    });
 }
 
 export async function getPostsByTag(tag: string): Promise<BlogPost[]> {

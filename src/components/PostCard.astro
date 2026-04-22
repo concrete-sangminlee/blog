@@ -1,6 +1,7 @@
 ---
 import type { BlogPost } from "@/utils/posts";
 import { href } from "@/utils/paths";
+import { getPostSocialImage } from "@/utils/social-image";
 
 interface Props {
   post: BlogPost;
@@ -9,6 +10,7 @@ interface Props {
 
 const { post, index = 0 } = Astro.props;
 const { title, description, pubDate, tags, featured } = post.data;
+const imageUrl = getPostSocialImage(post);
 
 const formattedDate = pubDate.toLocaleDateString("en-US", {
   year: "numeric",
@@ -27,6 +29,10 @@ const truncatedDesc =
 >
   <a href={postHref} class="post-card-link">
     <div class="post-card-inner">
+      <div class="post-card-media">
+        <img src={imageUrl} alt="" loading="lazy" decoding="async" aria-hidden="true" />
+      </div>
+
       <div class="post-card-meta">
         <time datetime={pubDate.toISOString()}>{formattedDate}</time>
         {featured && <span class="featured-badge">Featured</span>}
@@ -65,7 +71,7 @@ const truncatedDesc =
     text-decoration: none;
     color: inherit;
     padding: 1.5rem;
-    border-radius: 12px;
+    border-radius: 8px;
     border: 1px solid transparent;
     position: relative;
     transition: all 0.25s ease;
@@ -85,6 +91,23 @@ const truncatedDesc =
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+  }
+
+  .post-card-media {
+    aspect-ratio: 1200 / 630;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-surface-hover);
+    margin-bottom: 0.65rem;
+  }
+
+  .post-card-media img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
   }
 
   .post-card-meta {
