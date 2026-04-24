@@ -51,3 +51,7 @@ npm run preview
 ## Deployment
 
 Push to `main` triggers GitHub Actions → GitHub Pages automatically.
+
+## Admin
+
+브라우저에서 글을 새로 쓰거나 수정하려면 `/blog/admin/`으로 접속해 GitHub Personal Access Token(`repo` 권한)을 붙여넣으면 됩니다. 토큰은 브라우저 `localStorage`에만 저장되고, 저장·삭제는 GitHub API로 바로 커밋됩니다.
