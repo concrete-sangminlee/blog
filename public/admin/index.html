@@ -294,6 +294,10 @@ async function editPost(path) {
   const bodyMatch = content.match(/^---\n[\s\S]*?\n---\n([\s\S]*)$/);
   const body = bodyMatch ? bodyMatch[1].trim() : content;
 
+  // Remember the original pubDate so editing preserves it instead of
+  // silently bumping the publish time to "now" on every save.
+  editingFile.pubDate = fm.pubDate || null;
+
   document.getElementById("ed-title").value = fm.title || "";
   document.getElementById("ed-desc").value = fm.description || "";
   document.getElementById("ed-tags").value = Array.isArray(fm.tags) ? fm.tags.join(", ") : (fm.tags || "");
@@ -317,7 +321,18 @@ async function savePost() {
   if (!title) { status.textContent = "제목을 입력하세요"; status.className = "status error"; return; }
   if (!desc) { status.textContent = "설명을 입력하세요"; status.className = "status error"; return; }
 
-  const today = new Date().toISOString().split("T")[0];
+  // For edits, preserve the original pubDate so "Update" doesn't quietly
+  // republish an old post with today's timestamp. For new posts, use the
+  // same local-time ISO pattern as scripts/new-post.mjs so both tools
+  // produce identical frontmatter.
+  let today;
+  if (editingFile && editingFile.pubDate) {
+    today = editingFile.pubDate;
+  } else {
+    const pad = (n) => String(n).padStart(2, "0");
+    const now = new Date();
+    today = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  }
   const slug = title.toLowerCase().replace(/[^\w\s가-힣-]/g, "").replace(/[\s_]+/g, "-").replace(/^-+|-+$/g, "");
   // Escape embedded double quotes so titles like "'유레카' 순간" don't
   // break the YAML frontmatter block.
