@@ -3,9 +3,9 @@
 import fs from "node:fs";
 import path from "node:path";
 
-// import.meta.dirname replaces the old fileURLToPath + path.dirname pair
-// (Node ≥ 20.11 / 21.2). The script's package.json engines aren't pinned,
-// but the rest of the toolchain (Astro 5) already requires Node ≥ 18.17.
+// import.meta.dirname replaces the old fileURLToPath + path.dirname
+// pair and requires Node ≥ 20.11 / 21.2, which matches the floor we
+// pin in package.json engines.
 const CONTENT_DIR = path.join(import.meta.dirname, "..", "src", "content", "blog");
 
 function slugify(text) {
@@ -43,8 +43,10 @@ if (fs.existsSync(filepath)) {
 
 fs.mkdirSync(CONTENT_DIR, { recursive: true });
 
+// Escape embedded quotes so titles like "'유레카' 순간" don't break YAML.
+const yamlTitle = title.replace(/"/g, '\\"');
 const content = `---
-title: "${title}"
+title: "${yamlTitle}"
 description: ""
 pubDate: ${getNowIso()}
 tags: []
