@@ -32,6 +32,16 @@ if (!title) {
   process.exit(1);
 }
 
+// Match content schema's title: z.string().min(6).max(100).
+if (title.length < 6) {
+  console.error("제목은 6자 이상이어야 합니다");
+  process.exit(1);
+}
+if (title.length > 100) {
+  console.error("제목은 100자 이하로 줄여주세요");
+  process.exit(1);
+}
+
 const slug = slugify(title);
 if (!slug) {
   console.error("슬러그로 변환할 글자(한글, 영문, 숫자)가 없습니다");
