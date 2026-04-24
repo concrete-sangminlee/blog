@@ -2,6 +2,11 @@ import { getCollection, type CollectionEntry } from "astro:content";
 
 export type BlogPost = CollectionEntry<"blog">;
 
+// Filter predicate for getCollection: drops drafts in production,
+// keeps them in dev so drafts are visible during local iteration.
+export const isPublished = ({ data }: BlogPost): boolean =>
+  import.meta.env.PROD ? !data.draft : true;
+
 const FEATURED_POST_ORDER = [
   "paper-writing-tips",
   "thinking-about-quitting",
@@ -12,9 +17,7 @@ const FEATURED_POST_ORDER = [
 
 export async function getAllPosts(): Promise<readonly BlogPost[]> {
   try {
-    const posts = await getCollection("blog", ({ data }) => {
-      return import.meta.env.PROD ? !data.draft : true;
-    });
+    const posts = await getCollection("blog", isPublished);
     return posts.sort(
       (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
     );

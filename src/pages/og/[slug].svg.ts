@@ -2,13 +2,12 @@ import { getCollection, type CollectionEntry } from "astro:content";
 import type { APIRoute, GetStaticPaths } from "astro";
 import { SITE } from "@/data/site.config";
 import { renderOgSvg } from "@/utils/og-svg";
+import { isPublished } from "@/utils/posts";
 
 export const prerender = true;
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  const posts = await getCollection("blog", ({ data }) => {
-    return import.meta.env.PROD ? !data.draft : true;
-  });
+  const posts = await getCollection("blog", isPublished);
 
   return posts.map((post) => ({
     params: { slug: post.slug },
