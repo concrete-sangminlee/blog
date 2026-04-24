@@ -17,7 +17,7 @@ const currentPath = Astro.url.pathname;
       class="logo-link flex items-center gap-2 transition-colors duration-200"
       aria-label="Home"
     >
-      <img src="/blog/favicon-32.png" alt="" class="logo-img" />
+      <img src={`${import.meta.env.BASE_URL}favicon-32.png`} alt="" class="logo-img" />
       <span class="logo-text hidden sm:inline">Sang Min Lee's Blog</span>
       <span class="logo-text sm:hidden">SML Blog</span>
     </a>
