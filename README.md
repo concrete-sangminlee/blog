@@ -1,4 +1,4 @@
-# Sang Min Lee's Blog
+# Sang Min Lee’s Blog
 
 구조공학과 인공지능의 교차점에서, 연구와 대학원 생활을 기록하는 개인 블로그.
 
