@@ -6,6 +6,18 @@ const homeHref = resolveHref("/");
 const currentPath = Astro.url.pathname;
 ---
 
+<noscript>
+  <!-- Search (Pagefind) and theme toggle are JS-only. Without JS the
+       buttons would render but do nothing, so hide them instead of
+       leaving dead chrome. -->
+  <style>
+    #search-btn,
+    #theme-toggle,
+    #mobile-menu-btn { display: none !important; }
+    #mobile-nav { display: flex !important; flex-direction: column; }
+  </style>
+</noscript>
+
 <header
   id="site-header"
   class="fixed top-0 left-0 right-0 z-[100] transition-all duration-300"
