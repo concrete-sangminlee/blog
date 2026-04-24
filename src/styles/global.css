@@ -9,6 +9,7 @@
 }
 
 :root {
+  color-scheme: light;
   --bg: #fafaf8;
   --bg-surface: #ffffff;
   --bg-surface-hover: #f2f0ec;
@@ -26,6 +27,7 @@
 }
 
 [data-theme="dark"] {
+  color-scheme: dark;
   --bg: #08080a;
   --bg-surface: #111114;
   --bg-surface-hover: #19191d;
