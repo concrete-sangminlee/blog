@@ -55,7 +55,7 @@ export function getReadingPathNeighbors(path: ResolvedReadingPath, slug: string)
   };
 }
 
-export function getReadingPathStats(paths: ResolvedReadingPath[]): {
+export function getReadingPathStats(paths: readonly ResolvedReadingPath[]): {
   pathCount: number;
   coveredPostCount: number;
 } {
