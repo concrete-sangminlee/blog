@@ -323,8 +323,7 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
   // Scroll selected result into view
   useEffect(() => {
     if (selectedIndex < 0 || !resultsRef.current) return;
-    const item = resultsRef.current.children[selectedIndex] as HTMLElement | undefined;
-    item?.scrollIntoView({ block: "nearest" });
+    resultsRef.current.children[selectedIndex]?.scrollIntoView({ block: "nearest" });
   }, [selectedIndex]);
 
   if (!isOpen) return null;
