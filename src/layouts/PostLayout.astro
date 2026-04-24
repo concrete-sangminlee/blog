@@ -3,7 +3,7 @@ import BaseLayout from "./BaseLayout.astro";
 import PostNav from "@/components/PostNav.astro";
 import PostComments from "@/components/PostComments.astro";
 import PostReadingPath from "@/components/PostReadingPath.astro";
-import { getReadingTime } from "@/utils/reading-time";
+import ReadingTime from "@/components/ReadingTime.astro";
 import { getAllPosts } from "@/utils/posts";
 import { getReadingPathsForPost } from "@/utils/reading-paths";
 import { href } from "@/utils/paths";
@@ -18,7 +18,6 @@ const { post } = Astro.props;
 const { title, description, pubDate, updatedDate, tags, math } = post.data;
 
 const { Content, headings } = await post.render();
-const readingTime = getReadingTime(post.body ?? "");
 const socialImage = getPostSocialImage(post);
 const socialImageAlt = getPostSocialImageAlt(post);
 const readingPaths = await getReadingPathsForPost(post.slug);
@@ -67,7 +66,7 @@ function formatDate(date: Date): string {
           </>
         )}
         <span aria-hidden="true">·</span>
-        <span>{readingTime}</span>
+        <ReadingTime content={post.body ?? ""} />
       </div>
     </header>
 
