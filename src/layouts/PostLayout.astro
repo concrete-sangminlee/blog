@@ -94,7 +94,7 @@ function formatDate(date: Date): string {
             <nav>
               <ul class="space-y-1.5">
                 {tocHeadings.map((h) => (
-                  <li style={h.depth === 3 ? "padding-left: 0.75rem;" : ""}>
+                  <li class:list={[{ "toc-indent": h.depth === 3 }]}>
                     <a
                       href={`#${h.slug}`}
                       class="toc-link block text-xs leading-relaxed transition-colors duration-200"
@@ -130,6 +130,10 @@ function formatDate(date: Date): string {
 
   .tag-link:hover {
     background: var(--accent-glow);
+  }
+
+  .toc-indent {
+    padding-left: 0.75rem;
   }
 
   .toc-link {
