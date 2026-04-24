@@ -2,7 +2,7 @@ import { READING_PATHS, type ReadingPathDefinition } from "@/data/reading-paths"
 import { getAllPosts, type BlogPost } from "@/utils/posts";
 
 export interface ResolvedReadingPath extends ReadingPathDefinition {
-  posts: BlogPost[];
+  readonly posts: readonly BlogPost[];
 }
 
 function resolvePathPosts(
