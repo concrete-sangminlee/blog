@@ -10,6 +10,13 @@ import rehypeKatex from "rehype-katex";
 export default defineConfig({
   site: "https://concrete-sangminlee.github.io",
   base: "/blog/",
+  // Prefetch every internal link when it enters the viewport so post
+  // navigation feels instant. The ClientRouter then swaps against the
+  // already-cached HTML — typical wait drops from ~100ms to nil.
+  prefetch: {
+    prefetchAll: true,
+    defaultStrategy: "viewport",
+  },
   integrations: [
     expressiveCode({
       // List light first so it becomes the default (first-listed) theme
