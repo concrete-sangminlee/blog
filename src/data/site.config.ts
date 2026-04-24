@@ -1,5 +1,5 @@
 export const SITE = {
-  title: "Sang Min Lee's Blog",
+  title: "Sang Min Lee’s Blog",
   description: "구조공학과 인공지능의 교차점에서, 연구와 대학원 생활을 기록합니다.",
   author: "Sang Min Lee",
   base: "/blog",
