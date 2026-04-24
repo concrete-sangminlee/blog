@@ -45,9 +45,8 @@
 }
 
 /* ── Base ── */
-* {
-  box-sizing: border-box;
-}
+/* box-sizing is already set by Tailwind v4's preflight on *, *::before,
+   *::after — no need to duplicate it here. */
 
 html {
   scroll-behavior: smooth;
