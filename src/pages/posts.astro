@@ -2,11 +2,27 @@
 import ListLayout from "@/layouts/ListLayout.astro";
 import PostCard from "@/components/PostCard.astro";
 import { getAllPosts } from "@/utils/posts";
+import { href } from "@/utils/paths";
 
 const posts = await getAllPosts();
 ---
 
 <ListLayout title="All Posts" description="모든 글">
+  <section class="posts-callout">
+    <div>
+      <p class="posts-callout-label">Start Here</p>
+      <p class="posts-callout-copy">
+        처음 오는 독자라면 시간순 목록보다 읽기 경로부터 보는 편이 맥락을 잡기 쉽습니다.
+      </p>
+    </div>
+    <a href={href("/start-here/")} class="posts-callout-link">
+      Open reading paths
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    </a>
+  </section>
+
   {posts.length > 0 ? (
     <div class="space-y-1">
       {posts.map((post, i) => (
@@ -22,3 +38,48 @@ const posts = await getAllPosts();
     </p>
   )}
 </ListLayout>
+
+<style>
+  .posts-callout {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem 1.1rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-surface);
+  }
+
+  .posts-callout-label {
+    margin: 0 0 0.35rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .posts-callout-copy {
+    margin: 0;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  .posts-callout-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    white-space: nowrap;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .posts-callout-link:hover {
+    color: var(--accent-hover);
+  }
+</style>

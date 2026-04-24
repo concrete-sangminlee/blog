@@ -1,0 +1,206 @@
+---
+import type { ResolvedReadingPath } from "@/utils/reading-paths";
+import { getReadingPathNeighbors } from "@/utils/reading-paths";
+import { href } from "@/utils/paths";
+
+interface Props {
+  currentSlug: string;
+  paths: ResolvedReadingPath[];
+}
+
+const { currentSlug, paths } = Astro.props;
+const primaryPath = paths[0] ?? null;
+const neighbors = primaryPath
+  ? getReadingPathNeighbors(primaryPath, currentSlug)
+  : { index: -1, prev: null, next: null };
+---
+
+{paths.length > 0 && (
+  <section class="post-path mt-16" aria-labelledby="reading-path-title">
+    <div class="post-path-header">
+      <p class="post-path-kicker">Start Here</p>
+      <h2 id="reading-path-title" class="heading-section text-lg">이 글이 들어 있는 읽기 경로</h2>
+      <p class="post-path-copy">
+        단독 글로 읽어도 되지만, 앞뒤 맥락까지 따라가고 싶다면 아래 경로에서 이어서 볼 수 있습니다.
+      </p>
+    </div>
+
+    <div class="post-path-links">
+      {paths.map((path) => (
+        <a href={href(`/start-here/${path.id}/`)} class="post-path-chip">
+          <span>{path.title}</span>
+          <span class="post-path-chip-count">{path.posts.length}</span>
+        </a>
+      ))}
+    </div>
+
+    {primaryPath && (
+      <div class="post-path-primary">
+        <div class="post-path-primary-head">
+          <p class="post-path-primary-label">
+            {neighbors.index + 1} / {primaryPath.posts.length} in this path
+          </p>
+          <a href={href(`/start-here/${primaryPath.id}/`)} class="post-path-primary-title">
+            {primaryPath.title}
+          </a>
+          <p class="post-path-primary-desc">{primaryPath.description}</p>
+        </div>
+
+        <div class="post-path-nav">
+          {neighbors.prev ? (
+            <a href={href(`/${neighbors.prev.slug}/`)} class="post-path-nav-link">
+              <span class="post-path-nav-label">Earlier</span>
+              <strong>{neighbors.prev.data.title}</strong>
+            </a>
+          ) : (
+            <div class="post-path-nav-empty">이 경로의 시작 글</div>
+          )}
+
+          {neighbors.next ? (
+            <a href={href(`/${neighbors.next.slug}/`)} class="post-path-nav-link">
+              <span class="post-path-nav-label">Next</span>
+              <strong>{neighbors.next.data.title}</strong>
+            </a>
+          ) : (
+            <div class="post-path-nav-empty">이 경로의 마지막 글</div>
+          )}
+        </div>
+      </div>
+    )}
+  </section>
+)}
+
+<style>
+  .post-path {
+    border-top: 1px solid var(--border);
+    padding-top: 2rem;
+  }
+
+  .post-path-kicker {
+    margin: 0 0 0.45rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .post-path-copy,
+  .post-path-primary-desc {
+    margin: 0.55rem 0 0;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  .post-path-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 1rem;
+  }
+
+  .post-path-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.45rem 0.85rem;
+    border-radius: 9999px;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+  }
+
+  .post-path-chip:hover {
+    border-color: var(--border-hover);
+    background: var(--bg-surface);
+    color: var(--text-primary);
+  }
+
+  .post-path-chip-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.5rem;
+    height: 1.5rem;
+    padding: 0 0.35rem;
+    border-radius: 9999px;
+    background: var(--accent-subtle);
+    color: var(--accent);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .post-path-primary {
+    margin-top: 1.25rem;
+    padding: 1.1rem 0 0;
+  }
+
+  .post-path-primary-label {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .post-path-primary-title {
+    display: inline-block;
+    margin-top: 0.35rem;
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    color: var(--text-primary);
+    text-decoration: none;
+  }
+
+  .post-path-primary-title:hover {
+    color: var(--accent);
+  }
+
+  .post-path-nav {
+    display: grid;
+    gap: 0.8rem;
+    margin-top: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .post-path-nav {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .post-path-nav-link,
+  .post-path-nav-empty {
+    display: grid;
+    gap: 0.35rem;
+    min-height: 100%;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-surface);
+  }
+
+  .post-path-nav-link {
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+
+  .post-path-nav-link:hover {
+    border-color: var(--border-hover);
+    background: var(--bg-surface-hover);
+    color: inherit;
+  }
+
+  .post-path-nav-link strong {
+    color: var(--text-primary);
+    line-height: 1.5;
+  }
+
+  .post-path-nav-label,
+  .post-path-nav-empty {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+</style>

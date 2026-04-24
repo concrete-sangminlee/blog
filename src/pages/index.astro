@@ -1,12 +1,15 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import PostCard from "@/components/PostCard.astro";
+import ReadingPathCard from "@/components/ReadingPathCard.astro";
 import { getAllPosts, getFeaturedPosts } from "@/utils/posts";
+import { getFeaturedReadingPaths } from "@/utils/reading-paths";
 import { SITE } from "@/data/site.config";
 import { href } from "@/utils/paths";
 
 const allPosts = await getAllPosts();
 const featuredPosts = await getFeaturedPosts();
+const featuredPaths = await getFeaturedReadingPaths();
 const featuredSlugs = new Set(featuredPosts.map((post) => post.slug));
 const recentPosts = allPosts.filter((post) => !featuredSlugs.has(post.slug)).slice(0, 8);
 ---
@@ -30,10 +33,33 @@ const recentPosts = allPosts.filter((post) => !featuredSlugs.has(post.slug)).sli
             <path d="M5 12h14M12 5l7 7-7 7"/>
           </svg>
         </a>
-        <a href={href("/about/")} class="btn-ghost">About</a>
+        <a href={href("/start-here/")} class="btn-ghost">Start Here</a>
       </div>
     </div>
   </section>
+
+  {featuredPaths.length > 0 && (
+    <section class="mb-16">
+      <div class="section-header">
+        <h2 class="section-title">Start Here</h2>
+        <div class="section-line"></div>
+      </div>
+      <div class="grid gap-4 md:grid-cols-3">
+        {featuredPaths.slice(0, 3).map((path, i) => (
+          <ReadingPathCard path={path} index={i} compact />
+        ))}
+      </div>
+
+      <div class="mt-8 text-center">
+        <a href={href("/start-here/")} class="view-all">
+          Browse all reading paths
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+    </section>
+  )}
 
   <!-- Featured -->
   {featuredPosts.length > 0 && (
