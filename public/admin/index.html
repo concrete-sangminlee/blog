@@ -185,6 +185,11 @@ let posts = [];
 let editingFile = null; // { path, sha } when editing existing
 let dirty = false; // set when the editor has unsaved changes
 
+const BASE_TITLE = document.title; // "글 작성 · 블로그 관리"
+function setTabTitle(suffix) {
+  document.title = suffix ? `${suffix} · 블로그 관리` : BASE_TITLE;
+}
+
 function getHeaders() {
   return { Authorization: `Bearer ${token}`, Accept: "application/vnd.github.v3+json" };
 }
@@ -232,6 +237,7 @@ async function showList() {
   document.getElementById("setup").style.display = "none";
   editingFile = null;
   dirty = false;
+  setTabTitle("글 목록");
 
   const container = document.getElementById("post-list");
   container.innerHTML = '<div class="loading" role="status" aria-label="글 목록 불러오는 중"><div class="spinner" aria-hidden="true"></div></div>';
@@ -341,6 +347,7 @@ function parseFrontmatter(content) {
 function newPost() {
   editingFile = null;
   document.getElementById("editor-title").textContent = "새 글 작성";
+  setTabTitle("새 글 작성");
   document.getElementById("ed-title").value = "";
   document.getElementById("ed-desc").value = "";
   document.getElementById("ed-tags").value = "";
@@ -359,6 +366,7 @@ async function editPost(path) {
   document.getElementById("list").style.display = "none";
   document.getElementById("editor").classList.add("active");
   document.getElementById("editor-title").textContent = "글 수정";
+  setTabTitle("글 수정");
   status.textContent = "불러오는 중...";
   status.className = "status";
 
