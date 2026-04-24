@@ -256,7 +256,9 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
 
     if (e.key === "ArrowUp") {
       e.preventDefault();
-      setSelectedIndex((prev) => Math.max(prev - 1, -1));
+      // Clamp at 0 when we already have a selection (auto-highlight puts us
+      // there on first result). Only drop to -1 when there's no list yet.
+      setSelectedIndex((prev) => Math.max(prev - 1, results.length > 0 ? 0 : -1));
       return;
     }
 
