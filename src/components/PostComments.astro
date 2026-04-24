@@ -51,7 +51,7 @@ const { identifier, url, title } = Astro.props;
     };
 
     if ((window as any).DISQUS) {
-      // Already loaded on a previous page — reset with new page info
+      // Already loaded on a previous page, reset with new page info
       (window as any).DISQUS.reset({
         reload: true,
         config: function () {
@@ -74,8 +74,8 @@ const { identifier, url, title } = Astro.props;
     if (!container) return;
 
     // If DISQUS is already loaded (from a previous page), reset immediately on
-    // this new post — users who navigated here via the client router expect
-    // the comments to reflect the current post without needing to scroll.
+    // this new post. Users who navigated here via the client router expect the
+    // comments to reflect the current post without needing to scroll.
     if ((window as any).DISQUS) {
       loadDisqusScript();
       return;
