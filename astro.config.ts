@@ -12,7 +12,19 @@ export default defineConfig({
   base: "/blog/",
   integrations: [
     expressiveCode({
-      themes: ["vitesse-dark", "vitesse-light"],
+      // List light first so it becomes the default (first-listed) theme
+      // applied to :root when no `data-theme` is set yet — the site's own
+      // base palette is also light.
+      themes: ["vitesse-light", "vitesse-dark"],
+      // Map expressive-code's theme selectors onto the site's own
+      // `data-theme="dark"` / `data-theme="light"` attribute instead of
+      // the default `data-theme="vitesse-dark"`, so code blocks follow
+      // the site toggle rather than the OS preference.
+      themeCssSelector: (theme) =>
+        theme.name === "vitesse-dark"
+          ? '[data-theme="dark"]'
+          : '[data-theme="light"]',
+      useDarkModeMediaQuery: false,
       styleOverrides: {
         borderRadius: "0.5rem",
         codePaddingBlock: "1rem",
