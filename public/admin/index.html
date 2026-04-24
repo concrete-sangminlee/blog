@@ -275,7 +275,7 @@ async function showList() {
       <div class="post-item" onclick="editPost('${escHtml(f.path)}')">
         <div>
           <div class="post-title">${escHtml(title)}${isDraft ? '<span class="draft-badge">초안</span>' : ''}</div>
-          <div class="post-meta">${escHtml(f.fm.pubDate || "")} · ${escHtml(f.name)}</div>
+          <div class="post-meta">${f.fm.pubDate ? `<time datetime="${escHtml(f.fm.pubDate)}">${escHtml(f.fm.pubDate)}</time> · ` : ""}${escHtml(f.name)}</div>
         </div>
         <div class="post-actions" onclick="event.stopPropagation()">
           <button class="btn btn-ghost btn-sm" onclick="editPost('${escHtml(f.path)}')">편집</button>
