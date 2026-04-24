@@ -1,8 +1,8 @@
-import { getCollection, type CollectionEntry } from "astro:content";
+import { getCollection } from "astro:content";
 import type { APIRoute, GetStaticPaths } from "astro";
 import { SITE } from "@/data/site.config";
 import { renderOgSvg } from "@/utils/og-svg";
-import { isPublished } from "@/utils/posts";
+import { isPublished, type BlogPost } from "@/utils/posts";
 
 export const prerender = true;
 
@@ -16,7 +16,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
 };
 
 export const GET: APIRoute = ({ props }) => {
-  const post = props.post as CollectionEntry<"blog">;
+  const post = props.post as BlogPost;
   const svg = renderOgSvg({
     title: post.data.title,
     description: post.data.description,
