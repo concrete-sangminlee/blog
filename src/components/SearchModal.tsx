@@ -564,13 +564,13 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
             }}
           >
             <span>
-              <kbd style={{ fontWeight: 600 }}>&uarr;&darr;</kbd> move
+              <kbd style={{ fontWeight: 600 }}>&uarr;&darr;</kbd> 이동
             </span>
             <span>
-              <kbd style={{ fontWeight: 600 }}>&crarr;</kbd> open
+              <kbd style={{ fontWeight: 600 }}>&crarr;</kbd> 열기
             </span>
             <span>
-              <kbd style={{ fontWeight: 600 }}>esc</kbd> close
+              <kbd style={{ fontWeight: 600 }}>esc</kbd> 닫기
             </span>
           </div>
         )}
