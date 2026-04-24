@@ -96,12 +96,12 @@ const currentPath = Astro.url.pathname;
       aria-expanded="false"
       aria-controls="mobile-nav"
     >
-      <svg id="menu-icon-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <svg id="menu-icon-open" class="menu-icon-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <line x1="3" y1="6" x2="21" y2="6" />
         <line x1="3" y1="12" x2="21" y2="12" />
         <line x1="3" y1="18" x2="21" y2="18" />
       </svg>
-      <svg id="menu-icon-close" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;" aria-hidden="true">
+      <svg id="menu-icon-close" class="menu-icon-close" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <line x1="18" y1="6" x2="6" y2="18" />
         <line x1="6" y1="6" x2="18" y2="18" />
       </svg>
@@ -258,6 +258,17 @@ const currentPath = Astro.url.pathname;
     display: none;
   }
 
+  /* Mobile menu icons follow aria-expanded on the toggle button. */
+  .menu-icon-close {
+    display: none;
+  }
+  #mobile-menu-btn[aria-expanded="true"] .menu-icon-open {
+    display: none;
+  }
+  #mobile-menu-btn[aria-expanded="true"] .menu-icon-close {
+    display: block;
+  }
+
   /* Mobile nav */
   #mobile-nav {
     border-top: 1px solid var(--border);
@@ -273,13 +284,11 @@ const currentPath = Astro.url.pathname;
     const header = document.getElementById("site-header");
     const mobileMenuBtn = document.getElementById("mobile-menu-btn");
     const mobileNav = document.getElementById("mobile-nav");
-    const iconOpen = document.getElementById("menu-icon-open");
-    const iconClose = document.getElementById("menu-icon-close");
 
     // Tear down listeners from the previous page before rebinding, or
     // we stack a new window scroll handler on every view transition.
     headerController?.abort();
-    if (!header || !mobileMenuBtn || !mobileNav || !iconOpen || !iconClose) return;
+    if (!header || !mobileMenuBtn || !mobileNav) return;
     headerController = new AbortController();
     const { signal } = headerController;
 
@@ -300,8 +309,7 @@ const currentPath = Astro.url.pathname;
       isOpen = open;
       mobileNav!.classList.toggle("hidden", !open);
       mobileNav!.classList.toggle("flex", open);
-      iconOpen!.style.display = open ? "none" : "block";
-      iconClose!.style.display = open ? "block" : "none";
+      // The open/close SVGs swap via CSS keyed on aria-expanded.
       mobileMenuBtn!.setAttribute("aria-expanded", String(open));
     }
 
