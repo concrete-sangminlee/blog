@@ -10,9 +10,9 @@ const tags = await getAllTags();
   {tags.size > 0 ? (
     <div class="flex flex-wrap gap-3">
       {[...tags.entries()].map(([tag, count]) => (
-        <a href={href(`/tags/${tag.toLowerCase()}/`)} class="tag-chip">
-          <span class="tag-chip-label">{tag}</span>
-          <span class="tag-chip-count">{count}</span>
+        <a href={href(`/tags/${tag.toLowerCase()}/`)} class="tag-chip" aria-label={`${tag} 태그의 글 ${count}편 보기`}>
+          <span class="tag-chip-label" aria-hidden="true">{tag}</span>
+          <span class="tag-chip-count" aria-hidden="true">{count}</span>
         </a>
       ))}
     </div>
