@@ -408,6 +408,7 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
                   transition: "background-color 0.1s ease",
                 }}
                 onMouseEnter={() => setSelectedIndex(i)}
+                onClick={close}
               >
                 <div
                   style={{
