@@ -28,7 +28,7 @@ function getNowIso() {
 const title = process.argv.slice(2).join(" ");
 
 if (!title) {
-  console.error("Usage: npm run new-post \"Post Title Here\"");
+  console.error("사용법: npm run new-post \"글 제목\"");
   process.exit(1);
 }
 
@@ -37,7 +37,7 @@ const filename = `${slug}.mdx`;
 const filepath = path.join(CONTENT_DIR, filename);
 
 if (fs.existsSync(filepath)) {
-  console.error(`File already exists: ${filepath}`);
+  console.error(`이미 같은 파일이 있습니다: ${filepath}`);
   process.exit(1);
 }
 
@@ -57,5 +57,5 @@ math: false
 `;
 
 fs.writeFileSync(filepath, content, "utf-8");
-console.log(`Created: src/content/blog/${filename}`);
-console.log(`Edit the file and set draft: false when ready to publish.`);
+console.log(`생성됨: src/content/blog/${filename}`);
+console.log(`글을 작성한 뒤 frontmatter의 draft: false 로 바꿔 발행하세요.`);
