@@ -34,7 +34,7 @@ function formatDate(date: Date): string {
     <div class="accent-line mt-6" aria-hidden="true" />
   </section>
 
-  <section class="path-list" aria-label={`${path.title} posts`}>
+  <section class="path-list" aria-label="경로에 포함된 글">
     {path.posts.map((post, index) => (
       <article class="path-step">
         <div class="path-step-index">{String(index + 1).padStart(2, "0")}</div>
