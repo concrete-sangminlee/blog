@@ -14,11 +14,56 @@ import { href } from "@/utils/paths";
     <p class="mt-3 text-base" style="color: var(--text-secondary);">
       찾으시는 페이지가 존재하지 않거나 이동되었습니다.
     </p>
-    <a href={href("/")} class="btn-accent mt-8">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M19 12H5M12 19l-7-7 7-7"/>
-      </svg>
-      Go Home
-    </a>
+    <p class="mt-2 text-sm" style="color: var(--text-muted);">
+      아래 경로로 돌아가 보세요.
+    </p>
+    <nav class="mt-8 flex flex-wrap items-center justify-center gap-3">
+      <a href={href("/")} class="btn-accent">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Home
+      </a>
+      <a href={href("/start-here/")} class="btn-ghost">Start Here</a>
+      <a href={href("/posts/")} class="btn-ghost">All Posts</a>
+      <a href={href("/tags/")} class="btn-ghost">Tags</a>
+    </nav>
   </section>
 </BaseLayout>
+
+<style>
+  .btn-accent {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.25rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 8px;
+    background: var(--accent);
+    color: var(--bg);
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+  .btn-accent:hover {
+    opacity: 0.9;
+    color: var(--bg);
+    transform: translateY(-1px);
+  }
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.6rem 1.1rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+  .btn-ghost:hover {
+    border-color: var(--border-hover);
+    color: var(--text-primary);
+  }
+</style>
