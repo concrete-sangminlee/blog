@@ -27,6 +27,20 @@ const { identifier, url, title } = Astro.props;
     title: string;
   };
 
+  // Disqus attaches two things to window that aren't in lib.dom: a
+  // disqus_config callback and, after embed.js runs, a DISQUS object with
+  // a reset method. Type that surface locally so we don't reach for `any`.
+  type DisqusConfigCallback = (this: {
+    page: { identifier: string; url: string; title: string };
+  }) => void;
+  type DisqusWindow = Window & {
+    disqus_config?: DisqusConfigCallback;
+    DISQUS?: {
+      reset: (options: { reload: boolean; config: DisqusConfigCallback }) => void;
+    };
+  };
+  const dw = window as DisqusWindow;
+
   function readPageConfig(): PageConfig | null {
     const container = document.getElementById("disqus_thread");
     if (!container) return null;
@@ -44,15 +58,15 @@ const { identifier, url, title } = Astro.props;
     if (!cfg) return;
 
     // Set initial config for first load
-    (window as any).disqus_config = function () {
+    dw.disqus_config = function () {
       this.page.identifier = cfg.identifier;
       this.page.url = cfg.url;
       this.page.title = cfg.title;
     };
 
-    if ((window as any).DISQUS) {
+    if (dw.DISQUS) {
       // Already loaded on a previous page, reset with new page info
-      (window as any).DISQUS.reset({
+      dw.DISQUS.reset({
         reload: true,
         config: function () {
           this.page.identifier = cfg.identifier;
@@ -83,7 +97,7 @@ const { identifier, url, title } = Astro.props;
     // If DISQUS is already loaded (from a previous page), reset immediately on
     // this new post. Users who navigated here via the client router expect the
     // comments to reflect the current post without needing to scroll.
-    if ((window as any).DISQUS) {
+    if (dw.DISQUS) {
       loadDisqusScript();
       return;
     }
