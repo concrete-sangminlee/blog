@@ -110,14 +110,16 @@
 <div id="setup" class="setup" style="display:none;">
   <h1>블로그 관리</h1>
   <p>처음 사용하려면 GitHub Personal Access Token이 필요합니다.</p>
-  <input type="password" id="token-input" placeholder="ghp_xxxxxxxxxxxx" aria-label="GitHub Personal Access Token" autocomplete="current-password" />
-  <div class="hint">
-    <a href="https://github.com/settings/tokens/new?scopes=repo&description=Blog+Admin" target="_blank" rel="noopener noreferrer" aria-label="GitHub에서 새 토큰 만들기 (새 탭에서 열림)">
-      여기서 토큰 생성 →
-    </a>
-    (repo 권한 체크)
-  </div>
-  <button class="btn btn-primary" onclick="saveToken()">시작하기</button>
+  <form onsubmit="event.preventDefault(); saveToken();">
+    <input type="password" id="token-input" placeholder="ghp_xxxxxxxxxxxx" aria-label="GitHub Personal Access Token" autocomplete="current-password" />
+    <div class="hint">
+      <a href="https://github.com/settings/tokens/new?scopes=repo&description=Blog+Admin" target="_blank" rel="noopener noreferrer" aria-label="GitHub에서 새 토큰 만들기 (새 탭에서 열림)">
+        여기서 토큰 생성 →
+      </a>
+      (repo 권한 체크)
+    </div>
+    <button type="submit" class="btn btn-primary">시작하기</button>
+  </form>
 </div>
 
 <!-- Post List -->
