@@ -69,9 +69,16 @@ const { identifier, url, title } = Astro.props;
     (document.head || document.body).appendChild(s);
   }
 
+  let activeObserver: IntersectionObserver | null = null;
+
   function initLazyDisqus() {
     const container = document.getElementById("disqus_thread");
     if (!container) return;
+
+    // Drop any observer left watching the previous post's container so we
+    // don't leak one per client-side navigation.
+    activeObserver?.disconnect();
+    activeObserver = null;
 
     // If DISQUS is already loaded (from a previous page), reset immediately on
     // this new post. Users who navigated here via the client router expect the
@@ -84,11 +91,12 @@ const { identifier, url, title } = Astro.props;
     // First-time load: wait until the comments section is close to the
     // viewport so the embed.js fetch and thread render happen only for
     // readers who actually reach the end of the post.
-    const io = new IntersectionObserver(
+    activeObserver = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
-            io.disconnect();
+            activeObserver?.disconnect();
+            activeObserver = null;
             loadDisqusScript();
             break;
           }
@@ -96,7 +104,7 @@ const { identifier, url, title } = Astro.props;
       },
       { rootMargin: "400px 0px" },
     );
-    io.observe(container);
+    activeObserver.observe(container);
   }
 
   initLazyDisqus();
