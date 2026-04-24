@@ -72,6 +72,12 @@ function auditPost(file, source) {
     issues.push(`${file}: pubDate ${data.pubDate} is in the future`);
   }
 
+  // Title comes from frontmatter and renders as an <h1>. A body-level `#`
+  // heading would produce a second <h1>, confusing SEO and screen readers.
+  if (/^# [^#]/m.test(body)) {
+    issues.push(`${file}: body contains a top-level "# " heading (use ## or deeper)`);
+  }
+
   for (const phrase of broadPhrases) {
     if (body.includes(phrase)) {
       warnings.push(`${file}:${lineNumber(source, phrase)}: broad phrase "${phrase}" needs context`);
