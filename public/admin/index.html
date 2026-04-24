@@ -271,19 +271,38 @@ async function showList() {
     container.innerHTML = details.map(f => {
       const title = f.fm.title || f.name;
       const isDraft = f.fm.draft === true || f.fm.draft === "true";
+      // Use data-* + delegated click handlers below, not inline onclicks —
+      // titles with single quotes (e.g. "'유레카' 순간") blew up the
+      // onclick="deletePost(...)" string once browsers decoded &#39;.
       return `
-      <div class="post-item" onclick="editPost('${escHtml(f.path)}')">
+      <div class="post-item" data-path="${escHtml(f.path)}">
         <div>
           <div class="post-title">${escHtml(title)}${isDraft ? '<span class="draft-badge">초안</span>' : ''}</div>
           <div class="post-meta">${f.fm.pubDate ? `<time datetime="${escHtml(f.fm.pubDate)}">${escHtml(f.fm.pubDate)}</time> · ` : ""}${escHtml(f.name)}</div>
         </div>
-        <div class="post-actions" onclick="event.stopPropagation()">
-          <button class="btn btn-ghost btn-sm" onclick="editPost('${escHtml(f.path)}')">편집</button>
-          <button class="btn btn-danger btn-sm" onclick="deletePost('${escHtml(f.path)}','${escHtml(f.sha)}','${escHtml(title)}')">삭제</button>
+        <div class="post-actions">
+          <button class="btn btn-ghost btn-sm" data-action="edit" data-path="${escHtml(f.path)}">편집</button>
+          <button class="btn btn-danger btn-sm" data-action="delete" data-path="${escHtml(f.path)}" data-sha="${escHtml(f.sha)}" data-title="${escHtml(title)}">삭제</button>
         </div>
       </div>
     `;
     }).join("");
+
+    // Delegated click handler keyed on data-action. Stops on the buttons
+    // so the row-level editPost doesn't double-fire.
+    container.onclick = (e) => {
+      const btn = e.target.closest("[data-action]");
+      if (btn) {
+        e.stopPropagation();
+        if (btn.dataset.action === "edit") editPost(btn.dataset.path);
+        else if (btn.dataset.action === "delete") {
+          deletePost(btn.dataset.path, btn.dataset.sha, btn.dataset.title);
+        }
+        return;
+      }
+      const row = e.target.closest(".post-item");
+      if (row) editPost(row.dataset.path);
+    };
   } catch (e) {
     container.innerHTML = `<div class="empty">오류: ${e.message}</div>`;
   }
