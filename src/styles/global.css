@@ -63,6 +63,10 @@ body {
   position: relative;
   min-height: 100vh;
   transition: background-color 0.3s ease, color 0.3s ease;
+  /* Korean convention: don't break inside a CJK word. Inherited, so every
+     text-carrying element picks it up unless explicitly overridden. */
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 /* Noise texture */
@@ -185,7 +189,6 @@ a:hover {
   letter-spacing: -0.02em;
   color: var(--text-primary);
   text-wrap: balance;
-  word-break: keep-all;
 }
 
 .heading-section {
@@ -195,7 +198,6 @@ a:hover {
   letter-spacing: -0.015em;
   color: var(--text-primary);
   text-wrap: balance;
-  word-break: keep-all;
 }
 
 .text-muted-sm {

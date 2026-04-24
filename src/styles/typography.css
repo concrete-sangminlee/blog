@@ -4,11 +4,6 @@
   line-height: 1.85;
   color: var(--text-primary);
   max-width: 100%;
-  /* Korean typography convention: break at word boundaries rather than
-     between CJK characters, which otherwise mid-split 단어 awkwardly at
-     narrow viewport widths. */
-  word-break: keep-all;
-  overflow-wrap: break-word;
 }
 
 .prose h1,
