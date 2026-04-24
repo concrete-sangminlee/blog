@@ -1,25 +1,76 @@
 ---
+interface Props {
+  identifier: string;
+  url: string;
+  title: string;
+}
+
+const { identifier, url, title } = Astro.props;
 ---
 
 <section class="mt-16" id="comments">
   <h2 class="heading-section mb-6 text-lg">Comments</h2>
-  <div id="disqus_thread"></div>
+  <div
+    id="disqus_thread"
+    data-disqus-identifier={identifier}
+    data-disqus-url={url}
+    data-disqus-title={title}
+  ></div>
 </section>
 
 <script>
-  function initDisqus() {
-    const container = document.getElementById("disqus_thread");
-    if (!container || container.children.length > 0) return;
+  const DISQUS_SHORTNAME = "sangminlee-blog";
 
-    const d = document;
-    const s = d.createElement("script");
-    s.src = "https://sangminlee-blog.disqus.com/embed.js";
-    s.setAttribute("data-timestamp", String(+new Date()));
-    (d.head || d.body).appendChild(s);
+  type PageConfig = {
+    identifier: string;
+    url: string;
+    title: string;
+  };
+
+  function readPageConfig(): PageConfig | null {
+    const container = document.getElementById("disqus_thread");
+    if (!container) return null;
+    const { disqusIdentifier, disqusUrl, disqusTitle } = container.dataset;
+    if (!disqusIdentifier || !disqusUrl) return null;
+    return {
+      identifier: disqusIdentifier,
+      url: disqusUrl,
+      title: disqusTitle ?? document.title,
+    };
   }
 
-  initDisqus();
-  document.addEventListener("astro:after-swap", initDisqus);
+  function loadDisqusScript() {
+    const cfg = readPageConfig();
+    if (!cfg) return;
+
+    // Set initial config for first load
+    (window as any).disqus_config = function () {
+      this.page.identifier = cfg.identifier;
+      this.page.url = cfg.url;
+      this.page.title = cfg.title;
+    };
+
+    if ((window as any).DISQUS) {
+      // Already loaded on a previous page — reset with new page info
+      (window as any).DISQUS.reset({
+        reload: true,
+        config: function () {
+          this.page.identifier = cfg.identifier;
+          this.page.url = cfg.url;
+          this.page.title = cfg.title;
+        },
+      });
+      return;
+    }
+
+    const s = document.createElement("script");
+    s.src = `https://${DISQUS_SHORTNAME}.disqus.com/embed.js`;
+    s.setAttribute("data-timestamp", String(+new Date()));
+    (document.head || document.body).appendChild(s);
+  }
+
+  loadDisqusScript();
+  document.addEventListener("astro:after-swap", loadDisqusScript);
 </script>
 
 <noscript>댓글을 보려면 JavaScript를 활성화해주세요.</noscript>

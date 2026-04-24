@@ -79,7 +79,11 @@ function formatDate(date: Date): string {
 
         <PostReadingPath currentSlug={post.slug} paths={readingPaths} />
         <PostNav prev={prevPost} next={nextPost} />
-        <PostComments />
+        <PostComments
+          identifier={post.slug}
+          url={new URL(Astro.url.pathname, Astro.site).toString()}
+          title={title}
+        />
       </div>
 
       {tocHeadings.length > 0 && (
