@@ -114,6 +114,7 @@ const fullTitle = title === SITE.title ? title : `${title} | ${SITE.title}`;
           "@type": "BlogPosting",
           headline: title,
           description,
+          url: canonicalURL.toString(),
           author: {
             "@type": "Person",
             name: SITE.author,
