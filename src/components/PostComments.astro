@@ -18,6 +18,14 @@ const { identifier, url, title } = Astro.props;
   ></div>
 </section>
 
+<style>
+  /* Match the scroll-margin-top on post headings so /#comments from
+     an external link lands below the fixed header, not under it. */
+  #comments {
+    scroll-margin-top: 5rem;
+  }
+</style>
+
 <script>
   const DISQUS_SHORTNAME = "sangminlee-blog";
 
