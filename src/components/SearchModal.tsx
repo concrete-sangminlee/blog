@@ -433,6 +433,9 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
           style={{
             maxHeight: "24rem",
             overflowY: "auto",
+            // Stop scroll momentum from bleeding into the page underneath
+            // when the reader flings through the result list.
+            overscrollBehavior: "contain",
           }}
         >
           {error && (
