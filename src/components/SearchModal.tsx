@@ -420,7 +420,7 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
               lineHeight: "1.5",
             }}
           >
-            ESC
+            Esc
           </kbd>
         </div>
 
@@ -570,7 +570,7 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
               <kbd style={{ fontWeight: 600 }}>&crarr;</kbd> 열기
             </span>
             <span>
-              <kbd style={{ fontWeight: 600 }}>esc</kbd> 닫기
+              <kbd style={{ fontWeight: 600 }}>Esc</kbd> 닫기
             </span>
           </div>
         )}
