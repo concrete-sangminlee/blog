@@ -252,18 +252,28 @@ async function showList() {
 
     details.sort((a, b) => (b.fm.pubDate || "").localeCompare(a.fm.pubDate || ""));
 
-    container.innerHTML = details.map(f => `
-      <div class="post-item" onclick="editPost('${f.path}')">
+    // Escape before putting untrusted frontmatter into HTML (text) and
+    // into inline onclick attribute strings (JS-ish). Without this a
+    // title like "'유레카' <tag>" breaks rendering or the click handler.
+    const escHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+    }[c]));
+    container.innerHTML = details.map(f => {
+      const title = f.fm.title || f.name;
+      const isDraft = f.fm.draft === true || f.fm.draft === "true";
+      return `
+      <div class="post-item" onclick="editPost('${escHtml(f.path)}')">
         <div>
-          <div class="post-title">${f.fm.title || f.name}${f.fm.draft === true || f.fm.draft === "true" ? '<span class="draft-badge">초안</span>' : ''}</div>
-          <div class="post-meta">${f.fm.pubDate || ""} · ${f.name}</div>
+          <div class="post-title">${escHtml(title)}${isDraft ? '<span class="draft-badge">초안</span>' : ''}</div>
+          <div class="post-meta">${escHtml(f.fm.pubDate || "")} · ${escHtml(f.name)}</div>
         </div>
         <div class="post-actions" onclick="event.stopPropagation()">
-          <button class="btn btn-ghost btn-sm" onclick="editPost('${f.path}')">편집</button>
-          <button class="btn btn-danger btn-sm" onclick="deletePost('${f.path}','${f.sha}','${f.fm.title || f.name}')">삭제</button>
+          <button class="btn btn-ghost btn-sm" onclick="editPost('${escHtml(f.path)}')">편집</button>
+          <button class="btn btn-danger btn-sm" onclick="deletePost('${escHtml(f.path)}','${escHtml(f.sha)}','${escHtml(title)}')">삭제</button>
         </div>
       </div>
-    `).join("");
+    `;
+    }).join("");
   } catch (e) {
     container.innerHTML = `<div class="empty">오류: ${e.message}</div>`;
   }
