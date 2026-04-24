@@ -1,6 +1,6 @@
 export const SITE = {
   title: "Sang Min Lee's Blog",
-  description: "AI 연구와 개발에 관한 이야기",
+  description: "구조공학과 인공지능의 교차점에서, 연구와 대학원 생활을 기록합니다.",
   author: "Sang Min Lee",
   url: "https://concrete-sangminlee.github.io",
   base: "/blog",
