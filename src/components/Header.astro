@@ -135,7 +135,7 @@ const currentPath = Astro.url.pathname;
   </nav>
 </header>
 
-<div class="h-16"></div>
+<div class="header-spacer"></div>
 
 <style>
   #site-header {
@@ -147,6 +147,13 @@ const currentPath = Astro.url.pathname;
     padding-top: env(safe-area-inset-top);
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
+  }
+
+  /* Takes the same vertical footprint as the fixed header so content
+     doesn't scroll under it. 4rem matches the inner div's py-4 + logo
+     height; the env() addend matches #site-header's padding-top. */
+  .header-spacer {
+    height: calc(4rem + env(safe-area-inset-top));
   }
 
   #site-header.scrolled {
