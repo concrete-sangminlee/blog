@@ -351,7 +351,10 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
         style={{
           width: "100%",
           maxWidth: "36rem",
-          margin: "0 1rem",
+          // Respect iPhone landscape notches: the base 1rem wins on
+          // rectangular viewports, safe-area insets win when larger.
+          marginLeft: "max(1rem, env(safe-area-inset-left))",
+          marginRight: "max(1rem, env(safe-area-inset-right))",
           backgroundColor: "var(--bg-surface)",
           border: "1px solid var(--border)",
           borderRadius: "0.75rem",
