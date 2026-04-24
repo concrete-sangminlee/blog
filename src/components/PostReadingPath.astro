@@ -46,7 +46,7 @@ const neighbors = primaryPath
           <p class="post-path-primary-desc">{primaryPath.description}</p>
         </div>
 
-        <div class="post-path-nav">
+        <nav class="post-path-nav" aria-label="읽기 경로 내 이동">
           {neighbors.prev ? (
             <a href={href(`/${neighbors.prev.slug}/`)} class="post-path-nav-link">
               <span class="post-path-nav-label">Earlier</span>
@@ -64,7 +64,7 @@ const neighbors = primaryPath
           ) : (
             <div class="post-path-nav-empty">이 경로의 마지막 글</div>
           )}
-        </div>
+        </nav>
       </div>
     )}
   </section>
