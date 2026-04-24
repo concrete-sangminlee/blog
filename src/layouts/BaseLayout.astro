@@ -53,6 +53,14 @@ const {
         if (chosen === "dark") {
           document.documentElement.setAttribute("data-theme", "dark");
         }
+        // Flag the author (anyone with a saved admin token) before body
+        // parses, so the admin button's CSS reveal rule applies without a
+        // visible flash.
+        try {
+          if (localStorage.getItem("blog_token")) {
+            document.documentElement.classList.add("has-admin-token");
+          }
+        } catch (_) {}
         // Defer the theme-color meta update until the head element exists;
         // the meta is written by BaseHead.astro right after this script.
         document.addEventListener("DOMContentLoaded", function () {

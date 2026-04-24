@@ -74,15 +74,15 @@ const currentPath = Astro.url.pathname;
         </svg>
       </button>
 
-      <!-- Write Button (hidden by default; script below reveals it only
-           for authors who have a saved admin token in localStorage). -->
+      <!-- Write Button. Hidden by default via CSS; the inline script in
+           BaseLayout adds .has-admin-token to <html> when a saved token
+           exists, which flips this to visible before first paint. -->
       <a
         id="admin-link"
         href={resolveHref("/admin/")}
         class="search-btn ml-1"
         aria-label="새 글 작성"
         title="새 글 작성"
-        hidden
       >
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M12 20h9" />
@@ -261,6 +261,16 @@ const currentPath = Astro.url.pathname;
     background: var(--bg-surface);
   }
 
+  /* Admin button hides unless the inline theme-init script in BaseLayout
+     has flagged <html> with a saved admin token. Keeps visitors from
+     seeing dead chrome that only makes sense to the author. */
+  #admin-link {
+    display: none;
+  }
+  :global(html.has-admin-token) #admin-link {
+    display: flex;
+  }
+
   /* Mobile menu button */
   .mobile-menu-btn {
     display: flex;
@@ -403,25 +413,12 @@ const currentPath = Astro.url.pathname;
     });
   }
 
-  function initAdminLink() {
-    // The admin page needs a GitHub token to do anything, so there's no
-    // reason to expose the nav button to visitors who don't have one.
-    // Show it only once the author has saved a token from /admin itself.
-    const link = document.getElementById("admin-link");
-    if (!link) return;
-    try {
-      if (localStorage.getItem("blog_token")) link.removeAttribute("hidden");
-    } catch (_) {}
-  }
-
   initHeader();
   initSearch();
   initThemeToggle();
-  initAdminLink();
   document.addEventListener("astro:after-swap", () => {
     initHeader();
     initSearch();
     initThemeToggle();
-    initAdminLink();
   });
 </script>
