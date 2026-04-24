@@ -10,7 +10,7 @@ const FEATURED_POST_ORDER = [
   "beating-baseline",
 ] as const;
 
-export async function getAllPosts(): Promise<BlogPost[]> {
+export async function getAllPosts(): Promise<readonly BlogPost[]> {
   try {
     const posts = await getCollection("blog", ({ data }) => {
       return import.meta.env.PROD ? !data.draft : true;
@@ -23,7 +23,7 @@ export async function getAllPosts(): Promise<BlogPost[]> {
   }
 }
 
-export async function getFeaturedPosts(): Promise<BlogPost[]> {
+export async function getFeaturedPosts(): Promise<readonly BlogPost[]> {
   const posts = await getAllPosts();
   const featuredRank = new Map<string, number>(
     FEATURED_POST_ORDER.map((slug, index) => [slug, index]),
@@ -39,7 +39,7 @@ export async function getFeaturedPosts(): Promise<BlogPost[]> {
     });
 }
 
-export async function getPostsByTag(tag: string): Promise<BlogPost[]> {
+export async function getPostsByTag(tag: string): Promise<readonly BlogPost[]> {
   const posts = await getAllPosts();
   return posts.filter((post) =>
     post.data.tags.map((t) => t.toLowerCase()).includes(tag.toLowerCase()),
