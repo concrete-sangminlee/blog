@@ -8,7 +8,7 @@ const posts = await getAllPosts();
 ---
 
 <ListLayout title="All Posts" description="이 블로그의 모든 글을 최신순으로 정리한 목록.">
-  <section class="posts-callout">
+  <aside class="posts-callout" aria-label="Start Here 안내">
     <div>
       <p class="posts-callout-label">Start Here</p>
       <p class="posts-callout-copy">
@@ -21,7 +21,7 @@ const posts = await getAllPosts();
         <path d="M5 12h14M12 5l7 7-7 7"/>
       </svg>
     </a>
-  </section>
+  </aside>
 
   {posts.length > 0 ? (
     <div class="space-y-1">

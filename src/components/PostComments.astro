@@ -8,8 +8,8 @@ interface Props {
 const { identifier, url, title } = Astro.props;
 ---
 
-<section class="mt-16" id="comments">
-  <h2 class="heading-section mb-6 text-lg">Comments</h2>
+<section class="mt-16" id="comments" aria-labelledby="comments-heading">
+  <h2 id="comments-heading" class="heading-section mb-6 text-lg">Comments</h2>
   <div
     id="disqus_thread"
     data-disqus-identifier={identifier}
