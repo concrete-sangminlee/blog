@@ -9,7 +9,6 @@ const args = new Map(
     return [key, value];
   }),
 );
-const passes = Math.max(1, Number.parseInt(args.get("passes") ?? "1", 10));
 
 const broadPhrases = [
   "반드시",
@@ -77,23 +76,14 @@ async function main() {
     .filter((file) => file.endsWith(".mdx"))
     .sort();
 
-  let allIssues = [];
-  let allWarnings = [];
+  const allIssues = [];
+  const allWarnings = [];
 
-  for (let pass = 1; pass <= passes; pass += 1) {
-    const passIssues = [];
-    const passWarnings = [];
-
-    for (const file of files) {
-      const source = await readFile(path.join(BLOG_DIR, file), "utf8");
-      const { issues, warnings } = auditPost(file, source);
-      passIssues.push(...issues);
-      passWarnings.push(...warnings);
-    }
-
-    if (pass === 1) allWarnings = passWarnings;
-    allIssues = passIssues;
-    if (passIssues.length > 0) break;
+  for (const file of files) {
+    const source = await readFile(path.join(BLOG_DIR, file), "utf8");
+    const { issues, warnings } = auditPost(file, source);
+    allIssues.push(...issues);
+    allWarnings.push(...warnings);
   }
 
   if (allWarnings.length > 0 && args.get("show-warnings") === "true") {
@@ -105,7 +95,7 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(`Blog audit passed: ${files.length} posts, ${passes} pass(es).`);
+  console.log(`Blog audit passed: ${files.length} posts.`);
   if (allWarnings.length > 0) {
     console.log(`Context warnings: ${allWarnings.length}. Use --show-warnings=true to inspect.`);
   }
