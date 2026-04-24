@@ -9,7 +9,7 @@ const { content } = Astro.props;
 const readingTime = getReadingTime(content);
 ---
 
-<span class="reading-time" aria-label={`Estimated reading time: ${readingTime}`}>
+<span class="reading-time" aria-label={`예상 읽기 시간 ${readingTime}`}>
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="14"
