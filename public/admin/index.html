@@ -372,6 +372,18 @@ async function deletePost(path, sha, title) {
     alert("삭제 실패: " + e.message);
   }
 }
+
+// Cmd/Ctrl+S saves the post from anywhere in the editor (title, body,
+// etc.), so the author doesn't have to mouse over to the save button.
+document.addEventListener("keydown", (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === "s") {
+    const editor = document.getElementById("editor");
+    if (editor && editor.classList.contains("active")) {
+      e.preventDefault();
+      savePost();
+    }
+  }
+});
 </script>
 </body>
 </html>
