@@ -109,6 +109,27 @@ body::after {
   border-radius: 2px;
 }
 
+/* ── Skip to content ── */
+/* Off-screen by default, slides into view when a keyboard user tabs into
+   the page so they can bypass the header nav. */
+.skip-link {
+  position: absolute;
+  top: -9999px;
+  left: 1rem;
+  z-index: 10001;
+  padding: 0.6rem 1rem;
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: 0.375rem;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
 /* ── Reduced motion ── */
 /* Readers who set prefers-reduced-motion still see layout and colour cues,
    but every animation/transition collapses to near-instant. Smooth scroll
