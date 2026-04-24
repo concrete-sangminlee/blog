@@ -362,6 +362,9 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
         {/* Results */}
         <div
           ref={resultsRef}
+          role="region"
+          aria-live="polite"
+          aria-label="검색 결과"
           style={{
             maxHeight: "24rem",
             overflowY: "auto",
