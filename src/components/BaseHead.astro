@@ -84,16 +84,20 @@ const fullTitle = title === SITE.title ? title : `${title} | ${SITE.title}`;
   </>
 )}
 
-{ogType === "article" && publishedTime && (
-  <meta property="article:published_time" content={publishedTime.toISOString()} />
+{!noIndex && ogType === "article" && (
+  <>
+    {publishedTime && (
+      <meta property="article:published_time" content={publishedTime.toISOString()} />
+    )}
+    {modifiedTime && (
+      <meta property="article:modified_time" content={modifiedTime.toISOString()} />
+    )}
+    <meta property="article:author" content={SITE.author} />
+    {tags && tags.map((tag) => (
+      <meta property="article:tag" content={tag} />
+    ))}
+  </>
 )}
-{ogType === "article" && modifiedTime && (
-  <meta property="article:modified_time" content={modifiedTime.toISOString()} />
-)}
-{ogType === "article" && <meta property="article:author" content={SITE.author} />}
-{ogType === "article" && tags && tags.map((tag) => (
-  <meta property="article:tag" content={tag} />
-))}
 
 {/* JSON-LD structured data. Escape "<" so a title/description that happens
     to contain "</script>" or "<script>" can't break out of the script tag.
