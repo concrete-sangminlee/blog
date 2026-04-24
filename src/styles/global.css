@@ -110,6 +110,20 @@ body::after {
   color: var(--accent);
 }
 
+/* ── Safe-area padding ── */
+/* With viewport-fit=cover, iPhone landscape notches can clip content at
+   the leading edge. Use max(base, safe-inset) so rectangular viewports
+   keep the Tailwind px-6 value and notched devices get pushed inward. */
+#main-content {
+  padding-left: max(1.5rem, env(safe-area-inset-left));
+  padding-right: max(1.5rem, env(safe-area-inset-right));
+}
+
+.footer {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
 /* ── Keyboard focus ── */
 /* :focus-visible targets keyboard focus only, so mouse clicks stay ring-free
    while Tab users get a consistent, on-brand indicator across browsers.
