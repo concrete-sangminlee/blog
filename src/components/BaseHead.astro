@@ -131,13 +131,10 @@ const fullTitle = title === SITE.title ? title : `${title} | ${SITE.title}`;
       }
 ).replace(/</g, "\\u003c")} />
 
-<!-- Twitter -->
-<meta property="twitter:card" content="summary_large_image" />
-<meta property="twitter:url" content={canonicalURL} />
-<meta property="twitter:title" content={fullTitle} />
-<meta property="twitter:description" content={description} />
-<meta property="twitter:image" content={socialImageURL} />
-<meta property="twitter:image:alt" content={socialImageAlt} />
+<!-- Twitter — card type is Twitter-specific; everything else falls back
+     to og:title / og:description / og:image automatically. -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image:alt" content={socialImageAlt} />
 
 <!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
