@@ -64,6 +64,14 @@ function auditPost(file, source) {
   if (headings < 3) issues.push(`${file}: expected at least three section headings`);
   if (/^## 결론$/m.test(body)) issues.push(`${file}: generic final heading "결론" remains`);
 
+  // Catch accidentally future-dated posts. They would still build, but the
+  // blog listing would show a date that hasn't happened yet — usually a
+  // typo in the pubDate.
+  const pub = data.pubDate ? new Date(data.pubDate) : null;
+  if (pub && !Number.isNaN(pub.valueOf()) && pub.valueOf() > Date.now()) {
+    issues.push(`${file}: pubDate ${data.pubDate} is in the future`);
+  }
+
   for (const phrase of broadPhrases) {
     if (body.includes(phrase)) {
       warnings.push(`${file}:${lineNumber(source, phrase)}: broad phrase "${phrase}" needs context`);
