@@ -18,7 +18,7 @@ function resolvePathPosts(
   });
 }
 
-export async function getReadingPaths(): Promise<ResolvedReadingPath[]> {
+export async function getReadingPaths(): Promise<readonly ResolvedReadingPath[]> {
   const posts = await getAllPosts();
   const postsBySlug = new Map(posts.map((post) => [post.slug, post]));
 
@@ -28,12 +28,12 @@ export async function getReadingPaths(): Promise<ResolvedReadingPath[]> {
   }));
 }
 
-export async function getFeaturedReadingPaths(): Promise<ResolvedReadingPath[]> {
+export async function getFeaturedReadingPaths(): Promise<readonly ResolvedReadingPath[]> {
   const paths = await getReadingPaths();
   return paths.filter((path) => path.featured);
 }
 
-export async function getReadingPathsForPost(slug: string): Promise<ResolvedReadingPath[]> {
+export async function getReadingPathsForPost(slug: string): Promise<readonly ResolvedReadingPath[]> {
   const paths = await getReadingPaths();
   return paths.filter((path) => path.posts.some((post) => post.slug === slug));
 }
