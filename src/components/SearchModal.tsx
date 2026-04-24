@@ -109,7 +109,9 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
   const openerRef = useRef<HTMLElement | null>(null);
 
   const open = useCallback(() => {
-    openerRef.current = (document.activeElement as HTMLElement) ?? null;
+    // activeElement is Element | null; cast admits null so the assertion
+    // doesn't quietly hide that the ref may start empty.
+    openerRef.current = document.activeElement as HTMLElement | null;
     setIsOpen(true);
     setQuery("");
     setResults([]);
