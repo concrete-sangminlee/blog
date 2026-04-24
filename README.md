@@ -1,8 +1,17 @@
-# Sang Min Lee's Tech Blog
+# Sang Min Lee's Blog
 
-AI 연구, 딥러닝, 개발에 대한 생각과 기록을 담는 개인 기술 블로그.
+구조공학과 인공지능의 교차점에서, 연구와 대학원 생활을 기록하는 개인 블로그.
 
 **https://concrete-sangminlee.github.io/blog/**
+
+## Features
+
+- **Curated reading paths** (`/start-here/`) — 48개 포스트를 주제별 흐름으로 묶은 진입점
+- **Tag index** (`/tags/`) — 카테고리별 탐색
+- **Client-side search** — `⌘K` / `Ctrl+K`로 제목·내용 검색 (Pagefind)
+- **RSS feed** (`/rss.xml`) — 피드 리더 구독
+- **OG social cards** — 포스트마다 자동 생성되는 SVG 카드
+- **Dark/Light theme** — 시스템 설정과 연동, 수동 전환 가능
 
 ## Tech Stack
 
