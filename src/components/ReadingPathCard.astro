@@ -22,7 +22,7 @@ const previewPosts = path.posts.slice(0, compact ? 2 : 3);
     <h3 class="path-card-title">{path.title}</h3>
     <p class="path-card-desc">{path.description}</p>
 
-    <ul class="path-card-preview" aria-label="Preview posts">
+    <ul class="path-card-preview" aria-label="포함된 글 미리보기">
       {previewPosts.map((post) => (
         <li>{post.data.title}</li>
       ))}

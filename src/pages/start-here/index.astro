@@ -13,13 +13,13 @@ const stats = getReadingPathStats(paths);
       처음부터 모든 글을 시간순으로 읽기보다, 비슷한 문제끼리 묶인 흐름으로 따라가면 이 블로그의 맥락이 더 빨리 잡힙니다.
     </p>
 
-    <div class="intro-stats" aria-label="Reading path stats">
+    <div class="intro-stats" aria-label="읽기 경로 통계">
       <span>{stats.pathCount} curated paths</span>
       <span>{stats.coveredPostCount} posts connected</span>
     </div>
   </div>
 
-  <section class="grid gap-4 md:grid-cols-2" aria-label="Reading paths">
+  <section class="grid gap-4 md:grid-cols-2" aria-label="읽기 경로 목록">
     {paths.map((path, index) => (
       <ReadingPathCard path={path} index={index} />
     ))}

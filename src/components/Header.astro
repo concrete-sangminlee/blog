@@ -15,7 +15,7 @@ const currentPath = Astro.url.pathname;
     <a
       href={homeHref}
       class="logo-link flex items-center gap-2 transition-colors duration-200"
-      aria-label="Home"
+      aria-label="홈"
     >
       <img
         src={`${import.meta.env.BASE_URL}favicon.svg`}
@@ -29,7 +29,7 @@ const currentPath = Astro.url.pathname;
     </a>
 
     <!-- Desktop Navigation -->
-    <nav class="hidden items-center gap-1 md:flex" aria-label="Main navigation">
+    <nav class="hidden items-center gap-1 md:flex" aria-label="주 메뉴">
       {NAV_ITEMS.map((item) => {
         const href = resolveHref(item.href);
         const isActive = currentPath === href || currentPath === href.replace(/\/$/, "");
@@ -50,8 +50,8 @@ const currentPath = Astro.url.pathname;
       <button
         id="search-btn"
         class="search-btn ml-2"
-        aria-label="Search (⌘K / Ctrl K)"
-        title="Search (⌘K / Ctrl K)"
+        aria-label="검색 (⌘K / Ctrl K)"
+        title="검색 (⌘K / Ctrl K)"
       >
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <circle cx="11" cy="11" r="8" />
@@ -63,8 +63,8 @@ const currentPath = Astro.url.pathname;
       <a
         href={resolveHref("/admin/")}
         class="search-btn ml-1"
-        aria-label="Write post"
-        title="Write post"
+        aria-label="새 글 작성"
+        title="새 글 작성"
       >
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M12 20h9" />
@@ -76,8 +76,8 @@ const currentPath = Astro.url.pathname;
       <button
         id="theme-toggle"
         class="search-btn ml-1"
-        aria-label="Toggle theme"
-        title="Toggle theme"
+        aria-label="테마 전환"
+        title="테마 전환"
       >
         <svg id="icon-sun" class="theme-icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
@@ -92,7 +92,7 @@ const currentPath = Astro.url.pathname;
     <button
       id="mobile-menu-btn"
       class="mobile-menu-btn md:hidden"
-      aria-label="Toggle menu"
+      aria-label="메뉴 전환"
       aria-expanded="false"
       aria-controls="mobile-nav"
     >
@@ -112,7 +112,7 @@ const currentPath = Astro.url.pathname;
   <nav
     id="mobile-nav"
     class="hidden flex-col gap-1 px-6 pb-4 md:hidden"
-    aria-label="Mobile navigation"
+    aria-label="모바일 메뉴"
   >
     {NAV_ITEMS.map((item) => {
       const href = resolveHref(item.href);
