@@ -3,8 +3,11 @@ import { defineCollection, z } from "astro:content";
 const blog = defineCollection({
   type: "content",
   schema: z.object({
-    title: z.string(),
-    description: z.string(),
+    // Minimums mirror scripts/blog-quality-audit.mjs so Astro's content
+    // sync already rejects too-short title/description before the audit
+    // script runs in CI.
+    title: z.string().min(6),
+    description: z.string().min(16),
     pubDate: z.coerce.date(),
     updatedDate: z.coerce.date().optional(),
     tags: z.array(z.string()).default([]),
