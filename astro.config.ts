@@ -10,6 +10,10 @@ import rehypeKatex from "rehype-katex";
 export default defineConfig({
   site: "https://concrete-sangminlee.github.io",
   base: "/blog/",
+  // All internal links are rendered with a trailing slash (/post/), the
+  // sitemap + canonical URLs match, and GitHub Pages serves directories
+  // as-is. Setting "always" keeps Astro's own URL checks consistent.
+  trailingSlash: "always",
   // Prefetch every internal link when it enters the viewport so post
   // navigation feels instant. The ClientRouter then swaps against the
   // already-cached HTML — typical wait drops from ~100ms to nil.
