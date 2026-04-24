@@ -6,15 +6,19 @@ import { getAllTags, getPostsByTag } from "@/utils/posts";
 export async function getStaticPaths() {
   const tags = await getAllTags();
   return [...tags.keys()].map((tag) => ({
-    params: { tag },
+    // URL stays lowercase so every variant of case resolves to the same page;
+    // the original casing travels through props for display.
+    params: { tag: tag.toLowerCase() },
+    props: { displayTag: tag },
   }));
 }
 
 const { tag } = Astro.params;
+const { displayTag } = Astro.props as { displayTag: string };
 const posts = await getPostsByTag(tag!);
 ---
 
-<ListLayout title={`#${tag}`} description={`${tag} 태그가 붙은 글 ${posts.length}편.`}>
+<ListLayout title={`#${displayTag}`} description={`${displayTag} 태그가 붙은 글 ${posts.length}편.`}>
   <div class="space-y-1">
     {posts.map((post, i) => (
       <PostCard post={post} index={i} />

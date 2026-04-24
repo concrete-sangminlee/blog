@@ -48,12 +48,21 @@ export async function getPostsByTag(tag: string): Promise<BlogPost[]> {
 
 export async function getAllTags(): Promise<Map<string, number>> {
   const posts = await getAllPosts();
-  const tags = new Map<string, number>();
-  posts.forEach((post) => {
-    post.data.tags.forEach((tag) => {
-      const lower = tag.toLowerCase();
-      tags.set(lower, (tags.get(lower) || 0) + 1);
-    });
-  });
-  return new Map([...tags.entries()].sort((a, b) => b[1] - a[1]));
+  // Group case-insensitively, but remember the first-seen casing so "AI"
+  // and "tips" keep their original display shape across tag index, tag
+  // detail pages, and post cards.
+  const byKey = new Map<string, { display: string; count: number }>();
+  for (const post of posts) {
+    for (const tag of post.data.tags) {
+      const key = tag.toLowerCase();
+      const existing = byKey.get(key);
+      if (existing) {
+        existing.count += 1;
+      } else {
+        byKey.set(key, { display: tag, count: 1 });
+      }
+    }
+  }
+  const sorted = [...byKey.values()].sort((a, b) => b.count - a.count);
+  return new Map(sorted.map((v) => [v.display, v.count]));
 }

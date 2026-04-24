@@ -11,7 +11,7 @@ const tags = await getAllTags();
     <div class="flex flex-wrap gap-3">
       {[...tags.entries()].map(([tag, count]) => (
         <a
-          href={href(`/tags/${tag}/`)}
+          href={href(`/tags/${tag.toLowerCase()}/`)}
           class="group inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200"
           style="border: 1px solid var(--border); color: var(--text-secondary);"
         >
