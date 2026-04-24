@@ -5,7 +5,7 @@ import { href } from "@/utils/paths";
 
 interface Props {
   currentSlug: string;
-  paths: ResolvedReadingPath[];
+  paths: readonly ResolvedReadingPath[];
 }
 
 const { currentSlug, paths } = Astro.props;
