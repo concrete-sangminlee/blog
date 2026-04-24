@@ -21,5 +21,5 @@ export function getReadingTime(content: string): string {
       englishWords / WORDS_PER_MINUTE,
   );
 
-  return `${Math.max(1, minutes)} min read`;
+  return `${Math.max(1, minutes)}분 분량`;
 }
