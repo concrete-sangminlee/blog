@@ -52,8 +52,8 @@ export async function getPostsByTag(tag: string): Promise<readonly BlogPost[]> {
 export async function getAllTags(): Promise<Map<string, number>> {
   const posts = await getAllPosts();
   // Group case-insensitively, but remember the first-seen casing so "AI"
-  // and "tips" keep their original display shape across tag index, tag
-  // detail pages, and post cards.
+  // keeps its original display shape across tag index, tag detail pages,
+  // and post cards.
   const byKey = new Map<string, { display: string; count: number }>();
   for (const post of posts) {
     for (const tag of post.data.tags) {
