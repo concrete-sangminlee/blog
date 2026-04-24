@@ -242,6 +242,11 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
 
   // Keyboard navigation inside modal
   function handleModalKeyDown(e: React.KeyboardEvent) {
+    // Korean/Japanese/Chinese IME users press Enter to confirm a
+    // composed character; that Enter must not navigate away from
+    // the search. isComposing is true for the full composition.
+    if (e.nativeEvent.isComposing) return;
+
     if (e.key === "Escape") {
       e.preventDefault();
       close();
