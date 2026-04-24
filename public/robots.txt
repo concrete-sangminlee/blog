@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
 Disallow: /blog/admin/
+Disallow: /blog/pagefind/
 
 Sitemap: https://concrete-sangminlee.github.io/blog/sitemap-index.xml
