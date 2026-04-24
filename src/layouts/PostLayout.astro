@@ -87,7 +87,7 @@ function formatDate(date: Date): string {
 
       {tocHeadings.length > 0 && (
         <aside class="toc-sidebar hidden w-56 shrink-0 lg:block" aria-labelledby="post-toc-heading">
-          <div class="sticky top-24">
+          <div class="toc-sticky">
             <p id="post-toc-heading" class="text-muted-sm mb-3 text-xs font-semibold uppercase tracking-widest">
               On this page
             </p>
@@ -130,6 +130,13 @@ function formatDate(date: Date): string {
 
   .tag-link:hover {
     background: var(--accent-glow);
+  }
+
+  .toc-sticky {
+    position: sticky;
+    /* Match the header's own top inset so the TOC sticks just below
+       the (safe-area-aware) fixed header. */
+    top: calc(6rem + env(safe-area-inset-top));
   }
 
   .toc-indent {
