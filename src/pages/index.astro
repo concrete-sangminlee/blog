@@ -89,7 +89,7 @@ const recentPosts = allPosts.filter((post) => !featuredSlugs.has(post.slug)).sli
         ))}
       </div>
     ) : (
-      <p class="empty-state">No posts yet.</p>
+      <p class="empty-state">아직 올라온 글이 없습니다.</p>
     )}
 
     {allPosts.length > 8 && (
