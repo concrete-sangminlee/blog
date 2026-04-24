@@ -22,6 +22,9 @@ import { href } from "@/utils/paths";
       <a href={href("/posts/")} class="btn-ghost">전체 글</a>
       <a href={href("/tags/")} class="btn-ghost">태그</a>
     </nav>
+    <p class="search-hint mt-6 text-sm">
+      특정 글을 찾고 계셨다면 상단의 검색 버튼이나 <kbd>⌘K</kbd> / <kbd>Ctrl K</kbd>로 검색해 보세요.
+    </p>
   </section>
 </BaseLayout>
 
@@ -51,5 +54,19 @@ import { href } from "@/utils/paths";
   .btn-ghost:hover {
     border-color: var(--border-hover);
     color: var(--text-primary);
+  }
+
+  .search-hint {
+    color: var(--text-muted);
+  }
+  .search-hint kbd {
+    display: inline-block;
+    padding: 0.1rem 0.4rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 0.25rem;
   }
 </style>
