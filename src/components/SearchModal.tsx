@@ -102,8 +102,11 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
   const overlayRef = useRef<HTMLDivElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  // Remember which element opened the modal so focus can return there on close.
+  const openerRef = useRef<HTMLElement | null>(null);
 
   const open = useCallback(() => {
+    openerRef.current = (document.activeElement as HTMLElement) ?? null;
     setIsOpen(true);
     setQuery("");
     setResults([]);
@@ -116,6 +119,13 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
     setQuery("");
     setResults([]);
     setSelectedIndex(-1);
+    // Return focus to whatever triggered the modal (⌘K shortcut leaves
+    // the body as the opener, which we silently skip).
+    const opener = openerRef.current;
+    if (opener && opener !== document.body) {
+      opener.focus();
+    }
+    openerRef.current = null;
   }, []);
 
   // Load Pagefind on first open
@@ -251,6 +261,25 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
       // Go through the ClientRouter so Enter triggers the same view
       // transition as clicking the anchor result.
       navigate(url);
+      return;
+    }
+
+    // Trap Tab inside the modal — without this, keyboard users could tab
+    // onto elements behind the backdrop.
+    if (e.key === "Tab" && overlayRef.current) {
+      const focusables = overlayRef.current.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled])',
+      );
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     }
   }
 
