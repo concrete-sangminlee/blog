@@ -225,7 +225,10 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
           .map(({ score: _score, rank: _rank, ...result }) => result);
 
         setResults(loaded);
-        setSelectedIndex(-1);
+        // Auto-highlight the top result so pressing Enter without pressing
+        // ArrowDown first jumps there — matches Spotlight / Alfred / GitHub
+        // search UX.
+        setSelectedIndex(loaded.length > 0 ? 0 : -1);
       } catch {
         setResults([]);
       }
