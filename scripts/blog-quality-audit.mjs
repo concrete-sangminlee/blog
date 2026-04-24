@@ -78,6 +78,12 @@ function auditPost(file, source) {
     issues.push(`${file}: body contains a top-level "# " heading (use ## or deeper)`);
   }
 
+  // Em dashes are banned in this blog's voice. Authors tend to paste them
+  // in when drafting elsewhere; catch them before publish.
+  if (body.includes("—")) {
+    issues.push(`${file}:${lineNumber(source, "—")}: em dash (—) detected`);
+  }
+
   for (const phrase of broadPhrases) {
     if (body.includes(phrase)) {
       warnings.push(`${file}:${lineNumber(source, phrase)}: broad phrase "${phrase}" needs context`);
