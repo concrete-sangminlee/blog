@@ -89,7 +89,10 @@ function resolveUrl(url: string, basePath: string): string {
   return `${normalizedBase}/${url}`;
 }
 
-export default function SearchModal({ basePath = "/blog" }: { basePath?: string }) {
+// basePath is always passed from BaseLayout as SITE.base. Making it
+// required stops stale "/blog" defaults from hiding a missing prop if
+// the mount point ever moves.
+export default function SearchModal({ basePath }: { basePath: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
