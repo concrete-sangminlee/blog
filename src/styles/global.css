@@ -109,6 +109,21 @@ body::after {
   border-radius: 2px;
 }
 
+/* ── Reduced motion ── */
+/* Readers who set prefers-reduced-motion still see layout and colour cues,
+   but every animation/transition collapses to near-instant. Smooth scroll
+   also reverts to jump, which avoids vestibular discomfort. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* ── Links ── */
 a {
   color: var(--accent);
