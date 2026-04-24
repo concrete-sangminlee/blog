@@ -140,7 +140,7 @@ body::after {
 .skip-link {
   position: absolute;
   top: -9999px;
-  left: 1rem;
+  left: max(1rem, env(safe-area-inset-left));
   z-index: 10001;
   padding: 0.6rem 1rem;
   background: var(--accent);
@@ -152,7 +152,7 @@ body::after {
 }
 
 .skip-link:focus {
-  top: 1rem;
+  top: max(1rem, env(safe-area-inset-top));
 }
 
 /* ── Reduced motion ── */
