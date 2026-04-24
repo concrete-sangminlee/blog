@@ -230,7 +230,7 @@ async function showList() {
   dirty = false;
 
   const container = document.getElementById("post-list");
-  container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  container.innerHTML = '<div class="loading" role="status" aria-label="글 목록 불러오는 중"><div class="spinner" aria-hidden="true"></div></div>';
 
   try {
     const res = await fetch(`${API}/repos/${REPO}/contents/${CONTENT_PATH}?ref=${BRANCH}`, { headers: getHeaders() });
