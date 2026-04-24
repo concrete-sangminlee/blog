@@ -5,7 +5,7 @@ interface OgSvgOptions {
   description: string;
   eyebrow: string;
   footer: string;
-  tags?: string[];
+  tags?: readonly string[];
 }
 
 const palette = {
@@ -117,7 +117,7 @@ function renderTextLines(
     .join("");
 }
 
-function renderTags(tags: string[]): string {
+function renderTags(tags: readonly string[]): string {
   const visibleTags = tags.slice(0, 4);
   let x = 86;
 
