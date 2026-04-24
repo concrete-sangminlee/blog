@@ -36,7 +36,9 @@ function parseFrontmatter(source, file) {
   for (const line of match[1].split("\n")) {
     const [key, ...rest] = line.split(":");
     if (!key || rest.length === 0) continue;
-    data[key.trim()] = rest.join(":").trim().replace(/^"|"$/g, "");
+    // Strip outer quotes, then unescape any \" that the admin or
+    // new-post.mjs escaped when writing titles containing quotes.
+    data[key.trim()] = rest.join(":").trim().replace(/^"|"$/g, "").replace(/\\"/g, '"');
   }
 
   return { data, body: match[2] };
