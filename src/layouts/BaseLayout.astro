@@ -37,15 +37,20 @@ const {
 <html lang={SITE.lang}>
   <head>
     <!-- Set the theme before first paint so dark-mode visitors never see a
-         light-theme flash while the rest of <head> is parsing. -->
+         light-theme flash while the rest of <head> is parsing. Saved
+         preference wins; otherwise follow the OS. -->
     <script is:inline>
       (function () {
         try {
           var stored = localStorage.getItem("theme");
           if (stored === "dark" || stored === "light") {
             document.documentElement.setAttribute("data-theme", stored);
+            return;
           }
         } catch (_) {}
+        if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
       })();
     </script>
     <BaseHead title={title} description={description} image={image} imageAlt={imageAlt} math={math} ogType={ogType} publishedTime={publishedTime} modifiedTime={modifiedTime} tags={tags} noIndex={noIndex} />
