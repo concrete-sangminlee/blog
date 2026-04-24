@@ -393,7 +393,7 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="글 제목, 주제, 문장 검색..."
-            aria-label="글 검색"
+            aria-label="검색어"
             autoComplete="off"
             autoCapitalize="off"
             autoCorrect="off"
