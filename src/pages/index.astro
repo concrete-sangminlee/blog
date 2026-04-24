@@ -28,12 +28,12 @@ const recentPosts = allPosts.filter((post) => !featuredSlugs.has(post.slug)).sli
       </p>
       <div class="mt-8 flex gap-3">
         <a href={href("/posts/")} class="btn-primary">
-          All Posts
+          전체 글
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M5 12h14M12 5l7 7-7 7"/>
           </svg>
         </a>
-        <a href={href("/start-here/")} class="btn-ghost">Start Here</a>
+        <a href={href("/start-here/")} class="btn-ghost">읽기 경로</a>
       </div>
     </div>
   </section>
@@ -52,7 +52,7 @@ const recentPosts = allPosts.filter((post) => !featuredSlugs.has(post.slug)).sli
 
       <div class="mt-8 text-center">
         <a href={href("/start-here/")} class="view-all">
-          Browse all reading paths
+          모든 읽기 경로 보기
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M5 12h14M12 5l7 7-7 7"/>
           </svg>
@@ -95,7 +95,7 @@ const recentPosts = allPosts.filter((post) => !featuredSlugs.has(post.slug)).sli
     {allPosts.length > 8 && (
       <div class="mt-8 text-center">
         <a href={href("/posts/")} class="view-all">
-          View all posts
+          전체 글 보기
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M5 12h14M12 5l7 7-7 7"/>
           </svg>
