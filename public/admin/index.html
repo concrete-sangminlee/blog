@@ -364,7 +364,9 @@ async function savePost() {
   const draft = document.getElementById("ed-draft").checked;
   const featured = document.getElementById("ed-featured").checked;
   const math = document.getElementById("ed-math").checked;
-  const body = document.getElementById("ed-body").value;
+  // trimEnd keeps the template's single trailing newline authoritative
+  // so bodies don't accumulate blank lines on repeated saves.
+  const body = document.getElementById("ed-body").value.trimEnd();
 
   if (!title) { status.textContent = "제목을 입력하세요"; status.className = "status error"; return; }
   if (!desc) { status.textContent = "설명을 입력하세요"; status.className = "status error"; return; }
