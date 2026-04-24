@@ -12,7 +12,7 @@ AI 연구, 딥러닝, 개발에 대한 생각과 기록을 담는 개인 기술 
 - [KaTeX](https://katex.org) — LaTeX math rendering
 - [Expressive Code](https://expressive-code.com) — Syntax highlighting
 - [Pagefind](https://pagefind.app) — Static search
-- [Giscus](https://giscus.app) — Comments (GitHub Discussions)
+- [Disqus](https://disqus.com) — Comments
 
 ## Usage
 
