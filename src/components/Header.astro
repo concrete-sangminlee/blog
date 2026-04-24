@@ -387,6 +387,9 @@ const currentPath = Astro.url.pathname;
       try {
         localStorage.setItem("theme", next);
       } catch (_) {}
+      // Keep the mobile URL bar in sync with the chosen theme.
+      const meta = document.getElementById("theme-color-meta");
+      if (meta) meta.setAttribute("content", next === "dark" ? "#08080a" : "#fafaf8");
       // The sun/moon icons swap via CSS rules keyed on [data-theme="dark"].
     });
   }

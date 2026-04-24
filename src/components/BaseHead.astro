@@ -53,9 +53,10 @@ const fullTitle = title === SITE.title ? title : `${title} | ${SITE.title}`;
      form controls / scrollbars pick the right palette without flashing. -->
 <meta name="color-scheme" content="light dark" />
 
-<!-- Mobile URL-bar color matches the body background in each theme -->
-<meta name="theme-color" content="#fafaf8" media="(prefers-color-scheme: light)" />
-<meta name="theme-color" content="#08080a" media="(prefers-color-scheme: dark)" />
+<!-- Mobile URL-bar color. Single meta kept in sync by the inline theme
+     init and the toggle so the bar follows the user's explicit choice
+     (not just the OS). -->
+<meta id="theme-color-meta" name="theme-color" content="#fafaf8" />
 
 <!-- Favicon: SVG scales to any density; PNG is the fallback -->
 <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
