@@ -14,8 +14,8 @@ export const getStaticPaths: GetStaticPaths = async () => {
   }));
 };
 
-export const GET: APIRoute = ({ props }) => {
-  const post = props.post as BlogPost;
+export const GET: APIRoute<{ post: BlogPost }> = ({ props }) => {
+  const { post } = props;
   const svg = renderOgSvg({
     title: post.data.title,
     description: post.data.description,
