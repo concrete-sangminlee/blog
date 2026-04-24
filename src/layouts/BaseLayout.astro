@@ -11,20 +11,24 @@ interface Props {
   title: string;
   description: string;
   image?: string;
+  imageAlt?: string;
   math?: boolean;
+  ogType?: "website" | "article";
 }
 
 const {
   title,
   description = SITE.description,
   image,
+  imageAlt,
   math = false,
+  ogType = "website",
 } = Astro.props;
 ---
 
 <html lang={SITE.lang}>
   <head>
-    <BaseHead title={title} description={description} image={image} math={math} />
+    <BaseHead title={title} description={description} image={image} imageAlt={imageAlt} math={math} ogType={ogType} />
     <ClientRouter />
   </head>
   <body>

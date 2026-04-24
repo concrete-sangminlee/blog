@@ -14,6 +14,7 @@ interface Props {
   image?: string;
   imageAlt?: string;
   math?: boolean;
+  ogType?: "website" | "article";
 }
 
 const {
@@ -22,6 +23,7 @@ const {
   image,
   imageAlt,
   math = false,
+  ogType = "website",
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
@@ -52,7 +54,7 @@ const fullTitle = title === SITE.title ? title : `${title} | ${SITE.title}`;
 <meta name="author" content={SITE.author} />
 
 <!-- Open Graph / Facebook -->
-<meta property="og:type" content="website" />
+<meta property="og:type" content={ogType} />
 <meta property="og:url" content={canonicalURL} />
 <meta property="og:title" content={fullTitle} />
 <meta property="og:description" content={description} />
