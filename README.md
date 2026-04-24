@@ -38,6 +38,9 @@ npm run typecheck
 # Frontmatter + prose sanity check
 npm run audit:blog -- --show-warnings=true
 
+# Run all three above in sequence (typecheck → audit → build)
+npm run check
+
 # Build (includes Pagefind indexing)
 npm run build
 

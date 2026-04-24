@@ -8,6 +8,7 @@
     "build": "astro build && pagefind --site dist",
     "preview": "astro preview",
     "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm run audit:blog && npm run build",
     "audit:blog": "node scripts/blog-quality-audit.mjs",
     "new-post": "node scripts/new-post.mjs"
   },
