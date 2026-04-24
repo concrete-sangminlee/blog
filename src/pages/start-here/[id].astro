@@ -36,8 +36,8 @@ function formatDate(date: Date): string {
 
   <section class="path-list" aria-label="경로에 포함된 글">
     {path.posts.map((post, index) => (
-      <article class="path-step">
-        <div class="path-step-index">{String(index + 1).padStart(2, "0")}</div>
+      <article class="path-step" aria-label={`경로 ${index + 1}번째 글`}>
+        <div class="path-step-index" aria-hidden="true">{String(index + 1).padStart(2, "0")}</div>
         <div class="path-step-body">
           <div class="path-step-meta">
             <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
