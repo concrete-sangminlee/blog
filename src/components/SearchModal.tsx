@@ -78,6 +78,17 @@ function displayPath(url: string, basePath: string): string {
   }
 }
 
+// Pagefind records URLs relative to the --site directory (e.g. "/post/"),
+// but the site is actually served at basePath (e.g. "/blog/"). Resolve each
+// search result URL against basePath so navigation lands on the right page.
+function resolveUrl(url: string, basePath: string): string {
+  const normalizedBase = basePath.replace(/\/$/, "");
+  if (!normalizedBase) return url;
+  if (url.startsWith(`${normalizedBase}/`) || url === normalizedBase) return url;
+  if (url.startsWith("/")) return `${normalizedBase}${url}`;
+  return `${normalizedBase}/${url}`;
+}
+
 export default function SearchModal({ basePath = "/blog" }: { basePath?: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -235,7 +246,7 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
 
     if (e.key === "Enter" && selectedIndex >= 0 && results[selectedIndex]) {
       e.preventDefault();
-      const url = results[selectedIndex].url;
+      const url = resolveUrl(results[selectedIndex].url, basePath);
       close();
       // Go through the ClientRouter so Enter triggers the same view
       // transition as clicking the anchor result.
@@ -403,7 +414,7 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
             results.map((result, i) => (
               <a
                 key={result.id}
-                href={result.url}
+                href={resolveUrl(result.url, basePath)}
                 style={{
                   display: "block",
                   padding: "0.875rem 1.25rem",
