@@ -51,7 +51,12 @@
     .btn-sm { padding: 0.35rem 0.75rem; font-size: 0.75rem; }
 
     /* Setup screen */
-    .setup { max-width: 480px; margin: 15vh auto; text-align: center; padding: 0 1.5rem; }
+    .setup {
+      max-width: 480px;
+      margin: 15vh auto;
+      text-align: center;
+      padding: 0 max(1.5rem, env(safe-area-inset-right)) 0 max(1.5rem, env(safe-area-inset-left));
+    }
     .setup h2 { font-family: var(--font-heading); font-size: 1.75rem; margin-bottom: 0.75rem; }
     .setup p { color: var(--text2); font-size: 0.9rem; line-height: 1.6; margin-bottom: 1.5rem; }
     .setup input { width: 100%; padding: 0.7rem 1rem; font-size: 0.9rem; font-family: var(--font-mono);
