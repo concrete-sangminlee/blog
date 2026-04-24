@@ -7,11 +7,11 @@ export const SITE = {
 } as const;
 
 export const NAV_ITEMS = [
-  { label: "Home", href: "/" },
-  { label: "Start Here", href: "/start-here/" },
-  { label: "Posts", href: "/posts/" },
-  { label: "Tags", href: "/tags/" },
-  { label: "About", href: "/about/" },
+  { label: "홈", href: "/" },
+  { label: "읽기 경로", href: "/start-here/" },
+  { label: "전체 글", href: "/posts/" },
+  { label: "태그", href: "/tags/" },
+  { label: "소개", href: "/about/" },
 ] as const;
 
 export const SOCIAL = {
