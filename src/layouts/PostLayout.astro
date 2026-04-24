@@ -91,7 +91,7 @@ function formatDate(date: Date): string {
             <p id="post-toc-heading" class="text-muted-sm mb-3 text-xs font-semibold uppercase tracking-widest">
               목차
             </p>
-            <nav>
+            <nav aria-label="이 글의 목차">
               <ul class="space-y-1.5">
                 {tocHeadings.map((h) => (
                   <li class:list={[{ "toc-indent": h.depth === 3 }]}>
