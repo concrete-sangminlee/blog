@@ -25,7 +25,7 @@ const truncatedDesc =
 
 <article
   class="post-card"
-  style={`animation-delay: ${index * 80}ms;`}
+  style={`animation-delay: ${Math.min(index, 6) * 80}ms;`}
 >
   <a href={postHref} class="post-card-link">
     <div class="post-card-inner">
