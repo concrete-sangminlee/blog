@@ -12,7 +12,7 @@ const { post, index = 0 } = Astro.props;
 const { title, description, pubDate, tags, featured } = post.data;
 const imageUrl = getPostSocialImage(post);
 
-const formattedDate = pubDate.toLocaleDateString("en-US", {
+const formattedDate = pubDate.toLocaleDateString("ko-KR", {
   year: "numeric",
   month: "short",
   day: "numeric",
