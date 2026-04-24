@@ -13,7 +13,11 @@ const previewPosts = path.posts.slice(0, compact ? 2 : 3);
 ---
 
 <article class="path-card" style={`animation-delay: ${Math.min(index, 6) * 70}ms;`}>
-  <a href={href(`/start-here/${path.id}/`)} class="path-card-link">
+  <a
+    href={href(`/start-here/${path.id}/`)}
+    class="path-card-link"
+    aria-label={`${path.title} 읽기 경로 (글 ${path.posts.length}편)`}
+  >
     <div class="path-card-meta">
       <span class="path-card-label">Reading Path</span>
       <span class="path-card-count">글 {path.posts.length}편</span>
