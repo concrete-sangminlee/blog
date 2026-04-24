@@ -6,7 +6,7 @@
   <meta name="robots" content="noindex" />
   <meta name="theme-color" content="#08080a" />
   <meta name="color-scheme" content="dark" />
-  <title>Write — Blog Admin</title>
+  <title>글 작성 · 블로그 관리</title>
   <link rel="icon" type="image/svg+xml" href="/blog/favicon.svg" />
   <link rel="icon" type="image/png" href="/blog/favicon-32.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -96,7 +96,7 @@
 
 <!-- Setup Screen -->
 <div id="setup" class="setup" style="display:none;">
-  <h2>Blog Admin</h2>
+  <h2>블로그 관리</h2>
   <p>처음 사용하려면 GitHub Personal Access Token이 필요합니다.</p>
   <input type="password" id="token-input" placeholder="ghp_xxxxxxxxxxxx" />
   <div class="hint">
@@ -111,9 +111,9 @@
 <!-- Post List -->
 <div id="list" class="container" style="display:none;">
   <div class="header">
-    <h1>Posts</h1>
+    <h1>글 목록</h1>
     <div class="header-actions">
-      <a href="/blog/" class="btn btn-ghost btn-sm">← Blog</a>
+      <a href="/blog/" class="btn btn-ghost btn-sm">← 블로그</a>
       <button class="btn btn-primary btn-sm" onclick="newPost()">+ 새 글</button>
     </div>
   </div>
@@ -141,9 +141,9 @@
   </div>
   <div class="field">
     <div class="toggle-row">
-      <label class="toggle"><input type="checkbox" id="ed-draft" checked /> Draft</label>
-      <label class="toggle"><input type="checkbox" id="ed-featured" /> Featured</label>
-      <label class="toggle"><input type="checkbox" id="ed-math" /> Math (KaTeX)</label>
+      <label class="toggle"><input type="checkbox" id="ed-draft" checked /> 초안</label>
+      <label class="toggle"><input type="checkbox" id="ed-featured" /> 추천</label>
+      <label class="toggle"><input type="checkbox" id="ed-math" /> 수식 (KaTeX)</label>
     </div>
   </div>
   <div class="field">
@@ -217,7 +217,7 @@ async function showList() {
     container.innerHTML = details.map(f => `
       <div class="post-item" onclick="editPost('${f.path}')">
         <div>
-          <div class="post-title">${f.fm.title || f.name}${f.fm.draft === true || f.fm.draft === "true" ? '<span class="draft-badge">Draft</span>' : ''}</div>
+          <div class="post-title">${f.fm.title || f.name}${f.fm.draft === true || f.fm.draft === "true" ? '<span class="draft-badge">초안</span>' : ''}</div>
           <div class="post-meta">${f.fm.pubDate || ""} · ${f.name}</div>
         </div>
         <div class="post-actions" onclick="event.stopPropagation()">
