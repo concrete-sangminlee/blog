@@ -87,7 +87,7 @@ const { identifier, url, title } = Astro.props;
 
     const s = document.createElement("script");
     s.src = `https://${DISQUS_SHORTNAME}.disqus.com/embed.js`;
-    s.setAttribute("data-timestamp", String(+new Date()));
+    s.setAttribute("data-timestamp", String(Date.now()));
     (document.head || document.body).appendChild(s);
   }
 
