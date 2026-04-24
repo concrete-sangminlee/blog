@@ -181,12 +181,15 @@ const currentPath = Astro.url.pathname;
   }
 
   nav a:hover {
-    color: var(--text-primary) !important;
+    color: var(--text-primary);
     background: var(--bg-surface);
   }
 
-  .active-nav-link {
-    color: var(--accent) !important;
+  /* Scope the active-link rule on nav a so its specificity matches
+     nav a:hover and the later-declared colour wins without !important. */
+  nav a.active-nav-link,
+  nav a.active-nav-link:hover {
+    color: var(--accent);
   }
 
   .active-nav-link::after {
