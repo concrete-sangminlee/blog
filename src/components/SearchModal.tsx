@@ -270,9 +270,9 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
       const focusables = overlayRef.current.querySelectorAll<HTMLElement>(
         'a[href], button:not([disabled]), input:not([disabled])',
       );
-      if (focusables.length === 0) return;
       const first = focusables[0];
       const last = focusables[focusables.length - 1];
+      if (!first || !last) return;
       if (e.shiftKey && document.activeElement === first) {
         e.preventDefault();
         last.focus();

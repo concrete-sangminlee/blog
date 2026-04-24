@@ -50,8 +50,8 @@ export function getReadingPathNeighbors(path: ResolvedReadingPath, slug: string)
 
   return {
     index,
-    prev: index > 0 ? path.posts[index - 1] : null,
-    next: index < path.posts.length - 1 ? path.posts[index + 1] : null,
+    prev: index > 0 ? (path.posts[index - 1] ?? null) : null,
+    next: index < path.posts.length - 1 ? (path.posts[index + 1] ?? null) : null,
   };
 }
 

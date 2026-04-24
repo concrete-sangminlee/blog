@@ -93,9 +93,11 @@ function wrapText(value: string, maxUnits: number, maxLines: number): string[] {
     const last = lines[maxLines - 1];
     // Use the single-character Unicode ellipsis so the OG image shows one
     // properly-kerned glyph instead of three dots.
-    lines[maxLines - 1] = visualLength(last) > maxUnits - 1.5
-      ? `${last.slice(0, Math.max(0, last.length - 1)).trim()}…`
-      : `${last}…`;
+    if (last !== undefined) {
+      lines[maxLines - 1] = visualLength(last) > maxUnits - 1.5
+        ? `${last.slice(0, Math.max(0, last.length - 1)).trim()}…`
+        : `${last}…`;
+    }
   }
 
   return lines;
