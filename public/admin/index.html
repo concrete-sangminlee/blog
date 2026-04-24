@@ -433,7 +433,10 @@ ${body}
       method: "PUT", headers: { ...getHeaders(), "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-    if (!res.ok) { const e = await res.json(); throw new Error(e.message); }
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({ message: `HTTP ${res.status}` }));
+      throw new Error(e.message);
+    }
     dirty = false;
     status.textContent = "저장 완료! 자동 배포 중...";
     status.className = "status success";
