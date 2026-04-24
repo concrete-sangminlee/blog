@@ -141,8 +141,10 @@ const currentPath = Astro.url.pathname;
   #site-header {
     background-color: transparent;
     /* viewport-fit=cover lets the header extend into iPhone safe-area
-       insets; pad back so the logo/nav doesn't sit under the notch
-       in landscape, where the cutout is on the side edges. */
+       insets. Pad in on every side that can host a cutout: the side
+       insets for landscape notches, the top inset so portrait Dynamic
+       Island doesn't overlap the logo/nav. */
+    padding-top: env(safe-area-inset-top);
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
   }
