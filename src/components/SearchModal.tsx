@@ -262,6 +262,18 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
       return;
     }
 
+    if (e.key === "Home" && results.length > 0) {
+      e.preventDefault();
+      setSelectedIndex(0);
+      return;
+    }
+
+    if (e.key === "End" && results.length > 0) {
+      e.preventDefault();
+      setSelectedIndex(results.length - 1);
+      return;
+    }
+
     if (e.key === "Enter" && selectedIndex >= 0 && results[selectedIndex]) {
       e.preventDefault();
       const url = resolveUrl(results[selectedIndex].url, basePath);
