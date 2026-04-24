@@ -33,8 +33,9 @@ const truncatedDesc =
         <img
           src={imageUrl}
           alt=""
-          loading="lazy"
+          loading={index === 0 ? "eager" : "lazy"}
           decoding="async"
+          fetchpriority={index === 0 ? "high" : "auto"}
           width={SOCIAL_IMAGE_WIDTH}
           height={SOCIAL_IMAGE_HEIGHT}
           aria-hidden="true"
