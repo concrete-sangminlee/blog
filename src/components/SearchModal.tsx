@@ -122,11 +122,14 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
     setQuery("");
     setResults([]);
     setSelectedIndex(-1);
-    // Return focus to whatever triggered the modal (⌘K shortcut leaves
-    // the body as the opener, which we silently skip).
+    // Return focus to whatever triggered the modal. The ⌘K shortcut leaves
+    // the body as the opener, in which case we land keyboard users on the
+    // search button so their next Tab has a natural anchor.
     const opener = openerRef.current;
     if (opener && opener !== document.body) {
       opener.focus();
+    } else {
+      document.getElementById("search-btn")?.focus();
     }
     openerRef.current = null;
   }, []);
