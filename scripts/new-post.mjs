@@ -33,6 +33,10 @@ if (!title) {
 }
 
 const slug = slugify(title);
+if (!slug) {
+  console.error("슬러그로 변환할 글자(한글, 영문, 숫자)가 없습니다");
+  process.exit(1);
+}
 const filename = `${slug}.mdx`;
 const filepath = path.join(CONTENT_DIR, filename);
 

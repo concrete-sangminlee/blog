@@ -382,6 +382,13 @@ async function savePost() {
     today = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
   }
   const slug = title.toLowerCase().replace(/[^\w\s가-힣-]/g, "").replace(/[\s_]+/g, "-").replace(/^-+|-+$/g, "");
+  // If a title is only punctuation/symbols, the slug ends up empty and
+  // the file path would collapse to ".mdx" — catch that before we write.
+  if (!editingFile && !slug) {
+    status.textContent = "슬러그로 변환할 글자(한글, 영문, 숫자)가 없습니다";
+    status.className = "status error";
+    return;
+  }
   // Escape embedded double quotes so titles like "'유레카' 순간" don't
   // break the YAML frontmatter block.
   const yamlEscape = (s) => s.replace(/"/g, '\\"');
