@@ -23,13 +23,13 @@ function formatDate(date: Date): string {
 }
 ---
 
-<BaseLayout title={`${path.title} | Start Here`} description={path.description}>
+<BaseLayout title={`${path.title} | 읽기 경로`} description={path.description}>
   <section class="mb-12 max-w-3xl" aria-labelledby="path-heading">
     <p class="path-kicker">Reading Path</p>
     <h1 id="path-heading" class="heading-page text-3xl tracking-tight sm:text-4xl lg:text-5xl">{path.title}</h1>
     <p class="path-lead">{path.description}</p>
     <div class="path-meta">
-      <span>{path.posts.length} posts</span>
+      <span>글 {path.posts.length}편</span>
     </div>
     <div class="accent-line mt-6" aria-hidden="true" />
   </section>
@@ -58,7 +58,7 @@ function formatDate(date: Date): string {
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M19 12H5M12 19l-7-7 7-7" />
       </svg>
-      Back to all paths
+      모든 경로 보기
     </a>
   </div>
 </BaseLayout>
