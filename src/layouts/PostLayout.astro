@@ -35,7 +35,7 @@ function formatDate(date: Date): string {
 }
 ---
 
-<BaseLayout title={title} description={description} image={socialImage} imageAlt={socialImageAlt} math={math} ogType="article">
+<BaseLayout title={title} description={description} image={socialImage} imageAlt={socialImageAlt} math={math} ogType="article" publishedTime={pubDate} modifiedTime={updatedDate} tags={tags}>
   <article class="post-layout" data-pagefind-body>
     <header class="mb-12 max-w-[720px]">
       <p class="sr-only" data-pagefind-meta="description">{description}</p>

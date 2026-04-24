@@ -15,6 +15,9 @@ interface Props {
   imageAlt?: string;
   math?: boolean;
   ogType?: "website" | "article";
+  publishedTime?: Date;
+  modifiedTime?: Date;
+  tags?: string[];
 }
 
 const {
@@ -24,6 +27,9 @@ const {
   imageAlt,
   math = false,
   ogType = "website",
+  publishedTime,
+  modifiedTime,
+  tags,
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
@@ -66,6 +72,17 @@ const fullTitle = title === SITE.title ? title : `${title} | ${SITE.title}`;
 <meta property="og:image:alt" content={socialImageAlt} />
 <meta property="og:locale" content={SITE.lang} />
 <meta property="og:site_name" content={SITE.title} />
+
+{ogType === "article" && publishedTime && (
+  <meta property="article:published_time" content={publishedTime.toISOString()} />
+)}
+{ogType === "article" && modifiedTime && (
+  <meta property="article:modified_time" content={modifiedTime.toISOString()} />
+)}
+{ogType === "article" && <meta property="article:author" content={SITE.author} />}
+{ogType === "article" && tags && tags.map((tag) => (
+  <meta property="article:tag" content={tag} />
+))}
 
 <!-- Twitter -->
 <meta property="twitter:card" content="summary_large_image" />
