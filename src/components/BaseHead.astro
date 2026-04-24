@@ -105,6 +105,10 @@ const fullTitle = title === SITE.title ? title : `${title} | ${SITE.title}`;
           "@type": "Person",
           name: SITE.author,
         },
+        publisher: {
+          "@type": "Person",
+          name: SITE.author,
+        },
         ...(publishedTime && { datePublished: publishedTime.toISOString() }),
         ...(modifiedTime && { dateModified: modifiedTime.toISOString() }),
         image: socialImageURL.toString(),
