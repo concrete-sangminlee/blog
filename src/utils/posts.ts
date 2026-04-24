@@ -4,7 +4,7 @@ export type BlogPost = CollectionEntry<"blog">;
 
 // Filter predicate for getCollection: drops drafts in production,
 // keeps them in dev so drafts are visible during local iteration.
-export const isPublished = ({ data }: BlogPost): boolean =>
+const isPublished = ({ data }: BlogPost): boolean =>
   import.meta.env.PROD ? !data.draft : true;
 
 const FEATURED_POST_ORDER = [
