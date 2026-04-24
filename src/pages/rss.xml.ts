@@ -8,7 +8,10 @@ export async function GET(context: APIContext) {
   const feedUrl = new URL(`${SITE.base}/rss.xml`, context.site!).toString();
 
   return rss({
-    xmlns: { atom: "http://www.w3.org/2005/Atom" },
+    xmlns: {
+      atom: "http://www.w3.org/2005/Atom",
+      dc: "http://purl.org/dc/elements/1.1/",
+    },
     title: SITE.title,
     description: SITE.description,
     site: new URL(SITE.base + "/", context.site!).toString(),
@@ -24,6 +27,10 @@ export async function GET(context: APIContext) {
       description: post.data.description,
       link: `${SITE.base}/${post.slug}/`,
       categories: [...post.data.tags],
+      // dc:creator is the de-facto Atom-flavour author for RSS; plain
+      // <author> in RSS 2.0 wants an email, which we'd rather not leak
+      // in every feed item.
+      customData: `<dc:creator>${SITE.author}</dc:creator>`,
     })),
   });
 }
