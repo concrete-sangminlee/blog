@@ -319,11 +319,14 @@ async function savePost() {
 
   const today = new Date().toISOString().split("T")[0];
   const slug = title.toLowerCase().replace(/[^\w\s가-힣-]/g, "").replace(/[\s_]+/g, "-").replace(/^-+|-+$/g, "");
-  const tagsStr = tags.length > 0 ? `[${tags.map(t => `"${t}"`).join(", ")}]` : "[]";
+  // Escape embedded double quotes so titles like "'유레카' 순간" don't
+  // break the YAML frontmatter block.
+  const yamlEscape = (s) => s.replace(/"/g, '\\"');
+  const tagsStr = tags.length > 0 ? `[${tags.map(t => `"${yamlEscape(t)}"`).join(", ")}]` : "[]";
 
   const content = `---
-title: "${title}"
-description: "${desc}"
+title: "${yamlEscape(title)}"
+description: "${yamlEscape(desc)}"
 pubDate: ${today}
 tags: ${tagsStr}
 draft: ${draft}
