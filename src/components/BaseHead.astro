@@ -89,7 +89,8 @@ const fullTitle = title === SITE.title ? title : `${title} | ${SITE.title}`;
   <meta property="article:tag" content={tag} />
 ))}
 
-<!-- JSON-LD structured data -->
+{/* JSON-LD structured data. Escape "<" so a title/description that happens
+    to contain "</script>" or "<script>" can't break out of the script tag. */}
 <script type="application/ld+json" set:html={JSON.stringify(
   ogType === "article"
     ? {
@@ -123,7 +124,7 @@ const fullTitle = title === SITE.title ? title : `${title} | ${SITE.title}`;
           name: SITE.author,
         },
       }
-)} />
+).replace(/</g, "\\u003c")} />
 
 <!-- Twitter -->
 <meta property="twitter:card" content="summary_large_image" />
