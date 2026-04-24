@@ -7,7 +7,7 @@ import { href } from "@/utils/paths";
 const posts = await getAllPosts();
 ---
 
-<ListLayout title="All Posts" description="이 블로그의 모든 글을 최신순으로 정리한 목록.">
+<ListLayout title="전체 글" description="이 블로그의 모든 글을 최신순으로 정리한 목록.">
   <aside class="posts-callout" aria-labelledby="posts-callout-label">
     <div>
       <p id="posts-callout-label" class="posts-callout-label">Start Here</p>
@@ -16,7 +16,7 @@ const posts = await getAllPosts();
       </p>
     </div>
     <a href={href("/start-here/")} class="posts-callout-link">
-      Open reading paths
+      읽기 경로 보러 가기
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M5 12h14M12 5l7 7-7 7"/>
       </svg>
