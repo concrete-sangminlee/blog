@@ -140,6 +140,11 @@ const currentPath = Astro.url.pathname;
 <style>
   #site-header {
     background-color: transparent;
+    /* viewport-fit=cover lets the header extend into iPhone safe-area
+       insets; pad back so the logo/nav doesn't sit under the notch
+       in landscape, where the cutout is on the side edges. */
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
 
   #site-header.scrolled {
