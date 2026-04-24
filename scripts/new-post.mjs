@@ -49,9 +49,12 @@ fs.mkdirSync(CONTENT_DIR, { recursive: true });
 
 // Escape embedded quotes so titles like "'유레카' 순간" don't break YAML.
 const yamlTitle = title.replace(/"/g, '\\"');
+// Placeholder description is long enough to satisfy the content schema's
+// min(16) on description, so running `npm run dev` right after scaffold
+// doesn't throw a zod validation error. Author replaces it before publish.
 const content = `---
 title: "${yamlTitle}"
-description: ""
+description: "여기에 한 줄 설명을 적어주세요."
 pubDate: ${getNowIso()}
 tags: []
 draft: true
