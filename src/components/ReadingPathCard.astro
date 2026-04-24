@@ -16,7 +16,7 @@ const previewPosts = path.posts.slice(0, compact ? 2 : 3);
   <a href={href(`/start-here/${path.id}/`)} class="path-card-link">
     <div class="path-card-meta">
       <span class="path-card-label">Reading Path</span>
-      <span class="path-card-count">{path.posts.length} posts</span>
+      <span class="path-card-count">글 {path.posts.length}편</span>
     </div>
 
     <h3 class="path-card-title">{path.title}</h3>
@@ -29,7 +29,7 @@ const previewPosts = path.posts.slice(0, compact ? 2 : 3);
     </ul>
 
     <span class="path-card-cta">
-      Open path
+      경로 열기
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M5 12h14M12 5l7 7-7 7" />
       </svg>
