@@ -57,6 +57,9 @@ html {
      ::-webkit-scrollbar rules below. Keep both in sync. */
   scrollbar-width: thin;
   scrollbar-color: var(--border-hover) transparent;
+  /* Reserve scrollbar space so the page doesn't jump horizontally when
+     the search modal toggles body { overflow: hidden }. */
+  scrollbar-gutter: stable;
 }
 
 body {
