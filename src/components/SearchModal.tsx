@@ -102,6 +102,9 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
   const overlayRef = useRef<HTMLDivElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  // Monotonically increasing id so a slow in-flight search can't overwrite
+  // the results of a newer query that has already resolved.
+  const searchSeqRef = useRef(0);
   // Remember which element opened the modal so focus can return there on close.
   const openerRef = useRef<HTMLElement | null>(null);
 
@@ -194,6 +197,7 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
     debounceRef.current = setTimeout(async () => {
+      const thisSearch = ++searchSeqRef.current;
       setIsLoading(true);
       try {
         const search = await pagefind.search(query);
@@ -214,6 +218,9 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
             };
           }),
         );
+        // If a newer search has already kicked off, drop these stale results.
+        if (thisSearch !== searchSeqRef.current) return;
+
         const loaded = loadedWithRank
           .map(({ result, rank }) => ({
             ...result,
@@ -230,9 +237,9 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
         // search UX.
         setSelectedIndex(loaded.length > 0 ? 0 : -1);
       } catch {
-        setResults([]);
+        if (thisSearch === searchSeqRef.current) setResults([]);
       }
-      setIsLoading(false);
+      if (thisSearch === searchSeqRef.current) setIsLoading(false);
     }, 200);
 
     return () => {
