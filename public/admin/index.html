@@ -215,8 +215,14 @@ document.addEventListener("input", (e) => {
 if (token) { showList(); } else { document.getElementById("setup").style.display = "block"; }
 
 function saveToken() {
-  const t = document.getElementById("token-input").value.trim();
-  if (!t) return;
+  const input = document.getElementById("token-input");
+  const t = input.value.trim();
+  if (!t) {
+    // Give the token field focus back so the user sees where to fix it
+    // rather than pressing submit silently.
+    input.focus();
+    return;
+  }
   token = t;
   localStorage.setItem("blog_token", t);
   document.getElementById("setup").style.display = "none";
