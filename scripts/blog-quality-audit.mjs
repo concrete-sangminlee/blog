@@ -1,8 +1,9 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 
-const ROOT = process.cwd();
-const BLOG_DIR = path.join(ROOT, "src/content/blog");
+// Anchor to the script location so the audit works regardless of where
+// npm or the user invokes it from.
+const BLOG_DIR = path.join(import.meta.dirname, "..", "src/content/blog");
 const args = new Map(
   process.argv.slice(2).map((arg) => {
     const [key, value = "true"] = arg.replace(/^--/, "").split("=");
