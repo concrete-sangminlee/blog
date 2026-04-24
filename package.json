@@ -7,7 +7,7 @@
     "dev": "astro dev",
     "build": "astro build && pagefind --site dist",
     "preview": "astro preview",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "astro sync && tsc --noEmit",
     "audit:blog": "node scripts/blog-quality-audit.mjs",
     "check": "npm run typecheck && npm run audit:blog && npm run build",
     "new-post": "node scripts/new-post.mjs"
