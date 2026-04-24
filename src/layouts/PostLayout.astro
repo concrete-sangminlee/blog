@@ -171,7 +171,7 @@ function formatDate(date: Date): string {
 
     const headingEls = Array.from(tocLinks)
       .map((link) => link.dataset.slug ? document.getElementById(link.dataset.slug) : null)
-      .filter(Boolean) as HTMLElement[];
+      .filter(Boolean);
 
     function updateActive() {
       let active = headingEls[0];
