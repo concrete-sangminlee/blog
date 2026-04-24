@@ -6,8 +6,10 @@ const blog = defineCollection({
     // Minimums mirror scripts/blog-quality-audit.mjs so Astro's content
     // sync already rejects too-short title/description before the audit
     // script runs in CI.
-    title: z.string().min(6),
-    description: z.string().min(16),
+    // Caps are generous; real posts are far below them. They mostly guard
+    // against an accidental giant title pasted into the admin.
+    title: z.string().min(6).max(100),
+    description: z.string().min(16).max(200),
     pubDate: z.coerce.date(),
     updatedDate: z.coerce.date().optional(),
     // OG images only render the first 4 tags; capping at 5 leaves a tiny
