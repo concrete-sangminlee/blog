@@ -349,7 +349,11 @@ const currentPath = Astro.url.pathname;
       const isDark = document.documentElement.getAttribute("data-theme") === "dark";
       const next = isDark ? "light" : "dark";
       document.documentElement.setAttribute("data-theme", next);
-      localStorage.setItem("theme", next);
+      // localStorage throws on some privacy modes / sandboxed iframes;
+      // the in-memory data-theme toggle above still works without it.
+      try {
+        localStorage.setItem("theme", next);
+      } catch (_) {}
       // The sun/moon icons swap via CSS rules keyed on [data-theme="dark"].
     });
   }
