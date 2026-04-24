@@ -53,7 +53,7 @@ const {
     <a href="#main-content" class="skip-link">본문으로 건너뛰기</a>
     <ScrollProgress />
     <Header />
-    <SearchModal client:only="react" basePath={SITE.base} />
+    <SearchModal client:only="react" basePath={SITE.base} transition:persist />
 
     <main id="main-content" class="mx-auto max-w-[1200px] px-6 py-8">
       <slot />
