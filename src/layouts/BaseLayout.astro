@@ -42,7 +42,9 @@ const {
       (function () {
         try {
           var stored = localStorage.getItem("theme");
-          if (stored) document.documentElement.setAttribute("data-theme", stored);
+          if (stored === "dark" || stored === "light") {
+            document.documentElement.setAttribute("data-theme", stored);
+          }
         } catch (_) {}
       })();
     </script>
