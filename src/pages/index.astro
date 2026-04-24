@@ -39,9 +39,9 @@ const recentPosts = allPosts.filter((post) => !featuredSlugs.has(post.slug)).sli
   </section>
 
   {featuredPaths.length > 0 && (
-    <section class="mb-16">
+    <section class="mb-16" aria-labelledby="home-start-here">
       <div class="section-header">
-        <h2 class="section-title">Start Here</h2>
+        <h2 id="home-start-here" class="section-title">Start Here</h2>
         <div class="section-line"></div>
       </div>
       <div class="grid gap-4 md:grid-cols-3">
@@ -63,9 +63,9 @@ const recentPosts = allPosts.filter((post) => !featuredSlugs.has(post.slug)).sli
 
   <!-- Featured -->
   {featuredPosts.length > 0 && (
-    <section class="mb-16">
+    <section class="mb-16" aria-labelledby="home-featured">
       <div class="section-header">
-        <h2 class="section-title">Featured</h2>
+        <h2 id="home-featured" class="section-title">Featured</h2>
         <div class="section-line"></div>
       </div>
       <div class="space-y-1">
@@ -77,9 +77,9 @@ const recentPosts = allPosts.filter((post) => !featuredSlugs.has(post.slug)).sli
   )}
 
   <!-- Recent -->
-  <section class="mb-16">
+  <section class="mb-16" aria-labelledby="home-recent">
     <div class="section-header">
-      <h2 class="section-title">Recent</h2>
+      <h2 id="home-recent" class="section-title">Recent</h2>
       <div class="section-line"></div>
     </div>
     {recentPosts.length > 0 ? (
