@@ -236,6 +236,14 @@ async function showList() {
     const res = await fetch(`${API}/repos/${REPO}/contents/${CONTENT_PATH}?ref=${BRANCH}`, { headers: getHeaders() });
     if (res.status === 404) { container.innerHTML = '<div class="empty">아직 글이 없습니다.</div>'; posts = []; return; }
     if (res.status === 401) { localStorage.removeItem("blog_token"); token = null; location.reload(); return; }
+    if (res.status === 403) {
+      // 403 from GitHub typically means rate limited when the token is
+      // valid; the header carries the reset time.
+      const reset = res.headers.get("x-ratelimit-reset");
+      const wait = reset ? new Date(Number(reset) * 1000).toLocaleTimeString("ko-KR") : "잠시 후";
+      container.innerHTML = `<div class="empty">GitHub API 제한. ${wait}에 다시 시도하세요.</div>`;
+      return;
+    }
     const files = await res.json();
     posts = Array.isArray(files) ? files.filter(f => f.name.endsWith(".mdx") || f.name.endsWith(".md")) : [];
 
