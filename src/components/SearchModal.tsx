@@ -200,12 +200,15 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
         const loadedWithRank = await Promise.all(
           search.results.slice(0, 24).map(async (r, rank) => {
             const data = await r.data();
+            // Spread meta/excerpt only when defined so the result object
+            // satisfies exactOptionalPropertyTypes without widening
+            // SearchResult's type surface.
             return {
               result: {
                 id: r.id,
                 url: data.url,
-                meta: data.meta,
-                excerpt: data.excerpt,
+                ...(data.meta !== undefined ? { meta: data.meta } : {}),
+                ...(data.excerpt !== undefined ? { excerpt: data.excerpt } : {}),
               },
               rank,
             };
