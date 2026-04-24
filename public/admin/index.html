@@ -414,8 +414,13 @@ async function savePost() {
   // so bodies don't accumulate blank lines on repeated saves.
   const body = document.getElementById("ed-body").value.trimEnd();
 
-  if (!title) { status.textContent = "제목을 입력하세요"; status.className = "status error"; return; }
-  if (!desc) { status.textContent = "설명을 입력하세요"; status.className = "status error"; return; }
+  // Match the content schema in src/content/config.ts so admin saves
+  // don't push commits that then fail the Astro build.
+  if (title.length < 6) { status.textContent = "제목은 6자 이상이어야 합니다"; status.className = "status error"; return; }
+  if (title.length > 100) { status.textContent = "제목은 100자 이하로 줄여주세요"; status.className = "status error"; return; }
+  if (desc.length < 16) { status.textContent = "설명은 16자 이상이어야 합니다"; status.className = "status error"; return; }
+  if (desc.length > 200) { status.textContent = "설명은 200자 이하로 줄여주세요"; status.className = "status error"; return; }
+  if (tags.length > 5) { status.textContent = "태그는 최대 5개까지 지정할 수 있습니다"; status.className = "status error"; return; }
 
   // For edits, preserve the original pubDate so "Update" doesn't quietly
   // republish an old post with today's timestamp. For new posts, use the
