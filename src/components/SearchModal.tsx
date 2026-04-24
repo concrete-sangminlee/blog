@@ -517,7 +517,7 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
                     marginBottom: "0.3rem",
                   }}
                 >
-                  {result.meta?.title || "Untitled"}
+                  {result.meta?.title || "제목 없음"}
                 </div>
                 {result.meta?.description && (
                   <div
