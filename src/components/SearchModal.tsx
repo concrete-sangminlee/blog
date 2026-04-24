@@ -382,11 +382,15 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
 
           <input
             ref={inputRef}
-            type="text"
+            type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="글 제목, 주제, 문장 검색..."
             aria-label="글 검색"
+            autoComplete="off"
+            autoCapitalize="off"
+            autoCorrect="off"
+            spellCheck={false}
             style={{
               flex: 1,
               background: "transparent",
