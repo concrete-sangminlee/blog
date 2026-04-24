@@ -49,6 +49,10 @@ const fullTitle = title === SITE.title ? title : `${title} | ${SITE.title}`;
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 {noIndex && <meta name="robots" content="noindex, follow" />}
 
+<!-- Tell the UA both schemes are supported before any CSS parses, so
+     form controls / scrollbars pick the right palette without flashing. -->
+<meta name="color-scheme" content="light dark" />
+
 <!-- Mobile URL-bar color matches the body background in each theme -->
 <meta name="theme-color" content="#fafaf8" media="(prefers-color-scheme: light)" />
 <meta name="theme-color" content="#08080a" media="(prefers-color-scheme: dark)" />
