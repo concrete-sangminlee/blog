@@ -2,10 +2,11 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const CONTENT_DIR = path.join(__dirname, "..", "src", "content", "blog");
+// import.meta.dirname replaces the old fileURLToPath + path.dirname pair
+// (Node ≥ 20.11 / 21.2). The script's package.json engines aren't pinned,
+// but the rest of the toolchain (Astro 5) already requires Node ≥ 18.17.
+const CONTENT_DIR = path.join(import.meta.dirname, "..", "src", "content", "blog");
 
 function slugify(text) {
   return text
