@@ -1,12 +1,20 @@
 ---
 ---
 
-<div
-  id="scroll-progress"
-  class="fixed top-0 left-0 h-[2px] z-[10000]"
-  style="width: 0%; background-color: var(--scroll-progress);"
-  aria-hidden="true"
-></div>
+<div id="scroll-progress" aria-hidden="true"></div>
+
+<style>
+  #scroll-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 2px;
+    z-index: 10000;
+    background-color: var(--scroll-progress);
+    pointer-events: none;
+  }
+</style>
 
 <script>
   let controller: AbortController | null = null;
