@@ -55,7 +55,7 @@
 }
 
 .prose ul li::before {
-  content: "—";
+  content: "-";
   position: absolute;
   left: -1.5rem;
   color: var(--text-muted);
