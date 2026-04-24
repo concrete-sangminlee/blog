@@ -12,7 +12,7 @@ const { path, index = 0, compact = false } = Astro.props;
 const previewPosts = path.posts.slice(0, compact ? 2 : 3);
 ---
 
-<article class="path-card" style={`animation-delay: ${index * 70}ms;`}>
+<article class="path-card" style={`animation-delay: ${Math.min(index, 6) * 70}ms;`}>
   <a href={href(`/start-here/${path.id}/`)} class="path-card-link">
     <div class="path-card-meta">
       <span class="path-card-label">Reading Path</span>
