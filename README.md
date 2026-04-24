@@ -30,7 +30,7 @@
 npm run dev
 
 # New post (creates a draft under src/content/blog/)
-npm run new-post "Post Title"
+npm run new-post "글 제목"
 
 # TypeScript typecheck (runs against astro/tsconfigs/strictest)
 npm run typecheck
