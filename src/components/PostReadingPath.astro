@@ -49,7 +49,7 @@ const neighbors = primaryPath
         <nav class="post-path-nav" aria-label="읽기 경로 내 이동">
           {neighbors.prev ? (
             <a href={href(`/${neighbors.prev.slug}/`)} class="post-path-nav-link">
-              <span class="post-path-nav-label">Earlier</span>
+              <span class="post-path-nav-label">이전 글</span>
               <strong>{neighbors.prev.data.title}</strong>
             </a>
           ) : (
@@ -58,7 +58,7 @@ const neighbors = primaryPath
 
           {neighbors.next ? (
             <a href={href(`/${neighbors.next.slug}/`)} class="post-path-nav-link">
-              <span class="post-path-nav-label">Next</span>
+              <span class="post-path-nav-label">다음 글</span>
               <strong>{neighbors.next.data.title}</strong>
             </a>
           ) : (
