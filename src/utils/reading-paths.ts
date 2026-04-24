@@ -33,11 +33,6 @@ export async function getFeaturedReadingPaths(): Promise<ResolvedReadingPath[]> 
   return paths.filter((path) => path.featured);
 }
 
-export async function getReadingPathById(id: string): Promise<ResolvedReadingPath | undefined> {
-  const paths = await getReadingPaths();
-  return paths.find((path) => path.id === id);
-}
-
 export async function getReadingPathsForPost(slug: string): Promise<ResolvedReadingPath[]> {
   const paths = await getReadingPaths();
   return paths.filter((path) => path.posts.some((post) => post.slug === slug));
