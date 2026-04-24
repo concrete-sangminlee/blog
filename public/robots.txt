@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://concrete-sangminlee.github.io/blog/sitemap-index.xml
