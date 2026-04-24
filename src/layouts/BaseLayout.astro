@@ -17,6 +17,7 @@ interface Props {
   publishedTime?: Date;
   modifiedTime?: Date;
   tags?: string[];
+  noIndex?: boolean;
 }
 
 const {
@@ -29,6 +30,7 @@ const {
   publishedTime,
   modifiedTime,
   tags,
+  noIndex = false,
 } = Astro.props;
 ---
 
@@ -44,7 +46,7 @@ const {
         } catch (_) {}
       })();
     </script>
-    <BaseHead title={title} description={description} image={image} imageAlt={imageAlt} math={math} ogType={ogType} publishedTime={publishedTime} modifiedTime={modifiedTime} tags={tags} />
+    <BaseHead title={title} description={description} image={image} imageAlt={imageAlt} math={math} ogType={ogType} publishedTime={publishedTime} modifiedTime={modifiedTime} tags={tags} noIndex={noIndex} />
     <ClientRouter />
   </head>
   <body>

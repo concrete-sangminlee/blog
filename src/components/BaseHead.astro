@@ -18,6 +18,7 @@ interface Props {
   publishedTime?: Date;
   modifiedTime?: Date;
   tags?: string[];
+  noIndex?: boolean;
 }
 
 const {
@@ -30,6 +31,7 @@ const {
   publishedTime,
   modifiedTime,
   tags,
+  noIndex = false,
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
@@ -46,6 +48,7 @@ const fullTitle = title === SITE.title ? title : `${title} | ${SITE.title}`;
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="generator" content={Astro.generator} />
+{noIndex && <meta name="robots" content="noindex, follow" />}
 
 <!-- Mobile URL-bar color matches the body background in each theme -->
 <meta name="theme-color" content="#fafaf8" media="(prefers-color-scheme: light)" />
