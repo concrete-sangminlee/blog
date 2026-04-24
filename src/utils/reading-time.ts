@@ -1,7 +1,7 @@
 const WORDS_PER_MINUTE = 200;
 const KOREAN_CHARS_PER_MINUTE = 500;
 
-export function getReadingTime(content: string): string {
+export function getReadingMinutes(content: string): number {
   const text = content
     .replace(/<[^>]*>/g, "")
     .replace(/```[\s\S]*?```/g, "")
@@ -21,5 +21,5 @@ export function getReadingTime(content: string): string {
       englishWords / WORDS_PER_MINUTE,
   );
 
-  return `${Math.max(1, minutes)}분 분량`;
+  return Math.max(1, minutes);
 }

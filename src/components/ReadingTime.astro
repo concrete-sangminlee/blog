@@ -1,15 +1,15 @@
 ---
-import { getReadingTime } from "@/utils/reading-time";
+import { getReadingMinutes } from "@/utils/reading-time";
 
 interface Props {
   content: string;
 }
 
 const { content } = Astro.props;
-const readingTime = getReadingTime(content);
+const minutes = getReadingMinutes(content);
 ---
 
-<span class="reading-time" aria-label={`예상 읽기 시간 ${readingTime}`}>
+<span class="reading-time" aria-label={`읽는 데 약 ${minutes}분`}>
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="14"
@@ -25,7 +25,7 @@ const readingTime = getReadingTime(content);
     <circle cx="12" cy="12" r="10" />
     <polyline points="12 6 12 12 16 14" />
   </svg>
-  {readingTime}
+  {minutes}분 분량
 </span>
 
 <style>
