@@ -1,7 +1,7 @@
 ---
 import type { BlogPost } from "@/utils/posts";
 import { href } from "@/utils/paths";
-import { getPostSocialImage } from "@/utils/social-image";
+import { getPostSocialImage, SOCIAL_IMAGE_WIDTH, SOCIAL_IMAGE_HEIGHT } from "@/utils/social-image";
 
 interface Props {
   post: BlogPost;
@@ -30,7 +30,15 @@ const truncatedDesc =
   <a href={postHref} class="post-card-link">
     <div class="post-card-inner">
       <div class="post-card-media">
-        <img src={imageUrl} alt="" loading="lazy" decoding="async" aria-hidden="true" />
+        <img
+          src={imageUrl}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          width={SOCIAL_IMAGE_WIDTH}
+          height={SOCIAL_IMAGE_HEIGHT}
+          aria-hidden="true"
+        />
       </div>
 
       <div class="post-card-meta">
