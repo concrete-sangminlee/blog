@@ -21,6 +21,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Run the blog audit before withastro/action builds. The audit
+      # enforces frontmatter hygiene, em-dash bans, future-dated pubDate,
+      # duplicate h1 etc. — issues that would otherwise deploy silently.
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install dependencies
+        run: npm ci
+      - name: Run blog audit
+        run: npm run audit:blog
+
       - name: Install, build, and upload
         uses: withastro/action@v3
 
