@@ -53,6 +53,10 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Firefox honours standard scrollbar properties; webkit uses the
+     ::-webkit-scrollbar rules below. Keep both in sync. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-hover) transparent;
 }
 
 body {
