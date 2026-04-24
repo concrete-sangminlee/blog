@@ -84,6 +84,42 @@ const fullTitle = title === SITE.title ? title : `${title} | ${SITE.title}`;
   <meta property="article:tag" content={tag} />
 ))}
 
+<!-- JSON-LD structured data -->
+<script type="application/ld+json" set:html={JSON.stringify(
+  ogType === "article"
+    ? {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        headline: title,
+        description,
+        author: {
+          "@type": "Person",
+          name: SITE.author,
+        },
+        ...(publishedTime && { datePublished: publishedTime.toISOString() }),
+        ...(modifiedTime && { dateModified: modifiedTime.toISOString() }),
+        image: socialImageURL.toString(),
+        mainEntityOfPage: {
+          "@type": "WebPage",
+          "@id": canonicalURL.toString(),
+        },
+        ...(tags && tags.length > 0 && { keywords: tags.join(", ") }),
+        inLanguage: SITE.lang,
+      }
+    : {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        name: SITE.title,
+        description: SITE.description,
+        url: new URL(SITE.base + "/", Astro.site).toString(),
+        inLanguage: SITE.lang,
+        author: {
+          "@type": "Person",
+          name: SITE.author,
+        },
+      }
+)} />
+
 <!-- Twitter -->
 <meta property="twitter:card" content="summary_large_image" />
 <meta property="twitter:url" content={canonicalURL} />
