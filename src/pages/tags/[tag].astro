@@ -14,7 +14,7 @@ const { tag } = Astro.params;
 const posts = await getPostsByTag(tag!);
 ---
 
-<ListLayout title={`#${tag}`} description={`${posts.length}개의 글`}>
+<ListLayout title={`#${tag}`} description={`${tag} 태그가 붙은 글 ${posts.length}편.`}>
   <div class="space-y-1">
     {posts.map((post, i) => (
       <PostCard post={post} index={i} />
