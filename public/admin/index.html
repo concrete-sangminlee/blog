@@ -128,7 +128,7 @@
     <h1>글 목록</h1>
     <div class="header-actions">
       <a href="/blog/" class="btn btn-ghost btn-sm">← 블로그</a>
-      <button class="btn btn-primary btn-sm" onclick="newPost()">+ 새 글</button>
+      <button type="button" class="btn btn-primary btn-sm" onclick="newPost()">+ 새 글</button>
     </div>
   </div>
   <div id="post-list"></div>
@@ -138,7 +138,7 @@
 <div id="editor" class="editor container">
   <div class="header">
     <h1 id="editor-title">새 글 작성</h1>
-    <button class="btn btn-ghost btn-sm" onclick="confirmAndShowList()">← 목록</button>
+    <button type="button" class="btn btn-ghost btn-sm" onclick="confirmAndShowList()">← 목록</button>
   </div>
 
   <div class="field">
@@ -167,8 +167,8 @@
   <div class="editor-footer">
     <span id="ed-status" class="status" role="status" aria-live="polite"></span>
     <div style="display:flex;gap:0.5rem;">
-      <button class="btn btn-ghost" onclick="confirmAndShowList()">취소</button>
-      <button class="btn btn-primary" onclick="savePost()">저장</button>
+      <button type="button" class="btn btn-ghost" onclick="confirmAndShowList()">취소</button>
+      <button type="button" class="btn btn-primary" onclick="savePost()">저장</button>
     </div>
   </div>
 </div>
@@ -295,8 +295,8 @@ async function showList() {
           <div class="post-meta">${f.fm.pubDate ? `<time datetime="${escHtml(f.fm.pubDate)}">${escHtml(f.fm.pubDate)}</time> · ` : ""}${escHtml(f.name)}</div>
         </div>
         <div class="post-actions">
-          <button class="btn btn-ghost btn-sm" data-action="edit" data-path="${escHtml(f.path)}">편집</button>
-          <button class="btn btn-danger btn-sm" data-action="delete" data-path="${escHtml(f.path)}" data-sha="${escHtml(f.sha)}" data-title="${escHtml(title)}">삭제</button>
+          <button type="button" class="btn btn-ghost btn-sm" data-action="edit" data-path="${escHtml(f.path)}">편집</button>
+          <button type="button" class="btn btn-danger btn-sm" data-action="delete" data-path="${escHtml(f.path)}" data-sha="${escHtml(f.sha)}" data-title="${escHtml(title)}">삭제</button>
         </div>
       </div>
     `;
