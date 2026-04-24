@@ -4,14 +4,13 @@ import PostNav from "@/components/PostNav.astro";
 import PostComments from "@/components/PostComments.astro";
 import PostReadingPath from "@/components/PostReadingPath.astro";
 import ReadingTime from "@/components/ReadingTime.astro";
-import { getAllPosts } from "@/utils/posts";
+import { getAllPosts, type BlogPost } from "@/utils/posts";
 import { getReadingPathsForPost } from "@/utils/reading-paths";
 import { href } from "@/utils/paths";
 import { getPostSocialImage, getPostSocialImageAlt } from "@/utils/social-image";
-import type { CollectionEntry } from "astro:content";
 
 interface Props {
-  post: CollectionEntry<"blog">;
+  post: BlogPost;
 }
 
 const { post } = Astro.props;
