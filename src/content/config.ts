@@ -17,8 +17,11 @@ const blog = defineCollection({
     featured: z.boolean().default(false),
     image: z
       .object({
-        url: z.string(),
-        alt: z.string(),
+        url: z.string().min(1),
+        // Alt text is required if an image is attached — decorative images
+        // shouldn't use this field at all (they belong in the prose markup
+        // with alt="" / aria-hidden).
+        alt: z.string().min(1),
       })
       .optional(),
     math: z.boolean().default(false),
