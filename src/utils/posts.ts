@@ -25,7 +25,9 @@ export async function getAllPosts(): Promise<BlogPost[]> {
 
 export async function getFeaturedPosts(): Promise<BlogPost[]> {
   const posts = await getAllPosts();
-  const featuredRank = new Map(FEATURED_POST_ORDER.map((slug, index) => [slug, index]));
+  const featuredRank = new Map<string, number>(
+    FEATURED_POST_ORDER.map((slug, index) => [slug, index]),
+  );
 
   return posts
     .filter((post) => post.data.featured || featuredRank.has(post.slug))

@@ -89,7 +89,7 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
   const inputRef = useRef<HTMLInputElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const open = useCallback(() => {
     setIsOpen(true);
