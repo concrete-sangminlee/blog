@@ -96,45 +96,49 @@ const fullTitle = title === SITE.title ? title : `${title} | ${SITE.title}`;
 ))}
 
 {/* JSON-LD structured data. Escape "<" so a title/description that happens
-    to contain "</script>" or "<script>" can't break out of the script tag. */}
-<script type="application/ld+json" set:html={JSON.stringify(
-  ogType === "article"
-    ? {
-        "@context": "https://schema.org",
-        "@type": "BlogPosting",
-        headline: title,
-        description,
-        author: {
-          "@type": "Person",
-          name: SITE.author,
-        },
-        publisher: {
-          "@type": "Person",
-          name: SITE.author,
-        },
-        ...(publishedTime && { datePublished: publishedTime.toISOString() }),
-        ...(modifiedTime && { dateModified: modifiedTime.toISOString() }),
-        image: socialImageURL.toString(),
-        mainEntityOfPage: {
-          "@type": "WebPage",
-          "@id": canonicalURL.toString(),
-        },
-        ...(tags && tags.length > 0 && { keywords: tags.join(", ") }),
-        inLanguage: SITE.lang,
-      }
-    : {
-        "@context": "https://schema.org",
-        "@type": "WebSite",
-        name: SITE.title,
-        description: SITE.description,
-        url: new URL(SITE.base + "/", Astro.site).toString(),
-        inLanguage: SITE.lang,
-        author: {
-          "@type": "Person",
-          name: SITE.author,
-        },
-      }
-).replace(/</g, "\\u003c")} />
+    to contain "</script>" or "<script>" can't break out of the script tag.
+    Skipped on noIndex pages so a 404 can't register itself as schema.org
+    content in crawlers that read structured data even when robots says no. */}
+{!noIndex && (
+  <script type="application/ld+json" set:html={JSON.stringify(
+    ogType === "article"
+      ? {
+          "@context": "https://schema.org",
+          "@type": "BlogPosting",
+          headline: title,
+          description,
+          author: {
+            "@type": "Person",
+            name: SITE.author,
+          },
+          publisher: {
+            "@type": "Person",
+            name: SITE.author,
+          },
+          ...(publishedTime && { datePublished: publishedTime.toISOString() }),
+          ...(modifiedTime && { dateModified: modifiedTime.toISOString() }),
+          image: socialImageURL.toString(),
+          mainEntityOfPage: {
+            "@type": "WebPage",
+            "@id": canonicalURL.toString(),
+          },
+          ...(tags && tags.length > 0 && { keywords: tags.join(", ") }),
+          inLanguage: SITE.lang,
+        }
+      : {
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: SITE.title,
+          description: SITE.description,
+          url: new URL(SITE.base + "/", Astro.site).toString(),
+          inLanguage: SITE.lang,
+          author: {
+            "@type": "Person",
+            name: SITE.author,
+          },
+        }
+  ).replace(/</g, "\\u003c")} />
+)}
 
 <!-- Twitter — card type is Twitter-specific; everything else falls back
      to og:title / og:description / og:image automatically. -->
