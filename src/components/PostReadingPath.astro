@@ -27,9 +27,13 @@ const neighbors = primaryPath
 
     <div class="post-path-links">
       {paths.map((path) => (
-        <a href={href(`/start-here/${path.id}/`)} class="post-path-chip">
-          <span>{path.title}</span>
-          <span class="post-path-chip-count">{path.posts.length}</span>
+        <a
+          href={href(`/start-here/${path.id}/`)}
+          class="post-path-chip"
+          aria-label={`${path.title} 읽기 경로 (글 ${path.posts.length}편)`}
+        >
+          <span aria-hidden="true">{path.title}</span>
+          <span class="post-path-chip-count" aria-hidden="true">{path.posts.length}</span>
         </a>
       ))}
     </div>
