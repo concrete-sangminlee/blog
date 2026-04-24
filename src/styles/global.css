@@ -185,6 +185,7 @@ a:hover {
   letter-spacing: -0.02em;
   color: var(--text-primary);
   text-wrap: balance;
+  word-break: keep-all;
 }
 
 .heading-section {
@@ -194,6 +195,7 @@ a:hover {
   letter-spacing: -0.015em;
   color: var(--text-primary);
   text-wrap: balance;
+  word-break: keep-all;
 }
 
 .text-muted-sm {
