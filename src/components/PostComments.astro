@@ -20,9 +20,10 @@ const { identifier, url, title } = Astro.props;
 
 <style>
   /* Match the scroll-margin-top on post headings so /#comments from
-     an external link lands below the fixed header, not under it. */
+     an external link lands below the fixed header, not under it.
+     Also covers the iPhone safe-area-inset-top the header consumes. */
   #comments {
-    scroll-margin-top: 5rem;
+    scroll-margin-top: calc(5rem + env(safe-area-inset-top));
   }
 </style>
 

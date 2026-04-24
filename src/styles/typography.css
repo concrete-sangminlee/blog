@@ -16,7 +16,7 @@
   letter-spacing: -0.02em;
   margin-top: 2.5rem;
   margin-bottom: 1rem;
-  scroll-margin-top: 5rem;
+  scroll-margin-top: calc(5rem + env(safe-area-inset-top));
   /* Distribute words across lines so multi-line headings don't end
      with a lonely short last line. Ignored on older browsers. */
   text-wrap: balance;
