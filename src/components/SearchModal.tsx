@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { navigate } from "astro:transitions/client";
 
 interface SearchResult {
   id: string;
@@ -234,7 +235,11 @@ export default function SearchModal({ basePath = "/blog" }: { basePath?: string 
 
     if (e.key === "Enter" && selectedIndex >= 0 && results[selectedIndex]) {
       e.preventDefault();
-      window.location.href = results[selectedIndex].url;
+      const url = results[selectedIndex].url;
+      close();
+      // Go through the ClientRouter so Enter triggers the same view
+      // transition as clicking the anchor result.
+      navigate(url);
     }
   }
 
