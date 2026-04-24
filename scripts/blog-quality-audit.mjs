@@ -10,11 +10,12 @@ const args = new Map(
   }),
 );
 
+// Only flag phrases that assert a universal claim. "보통"/"대부분" are soft
+// hedges in Korean that already signal personal observation, so including
+// them here produced noise that didn't actually point to over-generalization.
 const broadPhrases = [
   "반드시",
   "항상",
-  "대부분",
-  "보통",
   "일반적으로",
   "일반적인 원칙",
   "일반적인 것",
