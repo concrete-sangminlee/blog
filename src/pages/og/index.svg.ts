@@ -10,7 +10,7 @@ export const GET: APIRoute = () => {
     description: SITE.description,
     eyebrow: "PERSONAL BLOG",
     footer: "concrete-sangminlee.github.io/blog/",
-    tags: ["AI", "Research", "Graduate School"],
+    tags: ["AI", "연구", "대학원"],
   });
 
   return new Response(svg, {
