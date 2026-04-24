@@ -3,6 +3,12 @@
   "type": "module",
   "version": "1.0.0",
   "private": true,
+  "description": "구조공학과 인공지능의 교차점에서, 연구와 대학원 생활을 기록하는 블로그.",
+  "homepage": "https://concrete-sangminlee.github.io/blog/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/concrete-sangminlee/blog.git"
+  },
   "scripts": {
     "dev": "astro dev",
     "build": "astro build && pagefind --site dist",
