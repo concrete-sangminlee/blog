@@ -6,12 +6,12 @@
 
 ## Features
 
-- **Curated reading paths** (`/start-here/`) — 48개 포스트를 주제별 흐름으로 묶은 진입점
+- **Curated reading paths** (`/start-here/`) — 포스트를 주제별 흐름으로 묶은 진입점
 - **Tag index** (`/tags/`) — 카테고리별 탐색
 - **Client-side search** — `⌘K` / `Ctrl+K`로 제목·내용 검색 (Pagefind)
 - **RSS feed** (`/rss.xml`) — 피드 리더 구독
 - **OG social cards** — 포스트마다 자동 생성되는 SVG 카드
-- **Dark/Light theme** — 시스템 설정과 연동, 수동 전환 가능
+- **Dark/Light theme** — 헤더의 수동 전환 버튼, 선택은 localStorage에 저장
 
 ## Tech Stack
 
@@ -29,10 +29,13 @@
 # Development
 npm run dev
 
-# New post
+# New post (creates a draft under src/content/blog/)
 npm run new-post "Post Title"
 
-# Build
+# Frontmatter + prose sanity check
+npm run audit:blog -- --show-warnings=true
+
+# Build (includes Pagefind indexing)
 npm run build
 
 # Preview production build
