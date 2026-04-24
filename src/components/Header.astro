@@ -244,6 +244,8 @@ const currentPath = Astro.url.pathname;
 </style>
 
 <script>
+  let headerController: AbortController | null = null;
+
   function initHeader() {
     const header = document.getElementById("site-header");
     const mobileMenuBtn = document.getElementById("mobile-menu-btn");
@@ -251,7 +253,12 @@ const currentPath = Astro.url.pathname;
     const iconOpen = document.getElementById("menu-icon-open");
     const iconClose = document.getElementById("menu-icon-close");
 
+    // Tear down listeners from the previous page before rebinding, or
+    // we stack a new window scroll handler on every view transition.
+    headerController?.abort();
     if (!header || !mobileMenuBtn || !mobileNav || !iconOpen || !iconClose) return;
+    headerController = new AbortController();
+    const { signal } = headerController;
 
     let isOpen = false;
 
@@ -263,7 +270,7 @@ const currentPath = Astro.url.pathname;
       }
     }
 
-    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true, signal });
     onScroll();
 
     mobileMenuBtn.addEventListener("click", () => {

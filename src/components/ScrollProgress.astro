@@ -9,9 +9,16 @@
 ></div>
 
 <script>
+  let controller: AbortController | null = null;
+
   function initScrollProgress() {
     const bar = document.getElementById("scroll-progress");
     if (!bar) return;
+
+    // Detach any listener left over from a previous page so we don't pile up
+    // one per view-transition navigation.
+    controller?.abort();
+    controller = new AbortController();
 
     function updateProgress() {
       const scrollTop = window.scrollY;
@@ -24,11 +31,13 @@
       bar!.style.width = `${progress}%`;
     }
 
-    window.addEventListener("scroll", updateProgress, { passive: true });
+    window.addEventListener("scroll", updateProgress, {
+      passive: true,
+      signal: controller.signal,
+    });
     updateProgress();
   }
 
-  // Run on initial load and after view transitions
   initScrollProgress();
   document.addEventListener("astro:after-swap", initScrollProgress);
 </script>

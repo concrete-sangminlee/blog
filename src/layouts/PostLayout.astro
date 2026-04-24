@@ -147,9 +147,16 @@ function formatDate(date: Date): string {
 </style>
 
 <script>
+  let controller: AbortController | null = null;
+
   function initTOC() {
     const tocLinks = document.querySelectorAll<HTMLAnchorElement>(".toc-link");
+
+    // Abort the previous page's listener even when this page has no TOC,
+    // otherwise the stale handler keeps firing on every scroll.
+    controller?.abort();
     if (tocLinks.length === 0) return;
+    controller = new AbortController();
 
     const headingEls = Array.from(tocLinks)
       .map((link) => link.dataset.slug ? document.getElementById(link.dataset.slug) : null)
@@ -165,7 +172,10 @@ function formatDate(date: Date): string {
       });
     }
 
-    window.addEventListener("scroll", updateActive, { passive: true });
+    window.addEventListener("scroll", updateActive, {
+      passive: true,
+      signal: controller.signal,
+    });
     updateActive();
   }
 
