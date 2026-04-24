@@ -8,9 +8,9 @@ const posts = await getAllPosts();
 ---
 
 <ListLayout title="All Posts" description="이 블로그의 모든 글을 최신순으로 정리한 목록.">
-  <aside class="posts-callout" aria-label="Start Here 안내">
+  <aside class="posts-callout" aria-labelledby="posts-callout-label">
     <div>
-      <p class="posts-callout-label">Start Here</p>
+      <p id="posts-callout-label" class="posts-callout-label">Start Here</p>
       <p class="posts-callout-copy">
         처음 오는 독자라면 시간순 목록보다 읽기 경로부터 보는 편이 맥락을 잡기 쉽습니다.
       </p>
