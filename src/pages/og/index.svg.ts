@@ -9,7 +9,7 @@ export const GET: APIRoute = () => {
     title: SITE.title,
     description: SITE.description,
     eyebrow: "PERSONAL BLOG",
-    footer: "concrete-sangminlee.github.io/blog",
+    footer: "concrete-sangminlee.github.io/blog/",
     tags: ["AI", "Research", "Graduate School"],
   });
 
