@@ -69,8 +69,38 @@ const { identifier, url, title } = Astro.props;
     (document.head || document.body).appendChild(s);
   }
 
-  loadDisqusScript();
-  document.addEventListener("astro:after-swap", loadDisqusScript);
+  function initLazyDisqus() {
+    const container = document.getElementById("disqus_thread");
+    if (!container) return;
+
+    // If DISQUS is already loaded (from a previous page), reset immediately on
+    // this new post — users who navigated here via the client router expect
+    // the comments to reflect the current post without needing to scroll.
+    if ((window as any).DISQUS) {
+      loadDisqusScript();
+      return;
+    }
+
+    // First-time load: wait until the comments section is close to the
+    // viewport so the embed.js fetch and thread render happen only for
+    // readers who actually reach the end of the post.
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            io.disconnect();
+            loadDisqusScript();
+            break;
+          }
+        }
+      },
+      { rootMargin: "400px 0px" },
+    );
+    io.observe(container);
+  }
+
+  initLazyDisqus();
+  document.addEventListener("astro:after-swap", initLazyDisqus);
 </script>
 
 <noscript>댓글을 보려면 JavaScript를 활성화해주세요.</noscript>
