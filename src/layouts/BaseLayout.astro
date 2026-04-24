@@ -34,16 +34,20 @@ const {
 
 <html lang={SITE.lang}>
   <head>
+    <!-- Set the theme before first paint so dark-mode visitors never see a
+         light-theme flash while the rest of <head> is parsing. -->
+    <script is:inline>
+      (function () {
+        try {
+          var stored = localStorage.getItem("theme");
+          if (stored) document.documentElement.setAttribute("data-theme", stored);
+        } catch (_) {}
+      })();
+    </script>
     <BaseHead title={title} description={description} image={image} imageAlt={imageAlt} math={math} ogType={ogType} publishedTime={publishedTime} modifiedTime={modifiedTime} tags={tags} />
     <ClientRouter />
   </head>
   <body>
-    <script is:inline>
-      (function () {
-        const stored = localStorage.getItem("theme");
-        if (stored) document.documentElement.setAttribute("data-theme", stored);
-      })();
-    </script>
     <ScrollProgress />
     <Header />
     <SearchModal client:only="react" basePath={SITE.base} />
