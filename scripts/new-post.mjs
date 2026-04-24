@@ -53,7 +53,7 @@ featured: false
 math: false
 ---
 
-Write your post here.
+여기에 글을 작성하세요.
 `;
 
 fs.writeFileSync(filepath, content, "utf-8");
