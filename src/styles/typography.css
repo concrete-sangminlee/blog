@@ -17,7 +17,11 @@
   margin-top: 2.5rem;
   margin-bottom: 1rem;
   scroll-margin-top: 5rem;
+  /* Distribute words across lines so multi-line headings don't end
+     with a lonely short last line. Ignored on older browsers. */
+  text-wrap: balance;
 }
+
 
 .prose h1 { font-size: 2.25rem; font-weight: 700; }
 
@@ -30,7 +34,11 @@
 
 .prose h3 { font-size: 1.3rem; font-weight: 600; }
 .prose h4 { font-size: 1.1rem; font-weight: 600; }
-.prose p { margin-bottom: 1.5rem; }
+.prose p {
+  margin-bottom: 1.5rem;
+  /* Avoid single-word orphans on the last line of a paragraph. */
+  text-wrap: pretty;
+}
 
 .prose strong {
   font-weight: 700;
