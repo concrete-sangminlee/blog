@@ -290,18 +290,19 @@ async function showList() {
     `;
     }).join("");
 
-    // Delegated click handler keyed on data-action. Stops on the buttons
-    // so the row-level editPost doesn't double-fire.
+    // Delegated click handler keyed on data-action. Clicks inside
+    // .post-actions (including gaps between buttons) shouldn't bubble up
+    // to trigger the row-level editPost.
     container.onclick = (e) => {
       const btn = e.target.closest("[data-action]");
       if (btn) {
-        e.stopPropagation();
         if (btn.dataset.action === "edit") editPost(btn.dataset.path);
         else if (btn.dataset.action === "delete") {
           deletePost(btn.dataset.path, btn.dataset.sha, btn.dataset.title);
         }
         return;
       }
+      if (e.target.closest(".post-actions")) return;
       const row = e.target.closest(".post-item");
       if (row) editPost(row.dataset.path);
     };
