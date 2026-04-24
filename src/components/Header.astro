@@ -74,12 +74,15 @@ const currentPath = Astro.url.pathname;
         </svg>
       </button>
 
-      <!-- Write Button -->
+      <!-- Write Button (hidden by default; script below reveals it only
+           for authors who have a saved admin token in localStorage). -->
       <a
+        id="admin-link"
         href={resolveHref("/admin/")}
         class="search-btn ml-1"
         aria-label="새 글 작성"
         title="새 글 작성"
+        hidden
       >
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M12 20h9" />
@@ -388,12 +391,25 @@ const currentPath = Astro.url.pathname;
     });
   }
 
+  function initAdminLink() {
+    // The admin page needs a GitHub token to do anything, so there's no
+    // reason to expose the nav button to visitors who don't have one.
+    // Show it only once the author has saved a token from /admin itself.
+    const link = document.getElementById("admin-link");
+    if (!link) return;
+    try {
+      if (localStorage.getItem("blog_token")) link.removeAttribute("hidden");
+    } catch (_) {}
+  }
+
   initHeader();
   initSearch();
   initThemeToggle();
+  initAdminLink();
   document.addEventListener("astro:after-swap", () => {
     initHeader();
     initSearch();
     initThemeToggle();
+    initAdminLink();
   });
 </script>
