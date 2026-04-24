@@ -16,10 +16,10 @@ const recentPosts = allPosts.filter((post) => !featuredSlugs.has(post.slug)).sli
 
 <BaseLayout title={SITE.title} description={SITE.description}>
   <!-- Hero -->
-  <section class="hero">
+  <section class="hero" aria-labelledby="home-hero-title">
     <div class="max-w-2xl">
       <p class="hero-label">Where Structure Meets AI</p>
-      <h1 class="hero-title">
+      <h1 id="home-hero-title" class="hero-title">
         구조에<br />
         <span class="hero-accent">지능</span>을 쌓다
       </h1>

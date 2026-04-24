@@ -24,9 +24,9 @@ function formatDate(date: Date): string {
 ---
 
 <BaseLayout title={`${path.title} | Start Here`} description={path.description}>
-  <section class="mb-12 max-w-3xl">
+  <section class="mb-12 max-w-3xl" aria-labelledby="path-heading">
     <p class="path-kicker">Reading Path</p>
-    <h1 class="heading-page text-3xl tracking-tight sm:text-4xl lg:text-5xl">{path.title}</h1>
+    <h1 id="path-heading" class="heading-page text-3xl tracking-tight sm:text-4xl lg:text-5xl">{path.title}</h1>
     <p class="path-lead">{path.description}</p>
     <div class="path-meta">
       <span>{path.posts.length} posts</span>
