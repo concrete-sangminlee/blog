@@ -179,10 +179,28 @@ const API = "https://api.github.com";
 let token = localStorage.getItem("blog_token");
 let posts = [];
 let editingFile = null; // { path, sha } when editing existing
+let dirty = false; // set when the editor has unsaved changes
 
 function getHeaders() {
   return { Authorization: `Bearer ${token}`, Accept: "application/vnd.github.v3+json" };
 }
+
+// Warn before the tab closes if there's unsaved work in the editor.
+window.addEventListener("beforeunload", (e) => {
+  if (dirty) {
+    e.preventDefault();
+    e.returnValue = "";
+  }
+});
+
+// Every editor input marks the draft dirty; save and list navigation clear
+// it. The listener is scoped to the editor region to keep unrelated UI
+// interactions (checkbox toggles on list pages, etc.) out of it.
+document.addEventListener("input", (e) => {
+  if (e.target && document.getElementById("editor")?.contains(e.target)) {
+    dirty = true;
+  }
+});
 
 // Init
 if (token) { showList(); } else { document.getElementById("setup").style.display = "block"; }
@@ -201,6 +219,7 @@ async function showList() {
   document.getElementById("editor").classList.remove("active");
   document.getElementById("setup").style.display = "none";
   editingFile = null;
+  dirty = false;
 
   const container = document.getElementById("post-list");
   container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
@@ -282,6 +301,7 @@ function newPost() {
   document.getElementById("ed-status").textContent = "";
   document.getElementById("list").style.display = "none";
   document.getElementById("editor").classList.add("active");
+  dirty = false;
 }
 
 async function editPost(path) {
@@ -313,6 +333,9 @@ async function editPost(path) {
   document.getElementById("ed-math").checked = fm.math === true;
   document.getElementById("ed-body").value = body;
   status.textContent = "";
+  // Populating fields programmatically would trigger the input listener
+  // on some browsers; reset after the pre-fill settles.
+  setTimeout(() => { dirty = false; }, 0);
 }
 
 async function savePost() {
@@ -376,6 +399,7 @@ ${body}
       body: JSON.stringify(payload),
     });
     if (!res.ok) { const e = await res.json(); throw new Error(e.message); }
+    dirty = false;
     status.textContent = "저장 완료! 자동 배포 중...";
     status.className = "status success";
     setTimeout(() => showList(), 1500);
