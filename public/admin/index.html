@@ -447,10 +447,14 @@ ${body}
 async function deletePost(path, sha, title) {
   if (!confirm(`"${title}" 글을 삭제하시겠습니까?`)) return;
   try {
-    await fetch(`${API}/repos/${REPO}/contents/${path}`, {
+    const res = await fetch(`${API}/repos/${REPO}/contents/${path}`, {
       method: "DELETE", headers: { ...getHeaders(), "Content-Type": "application/json" },
       body: JSON.stringify({ message: `Delete: ${title}`, sha, branch: BRANCH }),
     });
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({ message: `HTTP ${res.status}` }));
+      throw new Error(e.message);
+    }
     showList();
   } catch (e) {
     alert("삭제 실패: " + e.message);
