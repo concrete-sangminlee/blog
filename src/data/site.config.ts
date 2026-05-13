@@ -11,7 +11,6 @@ export const SITE = {
 
 export const NAV_ITEMS = [
   { label: "홈", href: "/" },
-  { label: "읽기 경로", href: "/start-here/" },
   { label: "전체 글", href: "/posts/" },
   { label: "태그", href: "/tags/" },
   { label: "소개", href: "/about/" },

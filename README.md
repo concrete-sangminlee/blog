@@ -6,12 +6,13 @@
 
 ## Features
 
-- **Curated reading paths** (`/start-here/`) — 포스트를 주제별 흐름으로 묶은 진입점
+- **Curated reading paths** (`/start-here/`) — 검증된 포스트가 쌓이면 주제별 흐름으로 묶는 진입점
 - **Tag index** (`/tags/`) — 카테고리별 탐색
 - **Client-side search** — `⌘K` / `Ctrl+K`로 제목·내용 검색 (Pagefind)
 - **RSS feed** (`/rss.xml`) — 피드 리더 구독
 - **OG social cards** — 포스트마다 자동 생성되는 SVG 카드
 - **Dark/Light theme** — 헤더의 수동 전환 버튼, 선택은 localStorage에 저장
+- **Publish gate** — `draft: false` 글은 `verified: true`가 있어야 감사와 타입체크를 통과
 
 ## Tech Stack
 
@@ -31,6 +32,11 @@ npm run dev
 
 # New post (creates a draft under src/content/blog/)
 npm run new-post "글 제목"
+
+# Publish checklist
+# 1. 사실·인용·개인 경험의 범위를 확인
+# 2. frontmatter에 verified: true 설정
+# 3. draft: false 설정
 
 # TypeScript typecheck (runs against astro/tsconfigs/strictest)
 npm run typecheck

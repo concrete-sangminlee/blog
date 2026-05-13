@@ -6,7 +6,7 @@ import { href } from "@/utils/paths";
 const tags = await getAllTags();
 ---
 
-<ListLayout title="태그" description="구조공학·AI·대학원 생활 등 주제별로 글을 찾아볼 수 있는 태그 모음.">
+<ListLayout title="태그" description="검증된 글을 주제별로 찾아볼 수 있는 태그 모음.">
   {tags.size > 0 ? (
     <div class="flex flex-wrap gap-3">
       {[...tags.entries()].map(([tag, count]) => (
@@ -17,7 +17,7 @@ const tags = await getAllTags();
       ))}
     </div>
   ) : (
-    <p class="empty-state">아직 태그가 없습니다.</p>
+    <p class="empty-state">검증을 마친 글이 발행되면 태그가 생깁니다.</p>
   )}
 </ListLayout>
 

@@ -24,16 +24,16 @@ const recentPosts = allPosts.filter((post) => !featuredSlugs.has(post.slug)).sli
         <span class="hero-accent">지능</span>을 쌓다
       </h1>
       <p class="hero-desc">
-        구조공학과 인공지능의 교차점에서 연구하며, 대학원 생활과 배움의 순간을 기록합니다.
+        구조공학과 인공지능의 교차점에서, 검증한 사실과 직접 확인한 경험만 천천히 쌓습니다.
       </p>
       <div class="mt-8 flex gap-3">
         <a href={href("/posts/")} class="btn-primary">
-          전체 글
+          새 글 보기
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M5 12h14M12 5l7 7-7 7"/>
           </svg>
         </a>
-        <a href={href("/start-here/")} class="btn-ghost">읽기 경로</a>
+        {featuredPaths.length > 0 && <a href={href("/start-here/")} class="btn-ghost">읽기 경로</a>}
       </div>
     </div>
   </section>
@@ -89,7 +89,7 @@ const recentPosts = allPosts.filter((post) => !featuredSlugs.has(post.slug)).sli
         ))}
       </div>
     ) : (
-      <p class="empty-state">아직 올라온 글이 없습니다.</p>
+      <p class="empty-state">검증을 마친 새 글을 준비 중입니다.</p>
     )}
 
     {allPosts.length > 8 && (

@@ -2,20 +2,20 @@ import { getCollection, type CollectionEntry } from "astro:content";
 
 export type BlogPost = CollectionEntry<"blog">;
 
+const postModules = import.meta.glob("../content/blog/*.mdx");
+
 // Filter predicate for getCollection: drops drafts in production,
 // keeps them in dev so drafts are visible during local iteration.
 const isPublished = ({ data }: BlogPost): boolean =>
   import.meta.env.PROD ? !data.draft : true;
 
-const FEATURED_POST_ORDER = [
-  "paper-writing-tips",
-  "thinking-about-quitting",
-  "pre-phd-me-wouldnt-believe",
-  "dataset-error-discovery",
-  "beating-baseline",
-] as const;
+const FEATURED_POST_ORDER = [] as const;
 
 export async function getAllPosts(): Promise<readonly BlogPost[]> {
+  if (Object.keys(postModules).length === 0) {
+    return [];
+  }
+
   try {
     const posts = await getCollection("blog", isPublished);
     return posts.sort(

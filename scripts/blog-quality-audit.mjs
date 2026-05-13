@@ -56,15 +56,27 @@ function auditPost(file, source) {
   const { data, body } = parseFrontmatter(source, file);
   const headings = [...body.matchAll(/^## /gm)].length;
 
-  for (const key of ["title", "description", "pubDate", "tags", "draft", "featured"]) {
+  for (const key of ["title", "description", "pubDate", "tags", "draft", "verified", "featured"]) {
     if (!data[key]) issues.push(`${file}: missing ${key} in frontmatter`);
+  }
+
+  const isDraft = data.draft === "true";
+  const isPublished = data.draft === "false";
+  if (isPublished && data.verified !== "true") {
+    issues.push(`${file}: published posts must set verified: true`);
   }
 
   if ((data.title ?? "").length < 6) issues.push(`${file}: title is too short`);
   if ((data.description ?? "").length < 16) issues.push(`${file}: description is too short`);
-  if (body.trim().length < 900) issues.push(`${file}: body is too short for a publishable essay`);
-  if (headings < 3) issues.push(`${file}: expected at least three section headings`);
-  if (/^## 결론$/m.test(body)) issues.push(`${file}: generic final heading "결론" remains`);
+  if (!isDraft && body.trim().length < 900) {
+    issues.push(`${file}: body is too short for a publishable essay`);
+  }
+  if (!isDraft && headings < 3) {
+    issues.push(`${file}: expected at least three section headings`);
+  }
+  if (!isDraft && /^## 결론$/m.test(body)) {
+    issues.push(`${file}: generic final heading "결론" remains`);
+  }
 
   // Catch accidentally future-dated posts. They would still build, but the
   // blog listing would show a date that hasn't happened yet — usually a

@@ -68,6 +68,7 @@ description: "여기에 한 줄 설명을 적어주세요."
 pubDate: ${getNowIso()}
 tags: []
 draft: true
+verified: false
 featured: false
 math: false
 ---
@@ -77,4 +78,4 @@ math: false
 
 fs.writeFileSync(filepath, content, "utf-8");
 console.log(`생성됨: src/content/blog/${filename}`);
-console.log(`글을 작성한 뒤 frontmatter의 draft: false 로 바꿔 발행하세요.`);
+console.log(`글을 작성한 뒤 verified: true 와 draft: false 를 함께 설정해야 발행됩니다.`);

@@ -1,8 +1,7 @@
 import { defineCollection, z } from "astro:content";
 
-const blog = defineCollection({
-  type: "content",
-  schema: z.object({
+const blogSchema = z
+  .object({
     // Minimums mirror scripts/blog-quality-audit.mjs so Astro's content
     // sync already rejects too-short title/description before the audit
     // script runs in CI.
@@ -16,6 +15,9 @@ const blog = defineCollection({
     // buffer while preventing accidental 10+ tag posts.
     tags: z.array(z.string().min(1)).max(5).default([]),
     draft: z.boolean().default(false),
+    // A post may be drafted freely, but publishing requires the author to
+    // explicitly mark the facts and personal claims as verified.
+    verified: z.boolean().default(false),
     featured: z.boolean().default(false),
     image: z
       .object({
@@ -27,7 +29,20 @@ const blog = defineCollection({
       })
       .optional(),
     math: z.boolean().default(false),
-  }),
+  })
+  .superRefine((data, ctx) => {
+    if (!data.draft && !data.verified) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["verified"],
+        message: "Published posts must set verified: true.",
+      });
+    }
+  });
+
+const blog = defineCollection({
+  type: "content",
+  schema: blogSchema,
 });
 
 export const collections = { blog };
