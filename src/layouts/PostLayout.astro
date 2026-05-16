@@ -6,7 +6,6 @@ import PostReadingPath from "@/components/PostReadingPath.astro";
 import ReadingTime from "@/components/ReadingTime.astro";
 import { getAllPosts, type BlogPost } from "@/utils/posts";
 import { getReadingPathsForPost } from "@/utils/reading-paths";
-import { href } from "@/utils/paths";
 import { getPostSocialImage, getPostSocialImageAlt } from "@/utils/social-image";
 
 interface Props {
@@ -40,9 +39,9 @@ function formatDate(date: Date): string {
       {tags.length > 0 && (
         <div class="mb-4 flex flex-wrap gap-2">
           {tags.map((tag) => (
-            <a href={href(`/tags/${tag.toLowerCase()}/`)} class="tag-link">
+            <span class="tag-chip">
               {tag}
-            </a>
+            </span>
           ))}
         </div>
       )}
@@ -114,7 +113,7 @@ function formatDate(date: Date): string {
 </BaseLayout>
 
 <style>
-  .tag-link {
+  .tag-chip {
     display: inline-block;
     border-radius: 9999px;
     padding: 0.25rem 0.75rem;
@@ -124,12 +123,6 @@ function formatDate(date: Date): string {
     letter-spacing: 0.05em;
     color: var(--accent);
     background: var(--accent-subtle);
-    transition: all 0.2s ease;
-    text-decoration: none;
-  }
-
-  .tag-link:hover {
-    background: var(--accent-glow);
   }
 
   .toc-sticky {

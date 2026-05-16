@@ -41,31 +41,3 @@ export async function getFeaturedPosts(): Promise<readonly BlogPost[]> {
       return b.data.pubDate.valueOf() - a.data.pubDate.valueOf();
     });
 }
-
-export async function getPostsByTag(tag: string): Promise<readonly BlogPost[]> {
-  const posts = await getAllPosts();
-  return posts.filter((post) =>
-    post.data.tags.map((t) => t.toLowerCase()).includes(tag.toLowerCase()),
-  );
-}
-
-export async function getAllTags(): Promise<Map<string, number>> {
-  const posts = await getAllPosts();
-  // Group case-insensitively, but remember the first-seen casing so "AI"
-  // keeps its original display shape across tag index, tag detail pages,
-  // and post cards.
-  const byKey = new Map<string, { display: string; count: number }>();
-  for (const post of posts) {
-    for (const tag of post.data.tags) {
-      const key = tag.toLowerCase();
-      const existing = byKey.get(key);
-      if (existing) {
-        existing.count += 1;
-      } else {
-        byKey.set(key, { display: tag, count: 1 });
-      }
-    }
-  }
-  const sorted = [...byKey.values()].sort((a, b) => b.count - a.count);
-  return new Map(sorted.map((v) => [v.display, v.count]));
-}

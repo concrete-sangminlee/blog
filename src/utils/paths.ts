@@ -6,7 +6,6 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
  *
  *   href("/")          -> "/blog/"
  *   href("/posts/")    -> "/blog/posts/"
- *   href("tags/ai/")   -> "/blog/tags/ai/"
  */
 export function href(path: string): string {
   if (path === "/") return `${base}/`;
