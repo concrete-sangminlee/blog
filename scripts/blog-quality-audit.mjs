@@ -108,9 +108,15 @@ function auditPost(file, source) {
 }
 
 async function main() {
-  const files = (await readdir(BLOG_DIR))
-    .filter((file) => file.endsWith(".mdx"))
-    .sort();
+  let files;
+  try {
+    files = (await readdir(BLOG_DIR))
+      .filter((file) => file.endsWith(".mdx"))
+      .sort();
+  } catch (error) {
+    if (error?.code !== "ENOENT") throw error;
+    files = [];
+  }
 
   const allIssues = [];
   const allWarnings = [];
