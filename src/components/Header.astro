@@ -242,9 +242,8 @@ const currentPath = Astro.url.pathname;
     background: var(--bg-surface);
   }
 
-  /* Admin button hides unless the inline theme-init script in BaseLayout
-     has flagged <html> with a saved admin token. Keeps visitors from
-     seeing dead chrome that only makes sense to the author. */
+  /* Admin button hides unless the inline init script in BaseLayout has
+     flagged <html> with a saved admin token. */
   #admin-link {
     display: none;
   }
