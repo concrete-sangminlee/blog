@@ -6,7 +6,7 @@ import { getAllPosts } from "@/utils/posts";
 const posts = await getAllPosts();
 ---
 
-<ListLayout title="전체 글" description="검증을 마친 글만 최신순으로 정리한 목록.">
+<ListLayout title="전체 글" description="최신순으로 정렬한 모든 글 목록">
   {posts.length > 0 ? (
     <div class="space-y-1">
       {posts.map((post, i) => (
@@ -14,6 +14,6 @@ const posts = await getAllPosts();
       ))}
     </div>
   ) : (
-    <p class="empty-state">새 글을 준비중입니다.</p>
+    <p class="empty-state">새 글을 준비중입니다</p>
   )}
 </ListLayout>
