@@ -55,19 +55,6 @@ const fullTitle = title === SITE.title ? title : `${title} | ${SITE.title}`;
 <!-- Mobile URL-bar color for the dark-only theme. -->
 <meta id="theme-color-meta" name="theme-color" content="#08080a" />
 
-<!-- iOS home-screen icon label. The full site title truncates to
-     unhelpful characters at the home-screen width; use the short form
-     that matches the mobile header logo. -->
-<meta name="apple-mobile-web-app-title" content="SML Blog" />
-<meta name="application-name" content="SML Blog" />
-
-<!-- Favicon: SVG scales to any density; PNG is the fallback -->
-<link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
-<link rel="icon" type="image/png" sizes="16x16" href={`${import.meta.env.BASE_URL}favicon-16.png`} />
-<link rel="icon" type="image/png" sizes="32x32" href={`${import.meta.env.BASE_URL}favicon-32.png`} />
-<link rel="apple-touch-icon" sizes="180x180" href={`${import.meta.env.BASE_URL}apple-touch-icon.png`} />
-<link rel="manifest" href={`${import.meta.env.BASE_URL}site.webmanifest`} />
-
 <!-- Canonical URL (omitted on noIndex pages — 404 shouldn't self-canonicalise) -->
 {!noIndex && <link rel="canonical" href={canonicalURL} />}
 

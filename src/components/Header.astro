@@ -21,19 +21,12 @@ const currentPath = Astro.url.pathname;
   class="fixed top-0 left-0 right-0 z-[100] transition-all duration-300"
 >
   <div class="mx-auto flex max-w-[1200px] items-center justify-between px-6 py-4">
-    <!-- Logo -->
+    <!-- Home link -->
     <a
       href={homeHref}
       class="logo-link flex items-center gap-2 transition-colors duration-200"
       aria-label="홈"
     >
-      <img
-        src={`${import.meta.env.BASE_URL}favicon.svg`}
-        alt=""
-        width="28"
-        height="28"
-        class="logo-img"
-      />
       <span class="logo-text hidden sm:inline">Sang Min Lee’s Blog</span>
       <span class="logo-text sm:hidden">SML Blog</span>
     </a>
@@ -163,7 +156,7 @@ const currentPath = Astro.url.pathname;
     border-bottom: 1px solid var(--border);
   }
 
-  /* Logo */
+  /* Home link */
   .logo-link {
     color: var(--text-primary);
     text-decoration: none;
@@ -171,13 +164,6 @@ const currentPath = Astro.url.pathname;
 
   .logo-link:hover {
     color: var(--text-primary);
-  }
-
-  .logo-img {
-    width: 28px;
-    height: 28px;
-    border-radius: 0;
-    flex-shrink: 0;
   }
 
   .logo-text {
