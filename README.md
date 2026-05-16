@@ -1,13 +1,12 @@
 # Sang Min Lee’s Blog
 
-구조공학과 인공지능의 교차점에서, 연구와 대학원 생활을 기록하는 개인 블로그.
+구조공학과 인공지능의 교차점에서 기록을 남기는 개인 블로그.
 
 **https://concrete-sangminlee.github.io/blog/**
 
 ## Features
 
 - **Curated reading paths** (`/start-here/`) — 검증된 포스트가 쌓이면 주제별 흐름으로 묶는 진입점
-- **Client-side search** — `⌘K` / `Ctrl+K`로 제목·내용 검색 (Pagefind)
 - **OG social cards** — 포스트마다 자동 생성되는 SVG 카드
 - **Dark-only theme** — 모든 페이지를 다크 테마로 고정
 - **Publish gate** — `draft: false` 글은 `verified: true`가 있어야 감사와 타입체크를 통과
@@ -19,7 +18,6 @@
 - [MDX](https://mdxjs.com) — Content (Markdown + Components)
 - [KaTeX](https://katex.org) — LaTeX math rendering
 - [Expressive Code](https://expressive-code.com) — Syntax highlighting
-- [Pagefind](https://pagefind.app) — Static search
 - [Disqus](https://disqus.com) — Comments
 
 ## Usage
@@ -45,7 +43,7 @@ npm run audit:blog -- --show-warnings=true
 # Run all three above in sequence (typecheck → audit → build)
 npm run check
 
-# Build (includes Pagefind indexing)
+# Build
 npm run build
 
 # Preview production build

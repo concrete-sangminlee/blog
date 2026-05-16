@@ -216,6 +216,89 @@ a:hover {
   background: var(--accent);
 }
 
+.page-intro {
+  max-width: 46rem;
+  margin-bottom: 3rem;
+}
+
+.page-intro-centered {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+.page-eyebrow {
+  margin: 0 0 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.page-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0;
+  color: var(--text-primary);
+  text-wrap: balance;
+}
+
+.page-description {
+  max-width: 38rem;
+  margin: 1rem 0 0;
+  font-size: 1rem;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  text-wrap: pretty;
+}
+
+.page-intro-centered .page-description {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.page-intro-line {
+  margin-top: 1.25rem;
+}
+
+.page-intro-centered .page-intro-line {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.section-title {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.section-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.content-section {
+  margin-bottom: 4rem;
+}
+
 .btn-accent {
   display: inline-flex;
   align-items: center;
@@ -236,13 +319,36 @@ a:hover {
   transform: translateY(-1px);
 }
 
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.6rem 1.1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.btn-ghost:hover {
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
 .empty-state {
-  padding: 4rem 0;
-  text-align: center;
-  font-family: var(--font-heading);
-  font-style: italic;
-  font-size: 1rem;
+  padding: 2.25rem 0;
+  font-size: 0.95rem;
+  line-height: 1.8;
   color: var(--text-muted);
+}
+
+@media (min-width: 640px) {
+  .page-title {
+    font-size: 2.35rem;
+  }
 }
 
 /* ── KaTeX ── */

@@ -180,9 +180,5 @@ const fullTitle = title === SITE.title ? title : `${title} | ${SITE.title}`;
   />
 )}
 
-<!-- Prefetch Pagefind during idle time so the first ⌘K / search-button
-     open feels instant without blocking initial render. -->
-<link rel="prefetch" href={`${import.meta.env.BASE_URL}pagefind/pagefind.js`} as="script" />
-
 <!-- Sitemap -->
 <link rel="sitemap" href={`${import.meta.env.BASE_URL}sitemap-index.xml`} />

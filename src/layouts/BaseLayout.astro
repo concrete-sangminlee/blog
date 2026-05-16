@@ -3,7 +3,6 @@ import BaseHead from "@/components/BaseHead.astro";
 import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
 import ScrollProgress from "@/components/ScrollProgress.astro";
-import SearchModal from "@/components/SearchModal";
 import { ClientRouter } from "astro:transitions";
 import { SITE } from "@/data/site.config";
 
@@ -36,16 +35,10 @@ const {
 
 <html lang={SITE.lang} data-theme="dark">
   <head>
-    <!-- Keep the site dark-only before first paint and across view
-         transitions. Also reveal admin-only chrome when a saved token exists. -->
+    <!-- Keep the site dark-only before first paint and across view transitions. -->
     <script is:inline>
       (function () {
         document.documentElement.setAttribute("data-theme", "dark");
-        try {
-          if (localStorage.getItem("blog_token")) {
-            document.documentElement.classList.add("has-admin-token");
-          }
-        } catch (_) {}
       })();
     </script>
     <BaseHead title={title} description={description} image={image} imageAlt={imageAlt} math={math} ogType={ogType} publishedTime={publishedTime} modifiedTime={modifiedTime} tags={tags} noIndex={noIndex} />
@@ -55,7 +48,6 @@ const {
     <a href="#main-content" class="skip-link">본문으로 건너뛰기</a>
     <ScrollProgress />
     <Header />
-    <SearchModal client:only="react" basePath={SITE.base} transition:persist />
 
     <main id="main-content" class="mx-auto max-w-[1200px] px-6 py-8">
       <slot />

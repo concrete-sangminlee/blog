@@ -33,9 +33,9 @@ function formatDate(date: Date): string {
 ---
 
 <BaseLayout title={title} description={description} image={socialImage} imageAlt={socialImageAlt} math={math} ogType="article" publishedTime={pubDate} modifiedTime={updatedDate} tags={tags}>
-  <article class="post-layout" data-pagefind-body aria-labelledby="post-article-title">
+  <article class="post-layout" aria-labelledby="post-article-title">
     <header class="mb-12 max-w-[720px]">
-      <p class="sr-only" data-pagefind-meta="description">{description}</p>
+      <p class="sr-only">{description}</p>
       {tags.length > 0 && (
         <div class="mb-4 flex flex-wrap gap-2">
           {tags.map((tag) => (
@@ -50,8 +50,6 @@ function formatDate(date: Date): string {
         id="post-article-title"
         class="heading-page text-3xl leading-tight tracking-tight sm:text-4xl lg:text-5xl"
         transition:name={`post-title-${post.slug}`}
-        data-pagefind-meta="title"
-        data-pagefind-weight="10"
       >
         {title}
       </h1>

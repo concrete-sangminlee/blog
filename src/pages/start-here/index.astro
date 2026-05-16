@@ -1,5 +1,6 @@
 ---
 import ListLayout from "@/layouts/ListLayout.astro";
+import EmptyState from "@/components/EmptyState.astro";
 import ReadingPathCard from "@/components/ReadingPathCard.astro";
 import { getReadingPaths, getReadingPathStats } from "@/utils/reading-paths";
 
@@ -28,7 +29,7 @@ const stats = getReadingPathStats(paths);
       </section>
     </>
   ) : (
-    <p class="empty-state">검증된 글이 쌓이면 읽기 경로를 다시 엽니다.</p>
+    <EmptyState message="읽기 경로를 준비중입니다" />
   )}
 </ListLayout>
 

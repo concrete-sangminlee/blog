@@ -1,0 +1,9 @@
+---
+interface Props {
+  message?: string;
+}
+
+const { message = "새 글을 준비중입니다" } = Astro.props;
+---
+
+<p class="empty-state">{message}</p>

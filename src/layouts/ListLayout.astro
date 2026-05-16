@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "./BaseLayout.astro";
+import PageIntro from "@/components/PageIntro.astro";
 
 interface Props {
   title: string;
@@ -10,23 +11,7 @@ const { title, description } = Astro.props;
 ---
 
 <BaseLayout title={title} description={description}>
-  <div class="mb-12">
-    <h1 class="heading-page text-3xl tracking-tight sm:text-4xl lg:text-5xl">
-      {title}
-    </h1>
-    <p class="list-subtitle mt-3 text-lg">
-      {description}
-    </p>
-    <div class="accent-line mt-6" aria-hidden="true" />
-  </div>
+  <PageIntro title={title} description={description} />
 
   <slot />
 </BaseLayout>
-
-<style>
-  .list-subtitle {
-    max-width: 48rem;
-    color: var(--text-secondary);
-    text-wrap: pretty;
-  }
-</style>

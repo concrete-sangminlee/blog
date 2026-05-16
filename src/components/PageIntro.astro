@@ -1,0 +1,18 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+  eyebrow?: string;
+  headingId?: string;
+  centered?: boolean;
+}
+
+const { title, description, eyebrow, headingId, centered = false } = Astro.props;
+---
+
+<div class:list={["page-intro", { "page-intro-centered": centered }]}>
+  {eyebrow && <p class="page-eyebrow">{eyebrow}</p>}
+  <h1 id={headingId} class="page-title">{title}</h1>
+  {description && <p class="page-description">{description}</p>}
+  <div class="accent-line page-intro-line" aria-hidden="true"></div>
+</div>

@@ -1,7 +1,10 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import EmptyState from "@/components/EmptyState.astro";
+import PageIntro from "@/components/PageIntro.astro";
 import PostCard from "@/components/PostCard.astro";
 import ReadingPathCard from "@/components/ReadingPathCard.astro";
+import SectionHeader from "@/components/SectionHeader.astro";
 import { getAllPosts, getFeaturedPosts } from "@/utils/posts";
 import { getFeaturedReadingPaths } from "@/utils/reading-paths";
 import { SITE } from "@/data/site.config";
@@ -15,35 +18,27 @@ const recentPosts = allPosts.filter((post) => !featuredSlugs.has(post.slug)).sli
 ---
 
 <BaseLayout title={SITE.title} description={SITE.description}>
-  <!-- Hero -->
-  <section class="hero" aria-labelledby="home-hero-title">
-    <div class="max-w-2xl">
-      <p class="hero-label">Where Structure Meets AI</p>
-      <h1 id="home-hero-title" class="hero-title">
-        구조에<br />
-        <span class="hero-accent">지능</span>을 쌓다
-      </h1>
-      <p class="hero-desc">
-        구조공학과 인공지능의 교차점에서 기록을 남기기 위한 곳입니다.
-      </p>
-      <div class="mt-8 flex gap-3">
-        <a href={href("/posts/")} class="btn-primary">
-          새 글 보기
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M5 12h14M12 5l7 7-7 7"/>
-          </svg>
-        </a>
-        {featuredPaths.length > 0 && <a href={href("/start-here/")} class="btn-ghost">읽기 경로</a>}
-      </div>
+  <section class="home-intro" aria-labelledby="home-hero-title">
+    <PageIntro
+      headingId="home-hero-title"
+      eyebrow="Sang Min Lee's Blog"
+      title="구조공학과 인공지능의 기록"
+      description="구조공학과 인공지능의 교차점에서 기록을 남기기 위한 곳입니다."
+    />
+    <div class="home-actions">
+      <a href={href("/posts/")} class="btn-accent">
+        전체 글 보기
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </a>
+      {featuredPaths.length > 0 && <a href={href("/start-here/")} class="btn-ghost">읽기 경로</a>}
     </div>
   </section>
 
   {featuredPaths.length > 0 && (
-    <section class="mb-16" aria-labelledby="home-start-here">
-      <div class="section-header">
-        <h2 id="home-start-here" class="section-title">Start Here</h2>
-        <div class="section-line" aria-hidden="true"></div>
-      </div>
+    <section class="content-section" aria-labelledby="home-start-here">
+      <SectionHeader headingId="home-start-here" title="읽기 경로" />
       <div class="grid gap-4 md:grid-cols-3">
         {featuredPaths.slice(0, 3).map((path, i) => (
           <ReadingPathCard path={path} index={i} compact />
@@ -61,13 +56,9 @@ const recentPosts = allPosts.filter((post) => !featuredSlugs.has(post.slug)).sli
     </section>
   )}
 
-  <!-- Featured -->
   {featuredPosts.length > 0 && (
-    <section class="mb-16" aria-labelledby="home-featured">
-      <div class="section-header">
-        <h2 id="home-featured" class="section-title">Featured</h2>
-        <div class="section-line" aria-hidden="true"></div>
-      </div>
+    <section class="content-section" aria-labelledby="home-featured">
+      <SectionHeader headingId="home-featured" title="추천 글" />
       <div class="space-y-1">
         {featuredPosts.slice(0, 3).map((post, i) => (
           <PostCard post={post} index={i} />
@@ -76,12 +67,8 @@ const recentPosts = allPosts.filter((post) => !featuredSlugs.has(post.slug)).sli
     </section>
   )}
 
-  <!-- Recent -->
-  <section class="mb-16" aria-labelledby="home-recent">
-    <div class="section-header">
-      <h2 id="home-recent" class="section-title">Recent</h2>
-      <div class="section-line" aria-hidden="true"></div>
-    </div>
+  <section class="content-section" aria-labelledby="home-recent">
+    <SectionHeader headingId="home-recent" title="최근 글" />
     {recentPosts.length > 0 ? (
       <div class="space-y-1">
         {recentPosts.map((post, i) => (
@@ -89,7 +76,7 @@ const recentPosts = allPosts.filter((post) => !featuredSlugs.has(post.slug)).sli
         ))}
       </div>
     ) : (
-      <p class="empty-state">새 글을 준비중입니다.</p>
+      <EmptyState />
     )}
 
     {allPosts.length > 8 && (
@@ -106,123 +93,20 @@ const recentPosts = allPosts.filter((post) => !featuredSlugs.has(post.slug)).sli
 </BaseLayout>
 
 <style>
-  .hero {
-    padding: 3rem 0 4rem;
+  .home-intro {
+    padding: 3rem 0 3.5rem;
   }
 
   @media (min-width: 640px) {
-    .hero { padding: 5rem 0 6rem; }
+    .home-intro { padding: 4rem 0 4.5rem; }
   }
 
-  .hero-label {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: var(--accent);
-    margin-bottom: 1rem;
-  }
-
-  .hero-title {
-    font-family: var(--font-heading);
-    font-size: 2.75rem;
-    font-weight: 700;
-    line-height: 1.15;
-    letter-spacing: -0.03em;
-    color: var(--text-primary);
-  }
-
-  @media (min-width: 640px) {
-    .hero-title { font-size: 3.5rem; }
-  }
-
-  @media (min-width: 1024px) {
-    .hero-title { font-size: 4.25rem; }
-  }
-
-  .hero-accent {
-    color: var(--accent);
-  }
-
-  .hero-desc {
-    margin-top: 1.25rem;
-    font-size: 1.05rem;
-    line-height: 1.7;
-    color: var(--text-secondary);
-    max-width: 28.75rem;
-    text-wrap: pretty;
-  }
-
-  /* Buttons */
-  .btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem 1.25rem;
-    font-size: 0.85rem;
-    font-weight: 500;
-    border-radius: 8px;
-    background: var(--accent);
-    color: var(--bg);
-    transition: all 0.2s ease;
-    text-decoration: none;
-  }
-
-  .btn-primary:hover {
-    opacity: 0.9;
-    color: var(--bg);
-    transform: translateY(-1px);
-  }
-
-  .btn-ghost {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.6rem 1.25rem;
-    font-size: 0.85rem;
-    font-weight: 500;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    color: var(--text-secondary);
-    transition: all 0.2s ease;
-    text-decoration: none;
-  }
-
-  .btn-ghost:hover {
-    border-color: var(--border-hover);
-    color: var(--text-primary);
-  }
-
-  /* Section */
-  .section-header {
+  .home-actions {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
-
-  .section-title {
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--text-muted);
-    white-space: nowrap;
-  }
-
-  .section-line {
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-
-  .empty-state {
-    padding: 4rem 0;
-    text-align: center;
-    font-family: var(--font-heading);
-    font-style: italic;
-    font-size: 1rem;
-    color: var(--text-muted);
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: -1.75rem;
   }
 
   .view-all {
