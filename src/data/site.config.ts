@@ -18,5 +18,5 @@ export const NAV_ITEMS = [
 
 export const SOCIAL = {
   github: "https://github.com/concrete-sangminlee",
-  email: "mailto:sangmin@snu.ac.kr",
+  email: "mailto:201612445@snu.ac.kr",
 } as const;

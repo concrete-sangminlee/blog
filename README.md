@@ -11,7 +11,7 @@
 - **Client-side search** — `⌘K` / `Ctrl+K`로 제목·내용 검색 (Pagefind)
 - **RSS feed** (`/rss.xml`) — 피드 리더 구독
 - **OG social cards** — 포스트마다 자동 생성되는 SVG 카드
-- **Dark/Light theme** — 헤더의 수동 전환 버튼, 선택은 localStorage에 저장
+- **Dark-only theme** — 모든 페이지를 다크 테마로 고정
 - **Publish gate** — `draft: false` 글은 `verified: true`가 있어야 감사와 타입체크를 통과
 
 ## Tech Stack

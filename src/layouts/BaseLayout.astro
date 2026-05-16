@@ -34,39 +34,18 @@ const {
 } = Astro.props;
 ---
 
-<html lang={SITE.lang}>
+<html lang={SITE.lang} data-theme="dark">
   <head>
-    <!-- Set the theme before first paint so dark-mode visitors never see a
-         light-theme flash while the rest of <head> is parsing. Saved
-         preference wins; otherwise follow the OS. Also syncs the
-         theme-color meta so the mobile URL bar matches the chosen theme. -->
+    <!-- Keep the site dark-only before first paint and across view
+         transitions. Also reveal admin-only chrome when a saved token exists. -->
     <script is:inline>
       (function () {
-        var chosen = null;
-        try {
-          var stored = localStorage.getItem("theme");
-          if (stored === "dark" || stored === "light") chosen = stored;
-        } catch (_) {}
-        if (!chosen && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
-          chosen = "dark";
-        }
-        if (chosen === "dark") {
-          document.documentElement.setAttribute("data-theme", "dark");
-        }
-        // Flag the author (anyone with a saved admin token) before body
-        // parses, so the admin button's CSS reveal rule applies without a
-        // visible flash.
+        document.documentElement.setAttribute("data-theme", "dark");
         try {
           if (localStorage.getItem("blog_token")) {
             document.documentElement.classList.add("has-admin-token");
           }
         } catch (_) {}
-        // Defer the theme-color meta update until the head element exists;
-        // the meta is written by BaseHead.astro right after this script.
-        document.addEventListener("DOMContentLoaded", function () {
-          var meta = document.getElementById("theme-color-meta");
-          if (meta) meta.setAttribute("content", chosen === "dark" ? "#08080a" : "#fafaf8");
-        });
       })();
     </script>
     <BaseHead title={title} description={description} image={image} imageAlt={imageAlt} math={math} ogType={ogType} publishedTime={publishedTime} modifiedTime={modifiedTime} tags={tags} noIndex={noIndex} />

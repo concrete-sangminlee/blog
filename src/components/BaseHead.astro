@@ -49,14 +49,11 @@ const fullTitle = title === SITE.title ? title : `${title} | ${SITE.title}`;
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 {noIndex && <meta name="robots" content="noindex, follow" />}
 
-<!-- Tell the UA both schemes are supported before any CSS parses, so
-     form controls / scrollbars pick the right palette without flashing. -->
-<meta name="color-scheme" content="light dark" />
+<!-- The site is dark-only, so browser UI should use the dark palette too. -->
+<meta name="color-scheme" content="dark" />
 
-<!-- Mobile URL-bar color. Single meta kept in sync by the inline theme
-     init and the toggle so the bar follows the user's explicit choice
-     (not just the OS). -->
-<meta id="theme-color-meta" name="theme-color" content="#fafaf8" />
+<!-- Mobile URL-bar color for the dark-only theme. -->
+<meta id="theme-color-meta" name="theme-color" content="#08080a" />
 
 <!-- iOS home-screen icon label. The full site title truncates to
      unhelpful characters at the home-screen width; use the short form
