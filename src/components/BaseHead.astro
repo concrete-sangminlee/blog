@@ -55,6 +55,9 @@ const fullTitle = title === SITE.title ? title : `${title} | ${SITE.title}`;
 <!-- Mobile URL-bar color for the dark-only theme. -->
 <meta id="theme-color-meta" name="theme-color" content="#08080a" />
 
+<!-- Intentionally empty: prevents browsers from auto-requesting /favicon.ico. -->
+<link rel="icon" href="data:," />
+
 <!-- Canonical URL (omitted on noIndex pages — 404 shouldn't self-canonicalise) -->
 {!noIndex && <link rel="canonical" href={canonicalURL} />}
 
