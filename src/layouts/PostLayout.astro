@@ -2,10 +2,8 @@
 import BaseLayout from "./BaseLayout.astro";
 import PostNav from "@/components/PostNav.astro";
 import PostComments from "@/components/PostComments.astro";
-import PostReadingPath from "@/components/PostReadingPath.astro";
 import ReadingTime from "@/components/ReadingTime.astro";
 import { getAllPosts, type BlogPost } from "@/utils/posts";
-import { getReadingPathsForPost } from "@/utils/reading-paths";
 import { getPostSocialImage, getPostSocialImageAlt } from "@/utils/social-image";
 
 interface Props {
@@ -18,7 +16,6 @@ const { title, description, pubDate, updatedDate, tags, math } = post.data;
 const { Content, headings } = await post.render();
 const socialImage = getPostSocialImage(post);
 const socialImageAlt = getPostSocialImageAlt(post);
-const readingPaths = await getReadingPathsForPost(post.slug);
 
 const allPosts = await getAllPosts();
 const idx = allPosts.findIndex((p) => p.id === post.id);
@@ -73,7 +70,6 @@ function formatDate(date: Date): string {
           <Content />
         </div>
 
-        <PostReadingPath currentSlug={post.slug} paths={readingPaths} />
         <PostNav prev={prevPost} next={nextPost} />
         <PostComments
           identifier={post.slug}

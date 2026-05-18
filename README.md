@@ -6,7 +6,6 @@
 
 ## Features
 
-- **Curated reading paths** (`/start-here/`) — 검증된 포스트가 쌓이면 주제별 흐름으로 묶는 진입점
 - **OG social cards** — 포스트마다 자동 생성되는 SVG 카드
 - **Dark-only theme** — 모든 페이지를 다크 테마로 고정
 - **Publish gate** — `draft: false` 글은 `verified: true`가 있어야 감사와 타입체크를 통과
