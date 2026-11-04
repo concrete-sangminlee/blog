@@ -1,0 +1,88 @@
+---
+title: "단순보 처짐 계산을 코드로 검증하기"
+description: "단순보의 최대 처짐 공식을 유도하고, 수치 적분 결과와 비교해 오차를 확인하는 과정을 정리한다."
+pubDate: 2026-03-02T09:30:00+09:00
+updatedDate: 2026-03-10T21:00:00+09:00
+tags: ["구조공학", "수치해석"]
+draft: false
+verified: true
+featured: true
+math: true
+---
+
+이 글은 테스트 픽스처다. 렌더링 파이프라인이 수식, 코드, 표, 각주, 그림, 콜아웃을 모두 올바르게 처리하는지 확인하기 위해 존재한다. 실제 블로그 글이 아니며 빌드 검증에만 쓰인다.
+
+## 문제 설정
+
+길이가 $L$인 단순보에 등분포하중 $w$가 작용할 때, 중앙부 최대 처짐은 다음과 같다.
+
+$$
+\delta_{\max} = \frac{5 w L^4}{384 E I}
+$$
+
+여기서 $E$는 탄성계수, $I$는 단면2차모멘트다. 공식 자체는 교과서에 있지만, 직접 수치 적분으로 다시 계산해 보면 경계조건과 부호 규약을 다시 점검할 수 있다.[^1]
+
+### 가정
+
+- 재료는 선형 탄성이다.
+- 처짐은 작아서 기하 비선형을 무시한다.
+- 전단 변형은 무시한다 (오일러 베르누이 보).
+
+## 수치 적분으로 확인하기
+
+곡률 $\kappa = M / (E I)$를 두 번 적분하면 처짐을 얻는다. 아래 코드는 사다리꼴 적분으로 이를 계산한다.
+
+```python title="deflection.py"
+# 등분포하중 단순보의 처짐을 수치 적분으로 계산한다
+import numpy as np
+
+def deflection(w: float, L: float, E: float, I: float, n: int = 2001) -> float:
+    x = np.linspace(0.0, L, n)
+    moment = w * x * (L - x) / 2
+    curvature = moment / (E * I)
+    slope = np.concatenate([[0.0], np.cumsum((curvature[1:] + curvature[:-1]) / 2 * np.diff(x))])
+    y = np.concatenate([[0.0], np.cumsum((slope[1:] + slope[:-1]) / 2 * np.diff(x))])
+    y -= x / L * y[-1]  # 양 끝 처짐이 0이 되도록 보정
+    return float(-y.min())
+```
+
+명령행에서는 다음처럼 실행한다. 단축키 <kbd>Ctrl</kbd> + <kbd>C</kbd>로 중단할 수 있다.
+
+```bash
+# 가상환경을 만든 뒤 실행
+python -m venv .venv && source .venv/bin/activate
+python deflection.py
+```
+
+<Callout type="warning" title="단위 주의">
+하중은 kN/m, 길이는 m, 탄성계수는 kPa로 통일해야 결과가 m 단위로 나온다.
+</Callout>
+
+## 결과 비교
+
+| 요소 수 | 해석해 (mm) | 수치해 (mm) | 상대오차 |
+| ---: | ---: | ---: | ---: |
+| 11 | 12.40 | 12.21 | 1.53% |
+| 101 | 12.40 | 12.40 | 0.02% |
+| 2001 | 12.40 | 12.40 | 0.00% |
+
+요소 수를 늘리면 오차가 빠르게 줄어든다. 사다리꼴 적분의 오차가 격자 간격의 제곱에 비례한다는 점과도 맞는다.
+
+<Figure src="/blog/og/index.png" alt="블로그 기본 소셜 카드" caption="그림 1. 픽스처에서 쓰는 예시 이미지" width={1200} height={630} />
+
+> 공식을 외우는 것보다, 공식이 어디서 왔는지 한 번 손으로 따라가 보는 편이 오래 남는다.
+
+<details>
+<summary>추가 점검 항목</summary>
+
+- [x] 경계조건 확인
+- [x] 부호 규약 확인
+- [ ] 전단 변형 포함 버전 비교
+
+</details>
+
+## 다음에 해볼 것
+
+다음에는 티모셴코 보 이론으로 전단 변형을 포함해 같은 비교를 해 볼 생각이다. 깊은 보에서는 차이가 커질 것으로 예상한다.
+
+[^1]: 부호 규약은 아래 방향 처짐을 양수로 둔다.

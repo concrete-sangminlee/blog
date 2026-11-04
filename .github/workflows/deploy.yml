@@ -7,43 +7,25 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
   cancel-in-progress: false
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # Run the blog audit before withastro/action builds. The audit
-      # enforces frontmatter hygiene, em-dash bans, future-dated pubDate,
-      # duplicate h1, etc.; issues that would otherwise deploy silently.
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          # Match package.json engines (≥20.11). The LTS tag always resolves
-          # to a version ≥ 20.11 and picks up security patches automatically.
-          node-version: "lts/*"
-          cache: "npm"
-      - name: Install dependencies
-        run: npm ci
-      - name: Typecheck (strictest TS preset)
-        run: npm run typecheck
-      - name: Run blog audit
-        run: npm run audit:blog
-
-      - name: Install, build, and upload
-        uses: withastro/action@v3
+  # Same gate as pull requests: typecheck, audit, unit tests, both builds,
+  # link/metadata checks and browser tests. Only a green run deploys.
+  ci:
+    uses: ./.github/workflows/ci.yml
+    with:
+      upload-pages: true
 
   deploy:
-    needs: build
+    needs: ci
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
