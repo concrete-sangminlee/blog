@@ -19,3 +19,11 @@ export const SOCIAL = {
   github: "https://github.com/concrete-sangminlee",
   email: "mailto:201612445@snu.ac.kr",
 } as const;
+
+/** Where posts live on GitHub; used by the browser admin at /admin/. */
+export const REPO = {
+  owner: "concrete-sangminlee",
+  name: "blog",
+  branch: "main",
+  contentDir: "src/content/blog",
+} as const;
