@@ -25,6 +25,46 @@
 
 .prose h1 { font-size: 2.25rem; font-weight: 700; }
 
+/* Section permalinks (added by src/lib/markdown/rehype-prose.ts). Hidden
+   until the heading is hovered or the link itself is focused, so they
+   never compete with the text but stay reachable from the keyboard. */
+.prose .heading-anchor {
+  margin-left: 0.4em;
+  padding: 0 0.15em;
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 0.75em;
+  color: var(--text-muted);
+  border-bottom: 0;
+  opacity: 0;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.prose :is(h2, h3, h4):hover .heading-anchor,
+.prose .heading-anchor:focus-visible {
+  opacity: 1;
+}
+
+.prose .heading-anchor:hover {
+  color: var(--accent);
+  border-bottom: 0;
+}
+
+@media (hover: none) {
+  .prose .heading-anchor {
+    opacity: 0.45;
+  }
+}
+
+/* Briefly highlight the section a reader jumped to. */
+.prose :is(h2, h3, h4):target {
+  animation: target-flash 1.6s ease-out;
+}
+
+@keyframes target-flash {
+  from { color: var(--accent); }
+}
+
 .prose h2 {
   font-size: 1.625rem;
   font-weight: 700;
@@ -136,12 +176,23 @@
   margin: 3rem 0;
 }
 
-/* Table */
+/* Table: wrapped in .table-scroll so wide tables scroll inside the
+   column instead of widening the page on phones. */
+.prose .table-scroll {
+  margin: 2rem 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .prose table {
   width: 100%;
   border-collapse: collapse;
-  margin: 2rem 0;
   font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.prose .table-scroll > table {
+  margin: 0;
 }
 
 .prose th {
@@ -175,4 +226,168 @@
 .prose a:hover {
   color: var(--accent-hover);
   border-bottom-color: var(--accent-hover);
+}
+
+/* Footnotes (GFM). The label is localised in astro.config.ts. */
+.prose sup {
+  line-height: 0;
+}
+
+.prose [data-footnote-ref] {
+  padding: 0 0.1em;
+  font-family: var(--font-mono);
+  font-size: 0.8em;
+}
+
+.prose [data-footnote-ref]::before {
+  content: "[";
+}
+
+.prose [data-footnote-ref]::after {
+  content: "]";
+}
+
+.prose .footnotes {
+  margin-top: 4rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.prose .footnotes h2 {
+  margin-top: 0;
+  padding-bottom: 0;
+  border-bottom: 0;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.prose .footnotes ol {
+  padding-left: 1.25rem;
+}
+
+.prose .footnotes p {
+  margin-bottom: 0.5rem;
+}
+
+.prose [data-footnote-backref] {
+  margin-left: 0.25rem;
+  font-family: var(--font-mono);
+}
+
+.prose :is([data-footnote-ref], .footnotes li) {
+  scroll-margin-top: calc(5rem + env(safe-area-inset-top));
+}
+
+/* Figures (see src/components/mdx/Figure.astro) */
+.prose figure {
+  margin: 2.25rem 0;
+}
+
+.prose figure img {
+  margin: 0;
+}
+
+.prose figcaption {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  text-align: center;
+  color: var(--text-muted);
+  text-wrap: pretty;
+}
+
+/* Inline semantics */
+.prose kbd {
+  padding: 0.1em 0.4em;
+  font-family: var(--font-mono);
+  font-size: 0.8em;
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-hover);
+  border-bottom-width: 2px;
+  border-radius: 0.3rem;
+}
+
+.prose mark {
+  padding: 0 0.15em;
+  color: var(--text-primary);
+  background: var(--accent-glow);
+  border-radius: 0.2rem;
+}
+
+.prose del {
+  color: var(--text-muted);
+}
+
+.prose abbr[title] {
+  text-decoration: underline dotted;
+  cursor: help;
+}
+
+/* GFM task lists */
+.prose ul.contains-task-list {
+  padding-left: 0.25rem;
+}
+
+.prose .task-list-item::before {
+  content: none;
+}
+
+.prose .task-list-item input[type="checkbox"] {
+  margin-right: 0.5rem;
+  accent-color: var(--accent);
+  vertical-align: -0.1em;
+}
+
+/* Nested lists keep tight rhythm */
+.prose li > :is(ul, ol) {
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+}
+
+.prose li > p {
+  margin-bottom: 0.5rem;
+}
+
+/* Disclosure blocks */
+.prose details {
+  margin: 1.5rem 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--bg-surface);
+}
+
+.prose details > summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.prose details[open] > summary {
+  margin-bottom: 0.75rem;
+}
+
+.prose details > :last-child {
+  margin-bottom: 0;
+}
+
+/* Display math gets breathing room and scrolls instead of overflowing. */
+.prose .katex-display {
+  margin: 1.75rem 0;
+}
+
+.prose .katex {
+  font-size: 1.08em;
+}
+
+/* Expressive Code frames sit on the same vertical rhythm as prose. */
+.prose .expressive-code {
+  margin: 1.75rem 0;
 }

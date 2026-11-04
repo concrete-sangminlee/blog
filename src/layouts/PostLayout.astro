@@ -1,106 +1,123 @@
 ---
+import { render } from "astro:content";
 import BaseLayout from "./BaseLayout.astro";
 import PostNav from "@/components/PostNav.astro";
 import PostComments from "@/components/PostComments.astro";
 import ReadingTime from "@/components/ReadingTime.astro";
-import { getAllPosts, type BlogPost } from "@/utils/posts";
+import TableOfContents from "@/components/TableOfContents.astro";
+import RelatedPosts from "@/components/RelatedPosts.astro";
+import Callout from "@/components/mdx/Callout.astro";
+import Figure from "@/components/mdx/Figure.astro";
+import { getAllPosts, relatedPosts, type BlogPost } from "@/utils/posts";
 import { getPostSocialImage, getPostSocialImageAlt } from "@/utils/social-image";
+import { formatDateLong } from "@/lib/dates";
+import { getReadingMinutes } from "@/lib/reading-time";
+import { hasMathSyntax } from "@/lib/post-rules";
+import { FOOTNOTE_LABEL_ID } from "@/lib/markdown/rehype-prose";
 
 interface Props {
   post: BlogPost;
 }
 
 const { post } = Astro.props;
-const { title, description, pubDate, updatedDate, tags, math } = post.data;
+const { title, description, pubDate, updatedDate, tags, math, draft } = post.data;
+const body = post.body ?? "";
 
-const { Content, headings } = await post.render();
+const { Content, headings } = await render(post);
 const socialImage = getPostSocialImage(post);
 const socialImageAlt = getPostSocialImageAlt(post);
 
 const allPosts = await getAllPosts();
 const idx = allPosts.findIndex((p) => p.id === post.id);
-const prevPost = idx < allPosts.length - 1 ? allPosts[idx + 1] : null;
-const nextPost = idx > 0 ? allPosts[idx - 1] : null;
+const prevPost = idx >= 0 && idx < allPosts.length - 1 ? (allPosts[idx + 1] ?? null) : null;
+const nextPost = idx > 0 ? (allPosts[idx - 1] ?? null) : null;
+const related = relatedPosts(post, allPosts).filter(
+  (p) => p.id !== prevPost?.id && p.id !== nextPost?.id,
+);
 
-const tocHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
-
-function formatDate(date: Date): string {
-  return date.toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" });
-}
+const tocHeadings = headings.filter(
+  (h) => h.depth >= 2 && h.depth <= 3 && h.slug !== FOOTNOTE_LABEL_ID,
+);
+// Load KaTeX styles whenever the body actually contains math, even if the
+// author forgot `math: true`; otherwise formulas render as raw glyph soup.
+const needsMath = math || hasMathSyntax(body);
+const readingMinutes = getReadingMinutes(body);
 ---
 
-<BaseLayout title={title} description={description} image={socialImage} imageAlt={socialImageAlt} math={math} ogType="article" publishedTime={pubDate} modifiedTime={updatedDate} tags={tags}>
+<BaseLayout
+  title={title}
+  description={description}
+  image={socialImage}
+  imageAlt={socialImageAlt}
+  math={needsMath}
+  ogType="article"
+  publishedTime={pubDate}
+  modifiedTime={updatedDate}
+  tags={tags}
+  readingMinutes={readingMinutes}
+  noIndex={draft}
+>
   <article class="post-layout" aria-labelledby="post-article-title">
     <header class="mb-12 max-w-[720px]">
-      <p class="sr-only">{description}</p>
+      {draft && <p class="draft-banner" role="note">초안 미리보기: 프로덕션 빌드에는 포함되지 않습니다.</p>}
       {tags.length > 0 && (
-        <div class="mb-4 flex flex-wrap gap-2">
+        <ul class="mb-4 flex flex-wrap gap-2" aria-label="태그">
           {tags.map((tag) => (
-            <span class="tag-chip">
-              {tag}
-            </span>
+            <li class="tag-chip">{tag}</li>
           ))}
-        </div>
+        </ul>
       )}
 
       <h1
         id="post-article-title"
         class="heading-page text-3xl leading-tight tracking-tight sm:text-4xl lg:text-5xl"
-        transition:name={`post-title-${post.slug}`}
+        transition:name={`post-title-${post.id}`}
       >
         {title}
       </h1>
 
-      <div class="text-muted-sm mt-4 flex flex-wrap items-center gap-3">
-        <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
+      <p class="sr-only">{description}</p>
+
+      <div class="text-muted-sm mt-4 flex flex-wrap items-center gap-x-3 gap-y-1">
+        <time datetime={pubDate.toISOString()}>{formatDateLong(pubDate)}</time>
         {updatedDate && (
           <>
             <span aria-hidden="true">·</span>
-            <span>수정 {formatDate(updatedDate)}</span>
+            <span>
+              수정 <time datetime={updatedDate.toISOString()}>{formatDateLong(updatedDate)}</time>
+            </span>
           </>
         )}
         <span aria-hidden="true">·</span>
-        <ReadingTime content={post.body} />
+        <ReadingTime content={body} />
       </div>
     </header>
 
     <div class="flex gap-12">
       <div class="min-w-0 max-w-[720px] flex-1">
+        {tocHeadings.length > 1 && (
+          <TableOfContents headings={tocHeadings} variant="inline" />
+        )}
+
         <div class="prose">
-          <Content />
+          <Content components={{ Callout, Figure }} />
         </div>
 
+        <RelatedPosts posts={related} />
         <PostNav prev={prevPost} next={nextPost} />
-        <PostComments
-          identifier={post.slug}
-          url={new URL(Astro.url.pathname, Astro.site).toString()}
-          title={title}
-        />
+        {!draft && (
+          <PostComments
+            identifier={post.id}
+            url={new URL(Astro.url.pathname, Astro.site).toString()}
+            title={title}
+          />
+        )}
       </div>
 
-      {tocHeadings.length > 0 && (
-        <aside class="toc-sidebar hidden w-56 shrink-0 lg:block" aria-labelledby="post-toc-heading">
-          <div class="toc-sticky">
-            <p id="post-toc-heading" class="text-muted-sm mb-3 text-xs font-semibold uppercase tracking-widest">
-              목차
-            </p>
-            <nav aria-label="이 글의 목차">
-              <ul class="space-y-1.5">
-                {tocHeadings.map((h) => (
-                  <li class:list={[{ "toc-indent": h.depth === 3 }]}>
-                    <a
-                      href={`#${h.slug}`}
-                      class="toc-link block text-xs leading-relaxed transition-colors duration-200"
-                      data-slug={h.slug}
-                    >
-                      {h.text}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          </div>
-        </aside>
+      {tocHeadings.length > 1 && (
+        <div class="hidden w-56 shrink-0 lg:block">
+          <TableOfContents headings={tocHeadings} variant="sidebar" />
+        </div>
       )}
     </div>
   </article>
@@ -119,64 +136,12 @@ function formatDate(date: Date): string {
     background: var(--accent-subtle);
   }
 
-  .toc-sticky {
-    position: sticky;
-    /* Match the header's own top inset so the TOC sticks just below
-       the (safe-area-aware) fixed header. */
-    top: calc(6rem + env(safe-area-inset-top));
-  }
-
-  .toc-indent {
-    padding-left: 0.75rem;
-  }
-
-  .toc-link {
-    color: var(--text-muted);
-  }
-
-  .toc-link:hover,
-  .toc-link.active {
-    color: var(--accent);
-  }
-
-  .toc-link.active {
-    font-weight: 600;
+  .draft-banner {
+    margin-bottom: 1.25rem;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.8rem;
+    color: #fca5a5;
+    border: 1px dashed rgba(248, 113, 113, 0.4);
+    border-radius: 0.5rem;
   }
 </style>
-
-<script>
-  let controller: AbortController | null = null;
-
-  function initTOC() {
-    const tocLinks = document.querySelectorAll<HTMLAnchorElement>(".toc-link");
-
-    // Abort the previous page's listener even when this page has no TOC,
-    // otherwise the stale handler keeps firing on every scroll.
-    controller?.abort();
-    if (tocLinks.length === 0) return;
-    controller = new AbortController();
-
-    const headingEls = Array.from(tocLinks)
-      .map((link) => link.dataset.slug ? document.getElementById(link.dataset.slug) : null)
-      .filter(Boolean);
-
-    function updateActive() {
-      let active = headingEls[0];
-      for (const el of headingEls) {
-        if (el.getBoundingClientRect().top <= 100) active = el;
-      }
-      tocLinks.forEach((link) => {
-        link.classList.toggle("active", link.dataset.slug === active?.id);
-      });
-    }
-
-    window.addEventListener("scroll", updateActive, {
-      passive: true,
-      signal: controller.signal,
-    });
-    updateActive();
-  }
-
-  initTOC();
-  document.addEventListener("astro:after-swap", initTOC);
-</script>

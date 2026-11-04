@@ -1,0 +1,26 @@
+---
+/**
+ * Captioned figure. Usage in MDX (available without an import):
+ *
+ *   <Figure src="/blog/images/beam.png" alt="단순보 처짐 곡선" caption="그림 1. 단순보 처짐" />
+ *
+ * `src` is used as-is, so root-relative paths must include the /blog base
+ * (the audit flags ones that don't).
+ */
+interface Props {
+  src: string;
+  alt: string;
+  caption?: string;
+  width?: number;
+  height?: number;
+}
+
+const { src, alt, caption, width, height } = Astro.props;
+---
+
+<figure>
+  <img src={src} alt={alt} width={width} height={height} loading="lazy" decoding="async" />
+  {(caption || Astro.slots.has("default")) && (
+    <figcaption>{caption}<slot /></figcaption>
+  )}
+</figure>

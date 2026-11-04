@@ -6,42 +6,15 @@ import ScrollProgress from "@/components/ScrollProgress.astro";
 import { ClientRouter } from "astro:transitions";
 import { SITE } from "@/data/site.config";
 
-interface Props {
-  title: string;
-  description: string;
-  image?: string;
-  imageAlt?: string;
-  math?: boolean;
-  ogType?: "website" | "article";
-  publishedTime?: Date;
-  modifiedTime?: Date;
-  tags?: readonly string[];
-  noIndex?: boolean;
-}
+type HeadProps = import("@/components/BaseHead.astro").Props;
+type Props = HeadProps;
 
-const {
-  title,
-  description = SITE.description,
-  image,
-  imageAlt,
-  math = false,
-  ogType = "website",
-  publishedTime,
-  modifiedTime,
-  tags,
-  noIndex = false,
-} = Astro.props;
+const props = Astro.props;
 ---
 
-<html lang={SITE.lang} data-theme="dark">
+<html lang={SITE.lang}>
   <head>
-    <!-- Keep the site dark-only before first paint and across view transitions. -->
-    <script is:inline>
-      (function () {
-        document.documentElement.setAttribute("data-theme", "dark");
-      })();
-    </script>
-    <BaseHead title={title} description={description} image={image} imageAlt={imageAlt} math={math} ogType={ogType} publishedTime={publishedTime} modifiedTime={modifiedTime} tags={tags} noIndex={noIndex} />
+    <BaseHead {...props} description={props.description || SITE.description} />
     <ClientRouter />
   </head>
   <body>
@@ -49,7 +22,7 @@ const {
     <ScrollProgress />
     <Header />
 
-    <main id="main-content" class="mx-auto max-w-[1200px] px-6 py-8">
+    <main id="main-content" class="mx-auto max-w-[1200px] px-6 py-8" tabindex="-1">
       <slot />
     </main>
 

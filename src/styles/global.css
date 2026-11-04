@@ -1,11 +1,21 @@
 @import "tailwindcss";
 
+/* ── Self-hosted fonts ──
+   Newsreader and JetBrains Mono are bundled from npm by Vite (no Google
+   Fonts round trip). Each face is split by unicode-range, so browsers only
+   download the chunks a page uses. Pretendard is loaded in BaseHead from
+   jsDelivr's dynamic subset: its full-Hangul npm package is 72 MB. */
+@import "@fontsource-variable/newsreader/wght.css";
+@import "@fontsource-variable/newsreader/wght-italic.css";
+@import "@fontsource-variable/jetbrains-mono/wght.css";
+
 /* ── Theme ── */
 @theme {
-  --font-heading: "Newsreader", "Georgia", serif;
-  --font-body: "Pretendard Variable", "Pretendard", -apple-system, "BlinkMacSystemFont",
-    system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+  --font-heading: "Newsreader Variable", "Pretendard Variable", Georgia, serif;
+  --font-body: "Pretendard Variable", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+    "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, Consolas,
+    "D2Coding", monospace;
 }
 
 :root {
@@ -38,8 +48,8 @@ html {
      ::-webkit-scrollbar rules below. Keep both in sync. */
   scrollbar-width: thin;
   scrollbar-color: var(--border-hover) transparent;
-  /* Reserve scrollbar space so the page doesn't jump horizontally when
-     the search modal toggles body { overflow: hidden }. */
+  /* Reserve scrollbar space so short and long pages share one content
+     width and navigating between them never shifts the layout sideways. */
   scrollbar-gutter: stable;
 }
 
@@ -50,7 +60,7 @@ body {
   line-height: 1.7;
   position: relative;
   min-height: 100vh;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  min-height: 100dvh;
   /* Korean convention: don't break inside a CJK word. Inherited, so every
      text-carrying element picks it up unless explicitly overridden. */
   word-break: keep-all;
@@ -356,4 +366,54 @@ a:hover {
   overflow-x: auto;
   overflow-y: hidden;
   padding: 0.5rem 0;
+}
+
+/* ── Print ──
+   Readers print or save research notes as PDF; give them clean paper:
+   no chrome, black-on-white text, and visible link targets. */
+@media print {
+  :root {
+    --bg: #fff;
+    --bg-surface: #fff;
+    --text-primary: #111;
+    --text-secondary: #333;
+    --text-muted: #555;
+    --accent: #111;
+    --border: #ccc;
+    --code-bg: #f5f5f5;
+  }
+
+  body::before,
+  body::after,
+  #site-header,
+  .header-spacer,
+  #scroll-progress,
+  .footer,
+  .skip-link,
+  .toc-inline,
+  .post-nav,
+  .related,
+  #comments,
+  .heading-anchor {
+    display: none !important;
+  }
+
+  .prose a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+    word-break: break-all;
+  }
+
+  .prose pre,
+  .prose blockquote,
+  .prose table,
+  .prose img,
+  .prose figure {
+    break-inside: avoid;
+  }
+
+  .prose h2,
+  .prose h3 {
+    break-after: avoid;
+  }
 }

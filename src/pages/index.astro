@@ -10,8 +10,8 @@ import { href } from "@/utils/paths";
 
 const allPosts = await getAllPosts();
 const featuredPosts = await getFeaturedPosts();
-const featuredSlugs = new Set(featuredPosts.map((post) => post.slug));
-const recentPosts = allPosts.filter((post) => !featuredSlugs.has(post.slug)).slice(0, 8);
+const featuredIds = new Set(featuredPosts.map((post) => post.id));
+const recentPosts = allPosts.filter((post) => !featuredIds.has(post.id)).slice(0, 8);
 ---
 
 <BaseLayout title={SITE.title} description={SITE.description}>

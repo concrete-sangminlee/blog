@@ -1,24 +1,22 @@
 ---
 import type { BlogPost } from "@/utils/posts";
 import { href } from "@/utils/paths";
-import { getPostSocialImage, SOCIAL_IMAGE_WIDTH, SOCIAL_IMAGE_HEIGHT } from "@/utils/social-image";
+import { formatDateShort } from "@/lib/dates";
+import { getPostThumbnail, SOCIAL_IMAGE_WIDTH, SOCIAL_IMAGE_HEIGHT } from "@/utils/social-image";
 
 interface Props {
   post: BlogPost;
   index?: number;
+  /** Heading level for the card title, so each page keeps a clean outline. */
+  headingLevel?: 2 | 3;
 }
 
-const { post, index = 0 } = Astro.props;
-const { title, description, pubDate, tags, featured } = post.data;
-const imageUrl = getPostSocialImage(post);
+const { post, index = 0, headingLevel = 3 } = Astro.props;
+const { title, description, pubDate, tags, featured, draft } = post.data;
+const imageUrl = getPostThumbnail(post);
+const Heading = headingLevel === 2 ? "h2" : "h3";
 
-const formattedDate = pubDate.toLocaleDateString("ko-KR", {
-  year: "numeric",
-  month: "short",
-  day: "numeric",
-});
-
-const postHref = href(`/${post.slug}/`);
+const postHref = href(`/${post.id}/`);
 const truncatedDesc =
   description.length > 150 ? description.slice(0, 150) + "…" : description;
 ---
@@ -43,13 +41,14 @@ const truncatedDesc =
       </div>
 
       <div class="post-card-meta">
-        <time datetime={pubDate.toISOString()}>{formattedDate}</time>
+        <time datetime={pubDate.toISOString()}>{formatDateShort(pubDate)}</time>
         {featured && <span class="featured-badge">추천</span>}
+        {draft && <span class="draft-badge">초안</span>}
       </div>
 
-      <h3 class="post-card-title" transition:name={`post-title-${post.slug}`}>
+      <Heading class="post-card-title" transition:name={`post-title-${post.id}`}>
         {title}
-      </h3>
+      </Heading>
 
       <p class="post-card-desc">{truncatedDesc}</p>
 
@@ -66,8 +65,7 @@ const truncatedDesc =
 
 <style>
   .post-card {
-    opacity: 0;
-    animation: fadeIn 0.5s ease forwards;
+    animation: fadeIn 0.5s ease backwards;
   }
 
   @keyframes fadeIn {
@@ -83,7 +81,7 @@ const truncatedDesc =
     border-radius: 8px;
     border: 1px solid transparent;
     position: relative;
-    transition: all 0.25s ease;
+    transition: background-color 0.25s ease, border-color 0.25s ease;
   }
 
   .post-card-link:hover {
@@ -140,6 +138,17 @@ const truncatedDesc =
     color: var(--accent);
     background: var(--accent-subtle);
     border: 1px solid rgba(232, 168, 73, 0.15);
+    border-radius: 9999px;
+    font-family: var(--font-body);
+  }
+
+  /* Only ever visible in `astro dev`: production builds drop drafts. */
+  .draft-badge {
+    padding: 0.1rem 0.5rem;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: #f87171;
+    border: 1px solid rgba(248, 113, 113, 0.3);
     border-radius: 9999px;
     font-family: var(--font-body);
   }

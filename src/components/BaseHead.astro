@@ -1,24 +1,27 @@
 ---
 import "@/styles/global.css";
 import "@/styles/typography.css";
-import { SITE } from "@/data/site.config";
+import katexStylesheet from "katex/dist/katex-swap.min.css?url";
+import { SITE, SOCIAL } from "@/data/site.config";
+import { href } from "@/utils/paths";
 import {
   getDefaultSocialImage,
   SOCIAL_IMAGE_HEIGHT,
   SOCIAL_IMAGE_WIDTH,
 } from "@/utils/social-image";
 
-interface Props {
+export interface Props {
   title: string;
   description: string;
-  image?: string;
-  imageAlt?: string;
-  math?: boolean;
-  ogType?: "website" | "article";
-  publishedTime?: Date;
-  modifiedTime?: Date;
-  tags?: readonly string[];
-  noIndex?: boolean;
+  image?: string | undefined;
+  imageAlt?: string | undefined;
+  math?: boolean | undefined;
+  ogType?: "website" | "article" | undefined;
+  publishedTime?: Date | undefined;
+  modifiedTime?: Date | undefined;
+  tags?: readonly string[] | undefined;
+  readingMinutes?: number | undefined;
+  noIndex?: boolean | undefined;
 }
 
 const {
@@ -31,18 +34,87 @@ const {
   publishedTime,
   modifiedTime,
   tags,
+  readingMinutes,
   noIndex = false,
 } = Astro.props;
 
-const canonicalURL = new URL(Astro.url.pathname, Astro.site);
-const socialImageURL = image
-  ? new URL(image, Astro.site)
-  : new URL(getDefaultSocialImage(), Astro.site);
+const site = Astro.site ?? new URL(import.meta.env.SITE);
+const canonicalURL = new URL(Astro.url.pathname, site);
+const homeURL = new URL(href("/"), site).toString();
+const aboutURL = new URL(href("/about/"), site).toString();
+const socialImageURL = new URL(image ?? getDefaultSocialImage(), site);
 const socialImageType = socialImageURL.pathname.endsWith(".svg")
   ? "image/svg+xml"
-  : "image/png";
+  : socialImageURL.pathname.match(/\.jpe?g$/)
+    ? "image/jpeg"
+    : "image/png";
 const socialImageAlt = imageAlt ?? `${title} 대표 이미지`;
 const fullTitle = title === SITE.title ? title : `${title} | ${SITE.title}`;
+// Open Graph wants language_TERRITORY ("ko_KR"), not a BCP 47 tag.
+const ogLocale = SITE.lang.replace("-", "_");
+
+const author = {
+  "@type": "Person",
+  "@id": `${aboutURL}#person`,
+  name: SITE.author,
+  url: aboutURL,
+  sameAs: [SOCIAL.github],
+};
+
+const website = {
+  "@type": "WebSite",
+  "@id": `${homeURL}#website`,
+  name: SITE.title,
+  description: SITE.description,
+  url: homeURL,
+  inLanguage: SITE.lang,
+  author: { "@id": author["@id"] },
+};
+
+const graph =
+  ogType === "article"
+    ? [
+        {
+          "@type": "BlogPosting",
+          "@id": `${canonicalURL}#article`,
+          headline: title,
+          description,
+          url: canonicalURL.toString(),
+          mainEntityOfPage: canonicalURL.toString(),
+          image: {
+            "@type": "ImageObject",
+            url: socialImageURL.toString(),
+            width: SOCIAL_IMAGE_WIDTH,
+            height: SOCIAL_IMAGE_HEIGHT,
+          },
+          ...(publishedTime && { datePublished: publishedTime.toISOString() }),
+          ...((modifiedTime ?? publishedTime) && {
+            dateModified: (modifiedTime ?? publishedTime)!.toISOString(),
+          }),
+          ...(tags && tags.length > 0 && { keywords: [...tags] }),
+          ...(readingMinutes && { timeRequired: `PT${readingMinutes}M` }),
+          inLanguage: SITE.lang,
+          author: { "@id": author["@id"] },
+          publisher: { "@id": author["@id"] },
+          isPartOf: { "@id": website["@id"] },
+        },
+        {
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "홈", item: homeURL },
+            { "@type": "ListItem", position: 2, name: title, item: canonicalURL.toString() },
+          ],
+        },
+        website,
+        author,
+      ]
+    : [website, author];
+
+// Escape "<" so a title containing "</script>" can't break out of the tag.
+const jsonLd = JSON.stringify({ "@context": "https://schema.org", "@graph": graph }).replace(
+  /</g,
+  "\\u003c",
+);
 ---
 
 <meta charset="utf-8" />
@@ -51,23 +123,20 @@ const fullTitle = title === SITE.title ? title : `${title} | ${SITE.title}`;
 
 <!-- The site is dark-only, so browser UI should use the dark palette too. -->
 <meta name="color-scheme" content="dark" />
-
-<!-- Mobile URL-bar color for the dark-only theme. -->
-<meta id="theme-color-meta" name="theme-color" content="#08080a" />
+<meta name="theme-color" content="#08080a" />
+<!-- Stop iOS from turning numbers in Korean prose into phone links. -->
+<meta name="format-detection" content="telephone=no" />
 
 <!-- Intentionally empty: prevents browsers from auto-requesting /favicon.ico. -->
 <link rel="icon" href="data:," />
 
-<!-- Canonical URL (omitted on noIndex pages — 404 shouldn't self-canonicalise) -->
+<!-- Canonical URL (omitted on noIndex pages: 404 shouldn't self-canonicalise) -->
 {!noIndex && <link rel="canonical" href={canonicalURL} />}
 
-<!-- Primary Meta Tags -->
 <title>{fullTitle}</title>
 <meta name="description" content={description} />
 <meta name="author" content={SITE.author} />
 
-<!-- Open Graph / Facebook — only for pages that should be shareable.
-     A 404 (noIndex) shouldn't produce a social preview of the error. -->
 {!noIndex && (
   <>
     <meta property="og:type" content={ogType} />
@@ -75,113 +144,42 @@ const fullTitle = title === SITE.title ? title : `${title} | ${SITE.title}`;
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={socialImageURL} />
+    <meta property="og:image:secure_url" content={socialImageURL} />
     <meta property="og:image:type" content={socialImageType} />
     <meta property="og:image:width" content={SOCIAL_IMAGE_WIDTH.toString()} />
     <meta property="og:image:height" content={SOCIAL_IMAGE_HEIGHT.toString()} />
     <meta property="og:image:alt" content={socialImageAlt} />
-    <meta property="og:locale" content={SITE.lang} />
+    <meta property="og:locale" content={ogLocale} />
     <meta property="og:site_name" content={SITE.title} />
-  </>
-)}
-
-{!noIndex && ogType === "article" && (
-  <>
-    {publishedTime && (
-      <meta property="article:published_time" content={publishedTime.toISOString()} />
-    )}
-    {modifiedTime && (
-      <meta property="article:modified_time" content={modifiedTime.toISOString()} />
-    )}
-    <meta property="article:author" content={SITE.author} />
-    {tags && tags.map((tag) => (
-      <meta property="article:tag" content={tag} />
-    ))}
-  </>
-)}
-
-{/* JSON-LD structured data. Escape "<" so a title/description that happens
-    to contain "</script>" or "<script>" can't break out of the script tag.
-    Skipped on noIndex pages so a 404 can't register itself as schema.org
-    content in crawlers that read structured data even when robots says no. */}
-{!noIndex && (
-  <script type="application/ld+json" set:html={JSON.stringify(
-    ogType === "article"
-      ? {
-          "@context": "https://schema.org",
-          "@type": "BlogPosting",
-          headline: title,
-          description,
-          url: canonicalURL.toString(),
-          author: {
-            "@type": "Person",
-            name: SITE.author,
-          },
-          publisher: {
-            "@type": "Person",
-            name: SITE.author,
-          },
-          ...(publishedTime && { datePublished: publishedTime.toISOString() }),
-          ...(modifiedTime && { dateModified: modifiedTime.toISOString() }),
-          image: socialImageURL.toString(),
-          mainEntityOfPage: {
-            "@type": "WebPage",
-            "@id": canonicalURL.toString(),
-          },
-          ...(tags && tags.length > 0 && { keywords: tags.join(", ") }),
-          inLanguage: SITE.lang,
-        }
-      : {
-          "@context": "https://schema.org",
-          "@type": "WebSite",
-          name: SITE.title,
-          description: SITE.description,
-          url: new URL(SITE.base + "/", Astro.site).toString(),
-          inLanguage: SITE.lang,
-          author: {
-            "@type": "Person",
-            name: SITE.author,
-          },
-        }
-  ).replace(/</g, "\\u003c")} />
-)}
-
-<!-- Twitter — card type is Twitter-specific; everything else falls back
-     to og:title / og:description / og:image automatically. -->
-{!noIndex && (
-  <>
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image:alt" content={socialImageAlt} />
   </>
 )}
 
-<!-- Fonts -->
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
-<link
-  href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,700;1,400&display=swap"
-  rel="stylesheet"
-/>
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
-/>
-<link
-  href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
-  rel="stylesheet"
-/>
-
-<!-- KaTeX (conditional). Pinned with Subresource Integrity so a compromised
-     CDN response can't silently ship altered CSS to readers. -->
-{math && (
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css"
-    integrity="sha384-zh0CIslj+VczCZtlzBcjt5ppRcsAmDnRem7ESsYwWwg3m/OaJ2l4x7YBZl9Kxxib"
-    crossorigin="anonymous"
-    referrerpolicy="no-referrer"
-  />
+{!noIndex && ogType === "article" && (
+  <>
+    {publishedTime && <meta property="article:published_time" content={publishedTime.toISOString()} />}
+    {modifiedTime && <meta property="article:modified_time" content={modifiedTime.toISOString()} />}
+    <meta property="article:author" content={aboutURL} />
+    {tags?.map((tag) => <meta property="article:tag" content={tag} />)}
+  </>
 )}
 
-<!-- Sitemap -->
-<link rel="sitemap" href={`${import.meta.env.BASE_URL}sitemap-index.xml`} />
+{!noIndex && <script type="application/ld+json" set:html={jsonLd} />}
+
+<!-- Pretendard (full Hangul, dynamic subset). Version-pinned with
+     Subresource Integrity so an altered CDN response is rejected. -->
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+  integrity="sha384-/uC/GIvKJ/9RN6i1izHoBY9ubYo60OAsQRNQ3NRFiNsN+N/MVQJHD5OYcZz6wvwn"
+  crossorigin="anonymous"
+  referrerpolicy="no-referrer"
+/>
+
+<!-- KaTeX styles, self-hosted from the same katex version that rendered
+     the HTML at build time; only pages with math request them. -->
+{math && <link rel="stylesheet" href={katexStylesheet} />}
+
+<link rel="sitemap" href={href("/sitemap-index.xml")} />

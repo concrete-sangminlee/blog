@@ -11,27 +11,50 @@
   },
   "scripts": {
     "dev": "astro dev",
+    "dev:fixture": "BLOG_CONTENT_DIR=tests/fixtures/blog astro dev",
     "build": "astro build",
+    "build:fixture": "BLOG_CONTENT_DIR=tests/fixtures/blog astro build --outDir dist-fixture",
     "preview": "astro preview",
-    "typecheck": "astro sync && tsc --noEmit",
+    "typecheck": "astro check",
     "audit:blog": "node scripts/blog-quality-audit.mjs",
-    "check": "npm run typecheck && npm run audit:blog && npm run build",
+    "audit:fixture": "node scripts/blog-quality-audit.mjs --dir=tests/fixtures/blog",
+    "test": "node --test \"tests/unit/*.test.ts\"",
+    "test:e2e": "node --test \"tests/e2e/*.test.mjs\"",
+    "check:dist": "node scripts/check-dist.mjs dist && node scripts/check-dist.mjs dist-fixture",
+    "check": "npm run typecheck && npm run audit:blog && npm run audit:fixture && npm test && npm run build && npm run build:fixture && npm run check:dist",
     "new-post": "node scripts/new-post.mjs"
   },
   "engines": {
-    "node": ">=20.11.0"
+    "node": ">=22.23.4"
   },
   "dependencies": {
-    "@astrojs/mdx": "^4.3.0",
-    "@astrojs/sitemap": "^3.3.1",
-    "astro": "^5.7.10",
-    "astro-expressive-code": "^0.40.2",
+    "@astrojs/markdown-remark": "^7.3.5",
+    "@astrojs/mdx": "^8.1.2",
+    "@astrojs/sitemap": "^3.7.4",
+    "@fontsource-variable/jetbrains-mono": "^5.3.0",
+    "@fontsource-variable/newsreader": "^5.3.0",
+    "@resvg/resvg-js": "^2.6.2",
+    "astro": "^7.4.5",
+    "astro-expressive-code": "^0.44.3",
+    "hast-util-to-string": "^3.0.1",
+    "katex": "^0.19.1",
+    "marked": "^18.1.3",
     "rehype-katex": "^7.0.1",
-    "remark-math": "^6.0.0"
+    "remark-math": "^6.0.0",
+    "satori": "^0.63.2",
+    "unist-util-visit": "^5.2.0",
+    "yaml": "^2.9.1"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.1.4",
-    "tailwindcss": "^4.1.4",
-    "typescript": "^5.8.3"
+    "@astrojs/check": "^0.9.12",
+    "@tailwindcss/vite": "^4.3.4",
+    "@types/hast": "^3.0.5",
+    "playwright": "^1.64.1",
+    "tailwindcss": "^4.3.4",
+    "typescript": "^6.0.3"
+  },
+  "overrides": {
+    "katex": "$katex",
+    "fflate": "^0.8.3"
   }
 }

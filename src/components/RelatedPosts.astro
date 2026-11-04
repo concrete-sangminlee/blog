@@ -1,0 +1,76 @@
+---
+import { href } from "@/utils/paths";
+import { formatDateShort } from "@/lib/dates";
+import type { BlogPost } from "@/utils/posts";
+
+interface Props {
+  posts: readonly BlogPost[];
+}
+
+const { posts } = Astro.props;
+---
+
+{posts.length > 0 && (
+  <section class="related mt-16" aria-labelledby="related-heading">
+    <h2 id="related-heading" class="related-title">관련 글</h2>
+    <ul class="related-list">
+      {posts.map((post) => (
+        <li>
+          <a href={href(`/${post.id}/`)} class="related-link">
+            <span class="related-name">{post.data.title}</span>
+            <time class="related-date" datetime={post.data.pubDate.toISOString()}>
+              {formatDateShort(post.data.pubDate)}
+            </time>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+)}
+
+<style>
+  .related-title {
+    margin: 0 0 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .related-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .related-link {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 0.25rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-primary);
+    transition: color 0.2s ease;
+  }
+
+  .related-link:hover {
+    color: var(--accent);
+  }
+
+  .related-name {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    line-height: 1.4;
+  }
+
+  .related-date {
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+</style>

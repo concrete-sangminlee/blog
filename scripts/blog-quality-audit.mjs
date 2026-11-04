@@ -1,149 +1,77 @@
+#!/usr/bin/env node
+/**
+ * Editorial audit for every post. Uses the exact rules the admin and the
+ * content schema use (src/lib/post-rules.ts, run via Node's type
+ * stripping), so a post that passes here can't fail elsewhere.
+ *
+ *   npm run audit:blog                       # errors only
+ *   npm run audit:blog -- --show-warnings    # errors + warnings
+ *   npm run audit:blog -- --dir=tests/fixtures/blog
+ */
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
+import { auditPost, slugify } from "../src/lib/post-rules.ts";
+import { parsePost } from "../src/lib/frontmatter.ts";
 
-// Anchor to the script location so the audit works regardless of where
-// npm or the user invokes it from.
-const BLOG_DIR = path.join(import.meta.dirname, "..", "src/content/blog");
+// `--flag` and `--flag=value`; `--show-warnings=true` keeps working too.
 const args = new Map(
   process.argv.slice(2).map((arg) => {
-    const [key, value = "true"] = arg.replace(/^--/, "").split("=");
+    const [key = "", value = "true"] = arg.replace(/^--/, "").split("=");
     return [key, value];
   }),
 );
+const showWarnings = args.get("show-warnings") === "true";
 
-// Only flag phrases that assert a universal claim. "보통"/"대부분" are soft
-// hedges in Korean that already signal personal observation, so including
-// them here produced noise that didn't actually point to over-generalization.
-const broadPhrases = [
-  "반드시",
-  "항상",
-  "일반적으로",
-  "일반적인 원칙",
-  "일반적인 것",
-  "누구나",
-  "다들",
-  "90%",
-  "100%",
-];
+const ROOT = path.join(import.meta.dirname, "..");
+const BLOG_DIR = path.resolve(ROOT, args.get("dir") ?? process.env.BLOG_CONTENT_DIR ?? "src/content/blog");
 
-function parseFrontmatter(source, file) {
-  const match = source.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
-  if (!match) {
-    throw new Error(`${file}: frontmatter block is missing`);
-  }
-
-  const data = {};
-  for (const line of match[1].split("\n")) {
-    const [key, ...rest] = line.split(":");
-    if (!key || rest.length === 0) continue;
-    // Strip outer quotes, then unescape any \" that the admin or
-    // new-post.mjs escaped when writing titles containing quotes.
-    data[key.trim()] = rest.join(":").trim().replace(/^"|"$/g, "").replace(/\\"/g, '"');
-  }
-
-  return { data, body: match[2] };
-}
-
-function lineNumber(source, needle) {
-  const index = source.indexOf(needle);
-  if (index < 0) return 1;
-  return source.slice(0, index).split("\n").length;
-}
-
-function auditPost(file, source) {
-  const issues = [];
-  const warnings = [];
-  const { data, body } = parseFrontmatter(source, file);
-  const headings = [...body.matchAll(/^## /gm)].length;
-
-  for (const key of ["title", "description", "pubDate", "tags", "draft", "verified", "featured"]) {
-    if (!data[key]) issues.push(`${file}: missing ${key} in frontmatter`);
-  }
-
-  const isDraft = data.draft === "true";
-  const isPublished = data.draft === "false";
-  if (isPublished && data.verified !== "true") {
-    issues.push(`${file}: published posts must set verified: true`);
-  }
-
-  if ((data.title ?? "").length < 6) issues.push(`${file}: title is too short`);
-  if ((data.description ?? "").length < 16) issues.push(`${file}: description is too short`);
-  if (!isDraft && body.trim().length < 900) {
-    issues.push(`${file}: body is too short for a publishable essay`);
-  }
-  if (!isDraft && headings < 3) {
-    issues.push(`${file}: expected at least three section headings`);
-  }
-  if (!isDraft && /^## 결론$/m.test(body)) {
-    issues.push(`${file}: generic final heading "결론" remains`);
-  }
-
-  // Catch accidentally future-dated posts. They would still build, but the
-  // blog listing would show a date that hasn't happened yet — usually a
-  // typo in the pubDate.
-  const pub = data.pubDate ? new Date(data.pubDate) : null;
-  if (pub && !Number.isNaN(pub.valueOf()) && pub.valueOf() > Date.now()) {
-    issues.push(`${file}: pubDate ${data.pubDate} is in the future`);
-  }
-
-  // Title comes from frontmatter and renders as an <h1>. A body-level `#`
-  // heading would produce a second <h1>, confusing SEO and screen readers.
-  if (/^# [^#]/m.test(body)) {
-    issues.push(`${file}: body contains a top-level "# " heading (use ## or deeper)`);
-  }
-
-  // Em dashes are banned in this blog's voice. Authors tend to paste them
-  // in when drafting elsewhere; catch them before publish.
-  if (body.includes("—")) {
-    issues.push(`${file}:${lineNumber(source, "—")}: em dash (—) detected`);
-  }
-
-  for (const phrase of broadPhrases) {
-    if (body.includes(phrase)) {
-      warnings.push(`${file}:${lineNumber(source, phrase)}: broad phrase "${phrase}" needs context`);
-    }
-  }
-
-  return { issues, warnings };
-}
-
-async function main() {
-  let files;
+async function listPosts(dir) {
   try {
-    files = (await readdir(BLOG_DIR))
-      .filter((file) => file.endsWith(".mdx"))
+    const entries = await readdir(dir, { recursive: true, withFileTypes: true });
+    return entries
+      .filter((entry) => entry.isFile() && /\.mdx?$/.test(entry.name) && !entry.name.startsWith("_"))
+      .map((entry) => path.join(entry.parentPath, entry.name))
       .sort();
   } catch (error) {
-    if (error?.code !== "ENOENT") throw error;
-    files = [];
-  }
-
-  const allIssues = [];
-  const allWarnings = [];
-
-  for (const file of files) {
-    const source = await readFile(path.join(BLOG_DIR, file), "utf8");
-    const { issues, warnings } = auditPost(file, source);
-    allIssues.push(...issues);
-    allWarnings.push(...warnings);
-  }
-
-  if (allWarnings.length > 0 && args.get("show-warnings") === "true") {
-    console.warn(allWarnings.join("\n"));
-  }
-
-  if (allIssues.length > 0) {
-    console.error(allIssues.join("\n"));
-    process.exit(1);
-  }
-
-  console.log(`Blog audit passed: ${files.length} posts.`);
-  if (allWarnings.length > 0) {
-    console.log(`Context warnings: ${allWarnings.length}. Use --show-warnings=true to inspect.`);
+    if (error?.code === "ENOENT") return [];
+    throw error;
   }
 }
 
-main().catch((error) => {
-  console.error(error);
+const files = await listPosts(BLOG_DIR);
+const errors = [];
+const warnings = [];
+const seen = new Map();
+
+for (const file of files) {
+  const rel = path.relative(ROOT, file);
+  const source = await readFile(file, "utf8");
+  for (const finding of auditPost(source)) {
+    const where = finding.line > 0 ? `${rel}:${finding.line}` : rel;
+    (finding.severity === "error" ? errors : warnings).push(`${where}: ${finding.message} [${finding.rule}]`);
+  }
+
+  // Astro derives the URL from the file path (or a `slug` key); two posts
+  // that slug to the same id would silently overwrite each other.
+  let id = path.relative(BLOG_DIR, file).replace(/\.mdx?$/, "").split(path.sep).map(slugify).join("/");
+  try {
+    const { data } = parsePost(source);
+    if (typeof data.slug === "string") id = data.slug;
+  } catch {
+    /* already reported */
+  }
+  if (seen.has(id)) errors.push(`${rel}: URL /${id}/ collides with ${seen.get(id)} [duplicate-slug]`);
+  else seen.set(id, rel);
+}
+
+if (showWarnings && warnings.length > 0) console.warn(warnings.join("\n"));
+if (errors.length > 0) {
+  console.error(errors.join("\n"));
+  console.error(`\nBlog audit failed: ${errors.length} error(s) in ${files.length} post(s).`);
   process.exit(1);
-});
+}
+
+console.log(`Blog audit passed: ${files.length} post(s) in ${path.relative(ROOT, BLOG_DIR) || "."}.`);
+if (warnings.length > 0 && !showWarnings) {
+  console.log(`Context warnings: ${warnings.length}. Use --show-warnings to inspect.`);
+}
