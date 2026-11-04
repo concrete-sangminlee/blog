@@ -1,0 +1,106 @@
+name: CI
+
+# Runs on every pull request and is reused by deploy.yml, so nothing
+# reaches GitHub Pages without passing the same gate.
+on:
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      upload-pages:
+        description: Upload dist/ as the GitHub Pages artifact.
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}-${{ inputs.upload-pages && 'pages' || 'check' }}
+  cancel-in-progress: ${{ !inputs.upload-pages }}
+
+jobs:
+  check:
+    name: Typecheck, audit, unit tests, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      # Social-card fonts are fetched from jsDelivr and SHA-256-verified at
+      # build time (src/utils/og-fonts.ts). Restored after `npm ci`, which
+      # wipes node_modules.
+      - name: Restore social-card fonts
+        uses: actions/cache@v4
+        with:
+          path: node_modules/.cache/og-fonts
+          key: og-fonts-${{ hashFiles('src/utils/og-fonts.ts') }}
+
+      - name: Typecheck (.astro + .ts, strictest preset)
+        run: npm run typecheck
+
+      - name: Editorial audit
+        run: |
+          npm run audit:blog -- --show-warnings
+          npm run audit:fixture
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build site
+        run: npm run build
+
+      # The real blog may be empty; the fixture build exercises the post
+      # template, math, code, MDX components and social cards regardless.
+      - name: Build fixture site
+        run: npm run build:fixture
+
+      - name: Check links, metadata and social cards
+        run: npm run check:dist
+
+      - name: Upload builds for end-to-end tests
+        uses: actions/upload-artifact@v4
+        with:
+          name: builds
+          path: |
+            dist
+            dist-fixture
+          retention-days: 3
+
+      - name: Upload GitHub Pages artifact
+        if: inputs.upload-pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  e2e:
+    name: Browser tests (admin + fixture site)
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: builds
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run end-to-end tests
+        run: npm run test:e2e

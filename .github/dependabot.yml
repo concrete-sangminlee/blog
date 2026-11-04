@@ -1,0 +1,30 @@
+# Keep dependencies current: the blog sat on Astro 5 long enough to pick up
+# a critical advisory. Grouped so a week's updates arrive as one PR each.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: Asia/Seoul
+    open-pull-requests-limit: 5
+    groups:
+      astro:
+        patterns: ["astro", "@astrojs/*", "astro-*"]
+      markdown:
+        patterns: ["remark-*", "rehype-*", "katex", "unist-*", "hast-*", "@types/hast", "marked", "yaml"]
+      tooling:
+        dependency-type: development
+      fonts-and-images:
+        patterns: ["@fontsource*", "satori", "@resvg/*"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: Asia/Seoul
+    groups:
+      actions:
+        patterns: ["*"]
