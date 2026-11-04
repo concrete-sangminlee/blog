@@ -1,0 +1,207 @@
+---
+import type { MarkdownHeading } from "astro";
+
+interface Props {
+  headings: readonly MarkdownHeading[];
+  /** `sidebar`: sticky desktop column. `inline`: collapsible, below lg. */
+  variant: "sidebar" | "inline";
+}
+
+const { headings, variant } = Astro.props;
+---
+
+{variant === "sidebar" ? (
+  <div class="toc-sticky">
+    <p class="text-muted-sm mb-3 text-xs font-semibold uppercase tracking-widest" aria-hidden="true">목차</p>
+    <nav aria-label="이 글의 목차">
+      <ol class="toc-list space-y-1.5">
+        {headings.map((h) => (
+          <li class:list={[{ "toc-indent": h.depth === 3 }]}>
+            <a href={`#${h.slug}`} class="toc-link block text-xs leading-relaxed" data-toc-slug={h.slug}>
+              {h.text}
+            </a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  </div>
+) : (
+  <details class="toc-inline lg:hidden">
+    <summary>
+      <span>목차</span>
+      <span class="toc-count">{headings.length}개 섹션</span>
+    </summary>
+    <nav aria-label="이 글의 목차">
+      <ol class="toc-list">
+        {headings.map((h) => (
+          <li class:list={[{ "toc-indent": h.depth === 3 }]}>
+            <a href={`#${h.slug}`} class="toc-link" data-toc-slug={h.slug}>{h.text}</a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  </details>
+)}
+
+<style>
+  .toc-sticky {
+    position: sticky;
+    /* Sit just below the fixed, safe-area-aware header. */
+    top: calc(6rem + env(safe-area-inset-top));
+    max-height: calc(100vh - 8rem - env(safe-area-inset-top));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+  }
+
+  .toc-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .toc-indent {
+    padding-left: 0.75rem;
+  }
+
+  .toc-link {
+    color: var(--text-muted);
+    transition: color 0.2s ease;
+  }
+
+  .toc-link:hover,
+  .toc-link[aria-current="location"] {
+    color: var(--accent);
+  }
+
+  .toc-link[aria-current="location"] {
+    font-weight: 600;
+  }
+
+  .toc-inline {
+    margin-bottom: 2.5rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    background: var(--bg-surface);
+  }
+
+  .toc-inline summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.8rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .toc-inline summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .toc-inline summary::after {
+    content: "";
+    width: 0.45rem;
+    height: 0.45rem;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg) translateY(-2px);
+    transition: transform 0.2s ease;
+    margin-left: auto;
+  }
+
+  .toc-inline[open] summary::after {
+    transform: rotate(-135deg) translateY(-2px);
+  }
+
+  .toc-count {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 400;
+    color: var(--text-muted);
+  }
+
+  .toc-inline nav {
+    padding: 0 1rem 0.9rem;
+  }
+
+  .toc-inline .toc-list {
+    display: grid;
+    gap: 0.4rem;
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+</style>
+
+<script>
+  // One controller for every TOC on the page (sidebar + inline share it).
+  let controller: AbortController | null = null;
+
+  function initToc() {
+    controller?.abort();
+    const links = Array.from(document.querySelectorAll<HTMLAnchorElement>("[data-toc-slug]"));
+    if (links.length === 0) return;
+    controller = new AbortController();
+    const { signal } = controller;
+
+    const slugs = [...new Set(links.map((link) => link.dataset["tocSlug"] ?? ""))];
+    const headings = slugs
+      .map((slug) => document.getElementById(slug))
+      .filter((el): el is HTMLElement => el !== null);
+    if (headings.length === 0) return;
+
+    let frame = 0;
+    let current: string | null = null;
+
+    function update() {
+      frame = 0;
+      // The active section is the last heading whose top has scrolled past
+      // a line just below the fixed header.
+      const threshold = 120;
+      let active: HTMLElement | undefined = headings[0];
+      for (const heading of headings) {
+        if (heading.getBoundingClientRect().top <= threshold) active = heading;
+        else break;
+      }
+      // At the very bottom, the last section is active even if its heading
+      // never reached the threshold.
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) {
+        active = headings[headings.length - 1];
+      }
+      const id = active?.id ?? null;
+      if (id === current) return;
+      current = id;
+      for (const link of links) {
+        if (link.dataset["tocSlug"] === id) link.setAttribute("aria-current", "location");
+        else link.removeAttribute("aria-current");
+      }
+    }
+
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    window.addEventListener("scroll", schedule, { passive: true, signal });
+    window.addEventListener("resize", schedule, { passive: true, signal });
+    signal.addEventListener("abort", () => cancelAnimationFrame(frame));
+
+    // Collapse the inline TOC after a jump so the section isn't hidden
+    // behind a long open list on small screens.
+    document.querySelectorAll<HTMLDetailsElement>(".toc-inline").forEach((details) => {
+      details.addEventListener(
+        "click",
+        (event) => {
+          if ((event.target as Element).closest("a")) details.open = false;
+        },
+        { signal },
+      );
+    });
+
+    update();
+  }
+
+  initToc();
+  document.addEventListener("astro:after-swap", initToc);
+</script>

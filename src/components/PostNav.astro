@@ -10,20 +10,22 @@ interface Props {
 const { prev, next } = Astro.props;
 ---
 
-<nav class="post-nav mt-16 grid grid-cols-2 gap-4" aria-label="이전 / 다음 글">
-  {prev ? (
-    <a href={href(`/${prev.slug}/`)} class="post-nav-link">
-      <span class="post-nav-label">이전 글</span>
-      <span class="heading-section text-sm">{prev.data.title}</span>
-    </a>
-  ) : <div />}
-  {next ? (
-    <a href={href(`/${next.slug}/`)} class="post-nav-link text-right sm:items-end">
-      <span class="post-nav-label">다음 글</span>
-      <span class="heading-section text-sm">{next.data.title}</span>
-    </a>
-  ) : <div />}
-</nav>
+{(prev || next) && (
+  <nav class="post-nav mt-16 grid grid-cols-1 gap-4 sm:grid-cols-2" aria-label="이전 글과 다음 글">
+    {prev ? (
+      <a href={href(`/${prev.id}/`)} class="post-nav-link" rel="prev">
+        <span class="post-nav-label">← 이전 글</span>
+        <span class="heading-section text-sm">{prev.data.title}</span>
+      </a>
+    ) : <div class="hidden sm:block" aria-hidden="true" />}
+    {next && (
+      <a href={href(`/${next.id}/`)} class="post-nav-link sm:items-end sm:text-right" rel="next">
+        <span class="post-nav-label">다음 글 →</span>
+        <span class="heading-section text-sm">{next.data.title}</span>
+      </a>
+    )}
+  </nav>
+)}
 
 <style>
   .post-nav {
@@ -39,7 +41,7 @@ const { prev, next } = Astro.props;
     border-radius: 0.5rem;
     border: 1px solid var(--border);
     text-decoration: none;
-    transition: all 0.2s ease;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
   }
 
   .post-nav-link:hover {
@@ -54,7 +56,6 @@ const { prev, next } = Astro.props;
   .post-nav-label {
     font-size: 0.7rem;
     font-weight: 500;
-    text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--text-muted);
   }

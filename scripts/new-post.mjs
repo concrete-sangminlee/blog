@@ -1,81 +1,51 @@
 #!/usr/bin/env node
-
-import fs from "node:fs";
+/**
+ * Scaffold a draft post: npm run new-post "글 제목"
+ * Shares slug, date and frontmatter rules with the admin and the audit.
+ */
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { serializePost } from "../src/lib/frontmatter.ts";
+import { POST_LIMITS, slugify, toOffsetIsoString } from "../src/lib/post-rules.ts";
 
-// import.meta.dirname replaces the old fileURLToPath + path.dirname
-// pair and requires Node ≥ 20.11 / 21.2, which matches the floor we
-// pin in package.json engines.
 const CONTENT_DIR = path.join(import.meta.dirname, "..", "src", "content", "blog");
 
-function slugify(text) {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s가-힣-]/g, "")
-    .replace(/[\s_]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
-function getNowIso() {
-  const d = new Date();
-  const pad = (n) => String(n).padStart(2, "0");
-  // Local-time ISO without the timezone suffix; lets two posts drafted on
-  // the same day still sort deterministically by minute.
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-}
-
-const title = process.argv.slice(2).join(" ");
-
-if (!title) {
-  console.error("사용법: npm run new-post \"글 제목\"");
+function fail(message) {
+  console.error(message);
   process.exit(1);
 }
 
-// Match content schema's title: z.string().min(6).max(100).
-if (title.length < 6) {
-  console.error("제목은 6자 이상이어야 합니다");
-  process.exit(1);
-}
-if (title.length > 100) {
-  console.error("제목은 100자 이하로 줄여주세요");
-  process.exit(1);
-}
+const title = process.argv.slice(2).join(" ").trim();
+if (!title) fail('사용법: npm run new-post "글 제목"');
+if (title.length < POST_LIMITS.title.min) fail(`제목은 ${POST_LIMITS.title.min}자 이상이어야 합니다`);
+if (title.length > POST_LIMITS.title.max) fail(`제목은 ${POST_LIMITS.title.max}자 이하로 줄여주세요`);
 
 const slug = slugify(title);
-if (!slug) {
-  console.error("슬러그로 변환할 글자(한글, 영문, 숫자)가 없습니다");
-  process.exit(1);
-}
-const filename = `${slug}.mdx`;
-const filepath = path.join(CONTENT_DIR, filename);
+if (!slug) fail("슬러그로 변환할 글자(한글, 영문, 숫자)가 없습니다");
 
-if (fs.existsSync(filepath)) {
-  console.error(`이미 같은 파일이 있습니다: ${filepath}`);
-  process.exit(1);
-}
+const filepath = path.join(CONTENT_DIR, `${slug}.mdx`);
+if (existsSync(filepath)) fail(`이미 같은 파일이 있습니다: ${path.relative(process.cwd(), filepath)}`);
 
-fs.mkdirSync(CONTENT_DIR, { recursive: true });
+mkdirSync(CONTENT_DIR, { recursive: true });
+writeFileSync(
+  filepath,
+  serializePost(
+    {
+      title,
+      // Long enough for the schema's minimum so `npm run dev` works right
+      // away; replace it before publishing.
+      description: "여기에 한 줄 설명을 적어주세요.",
+      pubDate: toOffsetIsoString(),
+      tags: [],
+      draft: true,
+      verified: false,
+      featured: false,
+      math: false,
+    },
+    "여기에 글을 작성하세요.",
+  ),
+  "utf8",
+);
 
-// Escape embedded quotes so titles like "'유레카' 순간" don't break YAML.
-const yamlTitle = title.replace(/"/g, '\\"');
-// Placeholder description is long enough to satisfy the content schema's
-// min(16) on description, so running `npm run dev` right after scaffold
-// doesn't throw a zod validation error. Author replaces it before publish.
-const content = `---
-title: "${yamlTitle}"
-description: "여기에 한 줄 설명을 적어주세요."
-pubDate: ${getNowIso()}
-tags: []
-draft: true
-verified: false
-featured: false
-math: false
----
-
-여기에 글을 작성하세요.
-`;
-
-fs.writeFileSync(filepath, content, "utf-8");
-console.log(`생성됨: src/content/blog/${filename}`);
-console.log(`글을 작성한 뒤 verified: true 와 draft: false 를 함께 설정해야 발행됩니다.`);
+console.log(`생성됨: ${path.relative(process.cwd(), filepath)}`);
+console.log("발행하려면 사실 확인 후 verified: true 와 draft: false 를 함께 설정하세요.");

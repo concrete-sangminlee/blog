@@ -1,33 +1,16 @@
 import type { APIRoute, GetStaticPaths } from "astro";
-import { SITE } from "@/data/site.config";
-import { renderOgSvg } from "@/utils/og-svg";
+import { cardOptionsFor } from "@/utils/social-card-options";
+import { renderSocialCardSvg } from "@/utils/og-image";
 import { getAllPosts, type BlogPost } from "@/utils/posts";
 
-export const prerender = true;
-
+// Vector twin of /og/[slug].png, used as the post-card thumbnail: same
+// layout, text outlined to paths, a fraction of the bytes, sharp at any DPR.
 export const getStaticPaths: GetStaticPaths = async () => {
   const posts = await getAllPosts();
-
-  return posts.map((post) => ({
-    params: { slug: post.slug },
-    props: { post },
-  }));
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
 };
 
-export const GET: APIRoute<{ post: BlogPost }> = ({ props }) => {
-  const { post } = props;
-  const svg = renderOgSvg({
-    title: post.data.title,
-    description: post.data.description,
-    eyebrow: SITE.title.toUpperCase(),
-    footer: `/${post.slug}/`,
-    tags: post.data.tags,
-  });
-
-  return new Response(svg, {
-    headers: {
-      "Content-Type": "image/svg+xml; charset=utf-8",
-      "Cache-Control": "public, max-age=31536000, immutable",
-    },
-  });
+export const GET: APIRoute<{ post: BlogPost }> = async ({ props }) => {
+  const svg = await renderSocialCardSvg(cardOptionsFor(props.post));
+  return new Response(svg, { headers: { "Content-Type": "image/svg+xml; charset=utf-8" } });
 };

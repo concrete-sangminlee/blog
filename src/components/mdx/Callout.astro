@@ -1,0 +1,59 @@
+---
+/**
+ * Usage in MDX (available without an import):
+ *
+ *   <Callout type="warning" title="단위 주의">
+ *   하중은 kN, 길이는 m 기준이다.
+ *   </Callout>
+ */
+interface Props {
+  type?: "note" | "tip" | "warning" | "danger";
+  title?: string;
+}
+
+const LABELS = {
+  note: "참고",
+  tip: "팁",
+  warning: "주의",
+  danger: "경고",
+} as const;
+
+const { type = "note", title } = Astro.props;
+const label = title ?? LABELS[type];
+---
+
+<aside class:list={["callout", `callout-${type}`]} aria-label={label}>
+  <span class="callout-title">{label}</span>
+  <div class="callout-body"><slot /></div>
+</aside>
+
+<style>
+  .callout {
+    --callout-color: var(--accent);
+    margin: 2rem 0;
+    padding: 1rem 1.25rem;
+    border: 1px solid color-mix(in srgb, var(--callout-color) 28%, transparent);
+    border-left-width: 3px;
+    border-left-color: var(--callout-color);
+    border-radius: 0.5rem;
+    background: color-mix(in srgb, var(--callout-color) 6%, transparent);
+  }
+
+  .callout-note { --callout-color: #7aa2f7; }
+  .callout-tip { --callout-color: #73c991; }
+  .callout-warning { --callout-color: var(--accent); }
+  .callout-danger { --callout-color: #f7768e; }
+
+  .callout-title {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--callout-color);
+  }
+
+  .callout-body > :global(:last-child) {
+    margin-bottom: 0;
+  }
+</style>
