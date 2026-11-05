@@ -22,10 +22,12 @@ const { type = "note", title } = Astro.props;
 const label = title ?? LABELS[type];
 ---
 
-<aside class:list={["callout", `callout-${type}`]} aria-label={label}>
+<!-- role="note" rather than <aside>: several callouts in one post would
+     otherwise be complementary landmarks with clashing names. -->
+<div class:list={["callout", `callout-${type}`]} role="note" aria-label={label}>
   <span class="callout-title">{label}</span>
   <div class="callout-body"><slot /></div>
-</aside>
+</div>
 
 <style>
   .callout {

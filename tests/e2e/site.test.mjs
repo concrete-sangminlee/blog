@@ -9,6 +9,7 @@ import assert from "node:assert/strict";
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { after, before, describe, it } from "node:test";
+import { AxeBuilder } from "@axe-core/playwright";
 import { launchBrowser, serveDist } from "./helpers.mjs";
 
 const DIST = path.resolve(process.env.DIST_DIR ?? "dist-fixture");
@@ -41,7 +42,7 @@ describe("fixture build output", () => {
     assert.match(html, /<div class="table-scroll" tabindex="0" role="region"/);
     assert.match(html, /id="footnote-label">각주<\/h2>/, "footnote heading has no permalink");
     assert.doesNotMatch(html, /data-toc-slug="footnote-label"/, "footnotes are not a TOC section");
-    assert.match(html, /<aside class="callout callout-warning" aria-label="단위 주의"/);
+    assert.match(html, /<div class="callout callout-warning" role="note" aria-label="단위 주의"/);
     assert.match(html, /<figcaption>그림 1\./);
   });
 
@@ -118,6 +119,32 @@ describe("fixture site in a browser", () => {
       assert.deepEqual(problems, [], pathname);
       await page.context().close();
     }
+  });
+
+  it("has no WCAG 2.2 AA accessibility violations (axe-core)", async () => {
+    const pages = [
+      ["/blog/", 1360],
+      ["/blog/posts/", 1360],
+      ["/blog/about/", 1360],
+      ["/blog/structural-analysis-notes/", 1360],
+      ["/blog/structural-analysis-notes/", 390],
+      ["/blog/plain-markdown-post/", 390],
+      ["/blog/does-not-exist/", 1360],
+    ];
+    const failures = [];
+    for (const [pathname, width] of pages) {
+      const { page } = await open(pathname, { viewport: { width, height: 900 } });
+      // Let entrance animations and Expressive Code's scroll-region script settle.
+      await page.waitForTimeout(800);
+      const { violations } = await new AxeBuilder({ page })
+        .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"])
+        .analyze();
+      for (const v of violations) {
+        failures.push(`${pathname} @${width}px: [${v.impact}] ${v.id} (${v.nodes.length}) ${v.nodes[0]?.target.join(" ")}`);
+      }
+      await page.context().close();
+    }
+    assert.deepEqual(failures, []);
   });
 
   it("highlights the current section in the table of contents", async () => {

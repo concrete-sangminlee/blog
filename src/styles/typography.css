@@ -35,7 +35,6 @@
   font-weight: 400;
   font-size: 0.75em;
   color: var(--text-muted);
-  border-bottom: 0;
   opacity: 0;
   transition: opacity 0.15s ease, color 0.15s ease;
 }
@@ -47,7 +46,6 @@
 
 .prose .heading-anchor:hover {
   color: var(--accent);
-  border-bottom: 0;
 }
 
 @media (hover: none) {
@@ -215,17 +213,26 @@
   background: var(--bg-surface);
 }
 
-/* Links in prose */
+/* Links in prose. Colour alone doesn't distinguish a link inside running
+   text (WCAG 1.4.1), so they carry a quiet underline that brightens on
+   hover. */
 .prose a {
   color: var(--accent);
-  text-decoration: none;
-  border-bottom: 1px solid transparent;
-  transition: all 0.2s ease;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  text-underline-offset: 0.22em;
+  transition: color 0.2s ease, text-decoration-color 0.2s ease;
 }
 
 .prose a:hover {
   color: var(--accent-hover);
-  border-bottom-color: var(--accent-hover);
+  text-decoration-color: var(--accent-hover);
+}
+
+.prose a.heading-anchor,
+.prose [data-footnote-ref] {
+  text-decoration: none;
 }
 
 /* Footnotes (GFM). The label is localised in astro.config.ts. */

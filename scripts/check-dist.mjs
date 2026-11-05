@@ -7,16 +7,30 @@
  * - every indexable page has one <h1>, a title, a description, a canonical
  *   URL and valid JSON-LD; no page has duplicate ids or images without alt;
  * - og:image files exist and PNG cards are exactly 1200×630;
- * - the sitemap lists only pages that exist, and never the admin or 404.
+ * - the sitemap lists only pages that exist, and never the admin or 404;
+ * - each page stays within a gzipped weight budget for HTML, render-
+ *   blocking CSS and entry JS (fonts and images load lazily, so they're
+ *   not counted).
  *
  *   node scripts/check-dist.mjs [dist-dir]
  */
 import { readdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
+import { gzipSync } from "node:zlib";
 
 const SITE = "https://concrete-sangminlee.github.io";
 const BASE = "/blog/";
 const distDir = path.resolve(process.argv[2] ?? "dist");
+
+// Gzipped bytes. Generous on purpose: they catch a stray dependency or an
+// accidentally inlined asset, not normal growth. Measured at introduction:
+// post page 10 KB HTML / 38 KB CSS / 6 KB JS; admin 43 KB JS.
+const BUDGET = {
+  html: 60 * 1024,
+  css: 70 * 1024,
+  js: 25 * 1024,
+  adminJs: 90 * 1024,
+};
 
 const errors = [];
 const fail = (file, message) => errors.push(`${file}: ${message}`);
@@ -125,6 +139,21 @@ async function checkPage(file) {
   for (const img of html.matchAll(/<img\b[^>]*>/g)) {
     if (!/\salt=/.test(img[0])) fail(rel, `<img> without alt: ${img[0].slice(0, 80)}`);
   }
+
+  const gz = (bytes) => gzipSync(bytes).length;
+  const kb = (n) => `${(n / 1024).toFixed(1)} KB`;
+  const weights = { html: gz(html), css: 0, js: 0 };
+  const assets = new Set(
+    [...html.matchAll(/<(?:link\b[^>]*\brel="stylesheet"[^>]*\bhref|script\b[^>]*\bsrc)="(\/blog\/_astro\/[^"]+)"/g)].map((m) => m[1]),
+  );
+  for (const asset of assets) {
+    const file = await resolveFile(asset);
+    if (file) weights[asset.endsWith(".css") ? "css" : "js"] += gz(await readFile(file));
+  }
+  const jsBudget = isAdmin ? BUDGET.adminJs : BUDGET.js;
+  if (weights.html > BUDGET.html) fail(rel, `HTML is ${kb(weights.html)} gzipped (budget ${kb(BUDGET.html)})`);
+  if (weights.css > BUDGET.css) fail(rel, `render-blocking CSS is ${kb(weights.css)} gzipped (budget ${kb(BUDGET.css)})`);
+  if (weights.js > jsBudget) fail(rel, `entry JS is ${kb(weights.js)} gzipped (budget ${kb(jsBudget)})`);
 
   if (isAdmin) {
     if (!/http-equiv="Content-Security-Policy"/.test(html)) fail(rel, "admin page lost its Content-Security-Policy");

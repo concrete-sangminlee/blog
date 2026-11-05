@@ -14,9 +14,17 @@ const byNewest = (a: BlogPost, b: BlogPost) =>
  * All visible posts, newest first. Schema errors are NOT swallowed here:
  * a malformed post must fail the build rather than silently vanish.
  */
-export async function getAllPosts(): Promise<readonly BlogPost[]> {
-  const posts = await getCollection("blog", isPublished);
-  return posts.sort(byNewest);
+let cached: Promise<readonly BlogPost[]> | null = null;
+
+export function getAllPosts(): Promise<readonly BlogPost[]> {
+  // A production build renders every page from the same, immutable
+  // collection, and each post page asks for the full list (prev/next,
+  // related posts): compute it once instead of once per page. Dev keeps
+  // reading fresh so edits show up immediately.
+  if (cached) return cached;
+  const posts = getCollection("blog", isPublished).then((list) => Object.freeze(list.sort(byNewest)));
+  if (import.meta.env.PROD) cached = posts;
+  return posts;
 }
 
 export async function getFeaturedPosts(): Promise<readonly BlogPost[]> {

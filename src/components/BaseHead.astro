@@ -167,16 +167,9 @@ const jsonLd = JSON.stringify({ "@context": "https://schema.org", "@graph": grap
 
 {!noIndex && <script type="application/ld+json" set:html={jsonLd} />}
 
-<!-- Pretendard (full Hangul, dynamic subset). Version-pinned with
-     Subresource Integrity so an altered CDN response is rejected. -->
+<!-- Pretendard font files come from jsDelivr (their @font-face rules are
+     bundled in our CSS); open the connection early. -->
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
-  integrity="sha384-/uC/GIvKJ/9RN6i1izHoBY9ubYo60OAsQRNQ3NRFiNsN+N/MVQJHD5OYcZz6wvwn"
-  crossorigin="anonymous"
-  referrerpolicy="no-referrer"
-/>
 
 <!-- KaTeX styles, self-hosted from the same katex version that rendered
      the HTML at build time; only pages with math request them. -->
