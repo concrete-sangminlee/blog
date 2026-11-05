@@ -1,4 +1,4 @@
-import { utf8ToBase64 } from "@/lib/encoding";
+import { bytesToBase64, utf8ToBase64 } from "@/lib/encoding";
 
 /**
  * Minimal GitHub client for the admin. Reads go through GraphQL, which
@@ -160,17 +160,21 @@ export class GitHubClient {
    * Create (no `sha`) or update (with the `sha` that was loaded) a file.
    * GitHub rejects the write if the file changed in the meantime.
    */
-  async putFile(path: string, text: string, message: string, sha?: string): Promise<{ sha: string; commitUrl: string }> {
+  putFile(path: string, text: string, message: string, sha?: string): Promise<{ sha: string; commitUrl: string }> {
+    return this.#put(path, utf8ToBase64(text), message, sha);
+  }
+
+  /** Create a binary file (an image). Fails with a conflict if it exists. */
+  putBinary(path: string, bytes: Uint8Array, message: string): Promise<{ sha: string; commitUrl: string }> {
+    return this.#put(path, bytesToBase64(bytes), message);
+  }
+
+  async #put(path: string, content: string, message: string, sha?: string): Promise<{ sha: string; commitUrl: string }> {
     const result = await this.#request<{ content: { sha: string }; commit: { html_url: string } }>(
       `/repos/${this.#repo.owner}/${this.#repo.name}/contents/${encodePath(path)}`,
       {
         method: "PUT",
-        body: JSON.stringify({
-          message,
-          content: utf8ToBase64(text),
-          branch: this.#repo.branch,
-          ...(sha ? { sha } : {}),
-        }),
+        body: JSON.stringify({ message, content, branch: this.#repo.branch, ...(sha ? { sha } : {}) }),
       },
     );
     return { sha: result.content.sha, commitUrl: result.commit.html_url };

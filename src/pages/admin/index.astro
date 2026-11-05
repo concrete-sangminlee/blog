@@ -16,7 +16,7 @@ import { href } from "@/utils/paths";
 const csp = [
   "default-src 'none'",
   "script-src 'self'",
-  "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
+  "style-src 'self' 'unsafe-inline'",
   "font-src 'self' https://cdn.jsdelivr.net",
   "img-src 'self' data: https:",
   "connect-src https://api.github.com",
@@ -44,12 +44,7 @@ const newTokenUrl =
     <meta name="color-scheme" content="dark" />
     <meta name="theme-color" content="#08080a" />
     <link rel="icon" href="data:," />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
-      integrity="sha384-/uC/GIvKJ/9RN6i1izHoBY9ubYo60OAsQRNQ3NRFiNsN+N/MVQJHD5OYcZz6wvwn"
-      crossorigin="anonymous"
-    />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <title>블로그 관리</title>
   </head>
   <body class="admin">
@@ -183,13 +178,19 @@ const newTokenUrl =
             </div>
           </details>
 
-          <label class="field">
-            <span class="field-label">
-              본문 (Markdown / MDX)
+          <div class="field">
+            <div class="field-label">
+              <label for="ed-body">본문 (Markdown / MDX)</label>
               <span class="counter" id="body-stats"></span>
-            </span>
+            </div>
+            <div class="body-tools" role="toolbar" aria-label="본문 도구">
+              <button type="button" id="image-btn" class="btn btn-ghost btn-sm">이미지 추가</button>
+              <input id="image-input" type="file" accept="image/png,image/jpeg,image/webp,image/avif,image/gif" multiple hidden />
+              <span id="pending-images" class="hint" aria-live="polite"></span>
+              <span class="hint shortcut-hint">⌘B 굵게 · ⌘I 기울임 · ⌘K 링크 · 이미지는 붙여넣기·끌어놓기도 됩니다</span>
+            </div>
             <textarea id="ed-body" class="body-input" spellcheck="false" required></textarea>
-          </label>
+          </div>
         </div>
 
         <aside class="editor-side" aria-labelledby="audit-heading">
@@ -316,6 +317,9 @@ const newTokenUrl =
   .admin textarea:focus { outline: none; border-color: var(--accent); }
   .admin input[aria-invalid="true"] { border-color: #f87171; }
   .admin textarea { resize: vertical; }
+  .admin .body-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem 0.9rem; }
+  .admin .shortcut-hint { margin-left: auto; }
+  .admin .body-input.dragging { border-color: var(--accent); border-style: dashed; }
   .admin .body-input {
     min-height: 55vh;
     font: 0.86rem/1.75 var(--font-mono);

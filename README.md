@@ -10,7 +10,8 @@
 - **Publish gate**: `draft: false` 글은 `verified: true`가 있어야 스키마·감사·admin 저장을 모두 통과합니다.
 - **One rulebook**: 제목·설명 길이, slug, 날짜, 문체 감사 규칙이 `src/lib/post-rules.ts` 한 곳에 있고 콘텐츠 스키마, `audit:blog`, `new-post`, admin이 모두 이것을 씁니다.
 - **Writing extras**: 섹션 고유 링크(`#`), 모바일 접이식 목차, 태그 기반 관련 글, 각주(한국어 라벨), 가로 스크롤 표, KaTeX(수식이 있는 글에서만 로드), 인쇄용 스타일, MDX 컴포넌트 `<Callout>`·`<Figure>`.
-- **Dark-only theme**: 모든 페이지를 다크 테마로 고정합니다.
+- **Dark-only theme**: 모든 페이지를 다크 테마로 고정합니다. 모든 글자색이 WCAG AA 명도 대비(4.5:1)를 넘습니다.
+- **Accessible & fast**: axe-core 검사(WCAG 2.2 AA)와 페이지 용량 예산을 CI가 매번 확인합니다. Lighthouse(모바일) 기준 접근성 100, 성능 홈 91 / 글 98.
 
 ## Tech Stack
 
@@ -64,8 +65,8 @@ npm run build && npm run preview    # 프로덕션 빌드 확인
 | `npm run audit:blog` | 글 감사: frontmatter, 길이, 섹션 수, em dash, `#` 제목, 미래 날짜, `/blog` 빠진 링크, alt 없는 이미지, 닫히지 않은 코드 블록, slug 충돌 (`-- --show-warnings`로 경고까지) |
 | `npm test` | 공유 모듈 단위 테스트 (Node 내장 테스트 러너) |
 | `npm run build:fixture` | `tests/fixtures/blog`의 예시 글로 사이트를 `dist-fixture/`에 빌드 |
-| `npm run check:dist` | 빌드 결과의 내부 링크·앵커, 메타데이터, JSON-LD, 소셜 카드 크기, sitemap 검사 |
-| `npm run test:e2e` | 브라우저 테스트: admin(가짜 GitHub API), 예시 사이트(목차, 모바일, 페이지 전환) |
+| `npm run check:dist` | 빌드 결과의 내부 링크·앵커, 메타데이터, JSON-LD, 소셜 카드 크기, sitemap, 페이지 용량 예산(gzip: HTML 60KB, CSS 70KB, JS 25KB) 검사 |
+| `npm run test:e2e` | 브라우저 테스트: admin(가짜 GitHub API, 이미지 업로드 포함), 예시 사이트(목차, 모바일, 페이지 전환), axe-core 접근성 검사 |
 | `npm run check` | typecheck → 감사 → 단위 테스트 → 두 빌드 → 산출물 검사 |
 
 실제 블로그가 비어 있어도 글 템플릿이 망가지지 않도록, CI는 항상 예시 글(fixture)로도 빌드하고 테스트합니다. 예시 글은 `tests/fixtures/`에만 있고 배포되지 않습니다.
@@ -76,11 +77,15 @@ npm run build && npm run preview    # 프로덕션 빌드 확인
 
 소셜 카드용 Pretendard TTF는 빌드 때 jsDelivr에서 받아 SHA-256으로 검증한 뒤 `node_modules/.cache/og-fonts/`에 캐시합니다. 오프라인에서 빌드하려면 `OG_FONT_DIR`에 같은 파일이 있는 폴더를 지정하세요.
 
+본문용 Pretendard는 `@font-face` 규칙만 `src/styles/vendor/pretendard.css`로 포함하고 폰트 파일은 jsDelivr에서 필요한 조각만 받습니다(제3자 CSS가 첫 화면을 막지 않도록). 버전을 올릴 때는 `scripts/vendor-pretendard.mjs`의 `VERSION`을 바꾸고 다시 실행하세요.
+
 ## Admin
 
 브라우저에서 `/blog/admin/`으로 접속해 GitHub 토큰을 넣으면 글을 쓰고 고칠 수 있습니다. 저장은 GitHub API로 `main`에 바로 커밋됩니다.
 
 - **토큰**: [fine-grained token](https://github.com/settings/personal-access-tokens/new)을 이 저장소에만, `Contents: Read and write` 권한으로 만드는 것을 권장합니다. 기본은 탭을 닫으면 지워지는 `sessionStorage`이고, "기억하기"를 켜면 `localStorage`에 남습니다.
+- **이미지**: 본문에 붙여넣기, 끌어놓기, "이미지 추가" 버튼으로 넣습니다. 브라우저에서 가로 1600px 이하 WebP로 줄인 뒤 저장할 때 `public/images/<글 주소>/`에 함께 커밋합니다. 파일명은 내용 해시라 같은 이미지를 두 번 올려도 하나만 남습니다. alt가 비어 있으면 저장되지 않으니 `[ ]` 안에 설명을 적으세요. SVG는 이 출처에서 스크립트를 실행할 수 있어 받지 않습니다(PNG로 내보내 올리세요).
+- **편집**: ⌘/Ctrl+B 굵게, ⌘/Ctrl+I 기울임, ⌘/Ctrl+K 링크, 선택한 글자 위에 URL을 붙여넣으면 링크가 됩니다. 미리보기는 KaTeX 수식과 `<Callout>`·`<Figure>`도 비슷하게 보여 줍니다.
 - **안전장치**: 저장 전에 CI와 같은 감사를 돌려 오류가 있으면 커밋하지 않습니다. 다른 곳에서 파일이 바뀌었으면 덮어쓰지 않고 알려 줍니다. 작성 중인 내용은 브라우저에 자동 저장됩니다. 알 수 없는 frontmatter 키는 그대로 보존합니다.
 - **보안**: 페이지에 Content-Security-Policy를 걸어 스크립트는 같은 출처에서만, 네트워크 요청은 `api.github.com`으로만 가능합니다. 미리보기는 스크립트가 꺼진 sandbox iframe에서 렌더링되어 글 본문의 HTML이 토큰에 접근할 수 없습니다.
 
@@ -95,6 +100,6 @@ src/
   admin/        /admin/ 페이지 스크립트 (GitHub 클라이언트, 편집기)
   components/   Astro 컴포넌트 (mdx/: 글에서 쓰는 컴포넌트)
   utils/        Astro 전용 헬퍼 (컬렉션, 소셜 카드 렌더러)
-scripts/        audit, new-post, check-dist
+scripts/        audit, new-post, check-dist, vendor-pretendard
 tests/          unit/, e2e/, fixtures/blog/
 ```
