@@ -32,7 +32,12 @@ export async function serveDist(dir, base = "/blog/") {
     }
     const status = file ? 200 : 404;
     file ??= path.join(root, "404.html");
-    res.writeHead(status, { "Content-Type": TYPES[path.extname(file)] ?? "application/octet-stream" });
+    res.writeHead(status, {
+      "Content-Type": TYPES[path.extname(file)] ?? "application/octet-stream",
+      // GitHub Pages sends this on every file; the admin's sandboxed
+      // (opaque-origin) preview relies on it to load KaTeX fonts.
+      "Access-Control-Allow-Origin": "*",
+    });
     res.end(await readFile(file));
   });
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));

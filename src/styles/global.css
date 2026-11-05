@@ -2,9 +2,12 @@
 
 /* ── Self-hosted fonts ──
    Newsreader and JetBrains Mono are bundled from npm by Vite (no Google
-   Fonts round trip). Each face is split by unicode-range, so browsers only
-   download the chunks a page uses. Pretendard is loaded in BaseHead from
-   jsDelivr's dynamic subset: its full-Hangul npm package is 72 MB. */
+   Fonts round trip). Pretendard's @font-face rules are vendored (see
+   scripts/vendor-pretendard.mjs) while its font files stay on jsDelivr,
+   because the full-Hangul npm package is 72 MB. Every face is split by
+   unicode-range, so browsers download only the chunks a page uses, and
+   none of it is render-blocking. */
+@import "./vendor/pretendard.css";
 @import "@fontsource-variable/newsreader/wght.css";
 @import "@fontsource-variable/newsreader/wght-italic.css";
 @import "@fontsource-variable/jetbrains-mono/wght.css";
@@ -24,8 +27,10 @@
   --bg-surface: #111114;
   --bg-surface-hover: #19191d;
   --text-primary: #e4e0d9;
-  --text-secondary: #8b8680;
-  --text-muted: #5c5955;
+  /* Contrast on --bg: primary 15.2:1, secondary 6.8:1, muted 5.1:1, all
+     above WCAG AA's 4.5:1 for body text (muted was 2.9:1). */
+  --text-secondary: #9b968f;
+  --text-muted: #85807a;
   --accent: #e8a849;
   --accent-hover: #f0bc5e;
   --accent-subtle: rgba(232, 168, 73, 0.07);

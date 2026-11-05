@@ -2,7 +2,10 @@ import { REPO } from "@/data/site.config";
 import { FrontmatterError, parsePost, serializePost, type FrontmatterData } from "@/lib/frontmatter";
 import { auditPost, hasErrors, POST_LIMITS, slugify, toOffsetIsoString, type Finding } from "@/lib/post-rules";
 import { getReadingMinutes } from "@/lib/reading-time";
+import { bytesToBase64 } from "@/lib/encoding";
 import { GitHubClient, GitHubError, type RemoteFile } from "./github";
+import { formatBytes, ImageRejected, prepareImage, type PreparedImage } from "./images";
+import katexStylesheet from "katex/dist/katex.min.css?url";
 
 // Refuse to run framed: the page holds a write token (clickjacking guard;
 // GitHub Pages can't send frame-ancestors / X-Frame-Options headers).
@@ -61,6 +64,9 @@ const ui = {
   imageAlt: $<HTMLInputElement>("ed-image-alt"),
   body: $<HTMLTextAreaElement>("ed-body"),
   bodyStats: $("body-stats"),
+  imageBtn: $<HTMLButtonElement>("image-btn"),
+  imageInput: $<HTMLInputElement>("image-input"),
+  pendingImages: $("pending-images"),
   auditSummary: $("audit-summary"),
   auditList: $<HTMLUListElement>("audit-list"),
   editorStatus: $("editor-status"),
@@ -458,6 +464,8 @@ async function openEditor(path: string | null) {
   }
 
   editor = { path, sha: remote?.sha ?? null, original: data, baseline: "", slugTouched: false };
+  pending.clear();
+  renderPending();
   fillForm(data, body);
   ui.slug.value = "";
   ui.slugField.hidden = Boolean(path);
@@ -517,6 +525,7 @@ function refreshEditor() {
 
   const body = ui.body.value;
   ui.bodyStats.textContent = `${body.length.toLocaleString("ko-KR")}자 · 약 ${getReadingMinutes(body)}분`;
+  renderPending();
 
   const { text } = composePost();
   const findings = [...auditPost(text, { base: SITE_BASE }), ...slugFindings()];
@@ -565,6 +574,131 @@ ui.form.addEventListener("input", (event) => {
 });
 ui.form.addEventListener("submit", (event) => event.preventDefault());
 
+/* Images: paste, drop or pick; resized to WebP in the browser and
+   committed together with the post on save. */
+
+const pending = new Map<string, PreparedImage>();
+
+function imageFolder(): string {
+  if (editor?.path) return editor.path.split("/").pop()?.replace(/\.mdx?$/, "") ?? "drafts";
+  return ui.slug.value.trim() || "drafts";
+}
+
+function referencedPending(text: string): PreparedImage[] {
+  return [...pending.values()].filter((image) => text.includes(image.url));
+}
+
+function renderPending() {
+  const count = referencedPending(ui.body.value).length;
+  ui.pendingImages.textContent = count ? `저장할 때 함께 올릴 이미지 ${count}개` : "";
+}
+
+/** Insert text at the caret, keeping the browser's undo history. */
+function insertText(textarea: HTMLTextAreaElement, text: string, selectStart?: number, selectEnd?: number) {
+  textarea.focus();
+  const start = textarea.selectionStart;
+  // execCommand keeps Ctrl+Z working in a textarea; setRangeText is the fallback.
+  if (!document.execCommand("insertText", false, text)) {
+    textarea.setRangeText(text, start, textarea.selectionEnd, "end");
+    textarea.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+  if (selectStart !== undefined) textarea.setSelectionRange(start + selectStart, start + (selectEnd ?? selectStart));
+}
+
+async function addImages(files: Iterable<File>) {
+  if (!editor) return;
+  const list = [...files].filter((file) => file.type.startsWith("image/") || /\.svg$/i.test(file.name));
+  if (list.length === 0) return;
+  for (const file of list) {
+    setStatus(ui.editorStatus, `${file.name} 처리 중…`);
+    try {
+      const image = await prepareImage(file, imageFolder(), SITE_BASE);
+      pending.set(image.url, image);
+      // Own paragraph, caret inside the empty alt text: the audit flags
+      // images without alt until it is written.
+      const before = ui.body.value.slice(0, ui.body.selectionStart);
+      const lead = before === "" || before.endsWith("\n\n") ? "" : before.endsWith("\n") ? "\n" : "\n\n";
+      const snippet = `${lead}![](${image.url})\n\n`;
+      insertText(ui.body, snippet, lead.length + 2);
+      const size =
+        image.bytes.byteLength < image.originalBytes
+          ? `${formatBytes(image.originalBytes)} → ${formatBytes(image.bytes.byteLength)}`
+          : formatBytes(image.bytes.byteLength);
+      setStatus(
+        ui.editorStatus,
+        `${file.name} 추가됨 (${image.width ? `${image.width}×${image.height}, ` : ""}${size}). [ ] 안에 이미지 설명(alt)을 적어 주세요.`,
+        "success",
+      );
+    } catch (error) {
+      setStatus(ui.editorStatus, error instanceof ImageRejected ? error.message : `이미지 처리 실패: ${errorMessage(error)}`, "error");
+    }
+  }
+  refreshEditor();
+}
+
+ui.imageBtn.addEventListener("click", () => ui.imageInput.click());
+ui.imageInput.addEventListener("change", () => {
+  if (ui.imageInput.files) void addImages(ui.imageInput.files);
+  ui.imageInput.value = "";
+});
+
+ui.body.addEventListener("paste", (event) => {
+  const data = event.clipboardData;
+  if (!data) return;
+  const files = [...data.files].filter((file) => file.type.startsWith("image/"));
+  if (files.length > 0) {
+    event.preventDefault();
+    void addImages(files);
+    return;
+  }
+  // Pasting a URL over selected text makes a link, like GitHub does.
+  const pasted = data.getData("text/plain").trim();
+  const { selectionStart, selectionEnd, value } = ui.body;
+  if (selectionStart !== selectionEnd && /^https?:\/\/\S+$/.test(pasted)) {
+    event.preventDefault();
+    insertText(ui.body, `[${value.slice(selectionStart, selectionEnd)}](${pasted})`);
+  }
+});
+
+ui.body.addEventListener("dragover", (event) => {
+  if (event.dataTransfer?.types.includes("Files")) {
+    event.preventDefault();
+    ui.body.classList.add("dragging");
+  }
+});
+ui.body.addEventListener("dragleave", () => ui.body.classList.remove("dragging"));
+ui.body.addEventListener("drop", (event) => {
+  ui.body.classList.remove("dragging");
+  const files = event.dataTransfer?.files;
+  if (files && files.length > 0) {
+    event.preventDefault();
+    void addImages(files);
+  }
+});
+
+/* Formatting shortcuts: ⌘/Ctrl + B, I, K wrap the selection. */
+
+function wrapSelection(before: string, after: string, placeholder: string) {
+  const { selectionStart, selectionEnd, value } = ui.body;
+  const selected = value.slice(selectionStart, selectionEnd) || placeholder;
+  insertText(ui.body, `${before}${selected}${after}`, before.length, before.length + selected.length);
+}
+
+ui.body.addEventListener("keydown", (event) => {
+  if (!(event.metaKey || event.ctrlKey) || event.altKey || event.shiftKey) return;
+  const key = event.key.toLowerCase();
+  if (key === "b") wrapSelection("**", "**", "굵게");
+  else if (key === "i") wrapSelection("*", "*", "기울임");
+  else if (key === "k") {
+    const { selectionStart, selectionEnd, value } = ui.body;
+    const text = value.slice(selectionStart, selectionEnd) || "링크 텍스트";
+    const url = "https://";
+    // Select the URL part so it can be typed over straight away.
+    insertText(ui.body, `[${text}](${url})`, text.length + 3, text.length + 3 + url.length);
+  } else return;
+  event.preventDefault();
+});
+
 /* Save / delete */
 
 let saving = false;
@@ -585,6 +719,21 @@ async function save() {
   ui.saveBtn.disabled = true;
   setStatus(ui.editorStatus, "GitHub에 저장하는 중…");
   try {
+    // Images first: if one fails, the post isn't committed pointing at a
+    // file that doesn't exist. Only images still referenced are uploaded.
+    const images = referencedPending(text);
+    for (const [index, image] of images.entries()) {
+      setStatus(ui.editorStatus, `이미지 올리는 중… (${index + 1}/${images.length})`);
+      try {
+        await client.putBinary(image.repoPath, image.bytes, `Add image: ${image.repoPath.split("/").pop()} (${title})`);
+      } catch (error) {
+        // Content-addressed names: an existing file is this exact image.
+        if (!(error instanceof GitHubError && error.status === 422)) throw error;
+      }
+      pending.delete(image.url);
+      renderPending();
+    }
+    setStatus(ui.editorStatus, "글을 저장하는 중…");
     const result = await client.putFile(
       path,
       text,
@@ -667,19 +816,70 @@ const PREVIEW_STYLE = `
   a{color:#e8a849}strong{color:#e8a849}
   code{font-family:ui-monospace,monospace;font-size:.85em;background:#111114;border:1px solid #1a1a1e;border-radius:.3rem;padding:.15em .4em}
   pre{background:#111114;border:1px solid #1a1a1e;border-radius:.5rem;padding:1rem;overflow:auto}pre code{border:0;padding:0}
-  blockquote{margin:2rem 0;padding:.8rem 1.4rem;border-left:2px solid #e8a849;background:rgba(232,168,73,.07);color:#8b8680}
+  blockquote{margin:2rem 0;padding:.8rem 1.4rem;border-left:2px solid #e8a849;background:rgba(232,168,73,.07);color:#9b968f}
   table{border-collapse:collapse;width:100%}th,td{border-bottom:1px solid #1a1a1e;padding:.6rem .8rem;text-align:left}
   img{max-width:100%;height:auto;border-radius:.6rem}hr{border:0;height:1px;background:#1a1a1e;margin:3rem 0}
-  .lede{color:#8b8680}`;
+  .lede{color:#9b968f}figure{margin:2rem 0}figcaption{text-align:center;font-size:.85rem;color:#85807a}
+  .math-display{overflow-x:auto;margin:1.5rem 0}
+  .callout{margin:2rem 0;padding:1rem 1.25rem;border-left:3px solid #e8a849;border-radius:.5rem;background:rgba(232,168,73,.06)}
+  .callout strong{display:block;font-size:.8rem}.callout-note{border-color:#7aa2f7}.callout-tip{border-color:#73c991}.callout-danger{border-color:#f7768e}`;
+
+/** Approximate the MDX components so the preview reads like the post. */
+function previewMdx(markdown: string): string {
+  const attr = (attrs: string, name: string) => attrs.match(new RegExp(`${name}=["']([^"']*)["']`))?.[1] ?? "";
+  return markdown
+    .replace(/^(?:import|export)\s.*$/gm, "")
+    .replace(/<Callout\b([^>]*)>/g, (_, attrs: string) => {
+      const type = attr(attrs, "type") || "note";
+      const title = attr(attrs, "title") || { note: "참고", tip: "팁", warning: "주의", danger: "경고" }[type] || "참고";
+      return `<div class="callout callout-${type}"><strong>${title}</strong>\n\n`;
+    })
+    .replace(/<\/Callout>/g, "\n\n</div>")
+    .replace(/<Figure\b([^>]*?)\/>/g, (_, attrs: string) =>
+      `<figure><img src="${attr(attrs, "src")}" alt="${attr(attrs, "alt")}"><figcaption>${attr(attrs, "caption")}</figcaption></figure>`,
+    );
+}
 
 async function openPreview() {
-  const { marked } = await import("marked");
+  const [{ Marked }, { default: katex }] = await Promise.all([import("marked"), import("katex")]);
   const title = ui.title.value.trim() || "(제목 없음)";
   const escape = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c] ?? c);
-  // MDX import/export lines are build-time only; hide them in the preview.
-  const markdown = ui.body.value.replace(/^(?:import|export)\s.*$/gm, "");
-  const html = await marked.parse(markdown, { gfm: true });
-  ui.previewFrame.srcdoc = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>${PREVIEW_STYLE}</style></head><body><main><h1>${escape(title)}</h1><p class="lede">${escape(ui.desc.value)}</p>${html}</main></body></html>`;
+  const tex = (source: string, displayMode: boolean) =>
+    katex.renderToString(source, { displayMode, throwOnError: false, output: "html" });
+
+  const marked = new Marked({ gfm: true });
+  marked.use({
+    extensions: [
+      {
+        name: "mathBlock",
+        level: "block",
+        start: (src: string) => src.indexOf("$$"),
+        tokenizer(src: string) {
+          const match = src.match(/^\$\$\s*\n?([\s\S]+?)\n?\s*\$\$(?:\n|$)/);
+          return match ? { type: "mathBlock", raw: match[0], text: match[1] ?? "" } : undefined;
+        },
+        renderer: (token) => `<div class="math-display">${tex(String(token["text"]), true)}</div>`,
+      },
+      {
+        name: "mathInline",
+        level: "inline",
+        start: (src: string) => src.indexOf("$"),
+        tokenizer(src: string) {
+          const match = src.match(/^\$(?!\s)([^$\n]+?)(?<!\s)\$(?!\d)/);
+          return match ? { type: "mathInline", raw: match[0], text: match[1] ?? "" } : undefined;
+        },
+        renderer: (token) => tex(String(token["text"]), false),
+      },
+    ],
+  });
+
+  let html = await marked.parse(previewMdx(ui.body.value));
+  // Images that exist only in this tab yet: show them from memory.
+  for (const image of pending.values()) {
+    html = html.split(`src="${image.url}"`).join(`src="data:${image.type};base64,${bytesToBase64(image.bytes)}"`);
+  }
+  const katexHref = new URL(katexStylesheet, location.href).href;
+  ui.previewFrame.srcdoc = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="${katexHref}"><style>${PREVIEW_STYLE}</style></head><body><main><h1>${escape(title)}</h1><p class="lede">${escape(ui.desc.value)}</p>${html}</main></body></html>`;
   ui.previewDialog.showModal();
 }
 

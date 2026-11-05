@@ -19,6 +19,7 @@ export const FOOTNOTE_LABEL_ID = "footnote-label";
  */
 export default function rehypeProse() {
   return (tree: Root) => {
+    let tables = 0;
     visit(tree, "element", (node, index, parent) => {
       if (HEADING_RE.test(node.tagName) && typeof node.properties["id"] === "string") {
         // GFM's visually hidden "각주" heading is not a real section.
@@ -35,7 +36,8 @@ export default function rehypeProse() {
             className: ["table-scroll"],
             tabIndex: 0,
             role: "region",
-            ariaLabel: "표 (가로로 스크롤 가능)",
+            // Numbered so several tables don't share one region name.
+            ariaLabel: `표 ${++tables} (가로로 스크롤 가능)`,
           },
           children: [node],
         };

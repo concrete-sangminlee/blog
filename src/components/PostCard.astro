@@ -22,8 +22,8 @@ const truncatedDesc =
 ---
 
 <article
-  class="post-card"
-  style={`animation-delay: ${Math.min(index, 6) * 80}ms;`}
+  class:list={["post-card", { "post-card-static": index === 0 }]}
+  style={index > 0 ? `animation-delay: ${Math.min(index, 6) * 80}ms;` : undefined}
 >
   <a href={postHref} class="post-card-link">
     <div class="post-card-inner">
@@ -66,6 +66,12 @@ const truncatedDesc =
 <style>
   .post-card {
     animation: fadeIn 0.5s ease backwards;
+  }
+
+  /* The first card is usually the Largest Contentful Paint: fading it in
+     from opacity 0 delayed LCP, so it renders immediately. */
+  .post-card-static {
+    animation: none;
   }
 
   @keyframes fadeIn {
