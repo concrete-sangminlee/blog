@@ -104,3 +104,16 @@ jobs:
 
       - name: Run end-to-end tests
         run: npm run test:e2e
+
+      # Mobile Lighthouse on the fixture site (median of 3): accessibility,
+      # best practices and SEO must stay 100, performance >= 85.
+      - name: Lighthouse gate
+        run: npm run test:lighthouse
+
+      - name: Upload Lighthouse reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports
+          path: lighthouse-reports
+          retention-days: 7

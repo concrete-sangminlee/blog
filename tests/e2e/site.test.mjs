@@ -177,6 +177,41 @@ describe("fixture site in a browser", () => {
     await page.context().close();
   });
 
+  it("copies a section link when its # permalink is clicked", async () => {
+    const { page, problems } = await open("/blog/structural-analysis-notes/", { viewport: { width: 1360, height: 900 } });
+    await page.context().grantPermissions(["clipboard-read", "clipboard-write"], { origin: server.origin });
+    const heading = page.locator("#결과-비교");
+    await heading.hover();
+    await heading.locator(".heading-anchor").click();
+    await page.locator("#copy-toast.show").waitFor();
+    const copied = await page.evaluate(() => navigator.clipboard.readText());
+    assert.equal(decodeURIComponent(copied), `${server.origin}/blog/structural-analysis-notes/#결과-비교`);
+    assert.equal(decodeURIComponent(new URL(page.url()).hash), "#결과-비교");
+    assert.deepEqual(problems, []);
+    await page.context().close();
+  });
+
+  it("suggests the closest post on a 404 and lists recent posts", async () => {
+    const { page } = await open("/blog/attention-basic/");
+    const hint = page.locator("#did-you-mean");
+    await hint.waitFor();
+    assert.equal(await hint.locator("a").getAttribute("href"), "/blog/attention-basics/");
+    assert.equal(await page.locator(".recent li").count(), 3);
+    const { page: unrelated } = await open("/blog/zzzz-nothing-like-it/");
+    await unrelated.waitForTimeout(300);
+    assert.equal(await unrelated.locator("#did-you-mean").isHidden(), true);
+    await page.context().close();
+    await unrelated.context().close();
+  });
+
+  it("numbers code lines only where the author asked", async () => {
+    const html = await read("structural-analysis-notes/index.html");
+    const python = html.slice(html.indexOf('aria-label="코드: deflection.py"'), html.indexOf('aria-label="코드 블록 2 (bash)"'));
+    const bash = html.slice(html.indexOf('aria-label="코드 블록 2 (bash)"'));
+    assert.match(python, /class="gutter"/);
+    assert.doesNotMatch(bash.slice(0, bash.indexOf("</pre>")), /class="gutter"/);
+  });
+
   it("navigates between posts with the client router and keeps scripts alive", async () => {
     const { page, problems } = await open("/blog/posts/");
     await page.locator('a[href="/blog/attention-basics/"]').first().click();

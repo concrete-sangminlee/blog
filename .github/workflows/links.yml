@@ -1,0 +1,26 @@
+name: External link check
+
+# External sites move and disappear on their own schedule, so this runs
+# weekly rather than on push. A failed run means a post links somewhere that
+# is gone; GitHub notifies the repository owner.
+on:
+  schedule:
+    - cron: "17 0 * * 1" # Mondays 09:17 KST
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  links:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Check external links in posts
+        run: npm run check:links
