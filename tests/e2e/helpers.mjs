@@ -1,4 +1,5 @@
 import { createServer } from "node:http";
+import { gzipSync } from "node:zlib";
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { chromium } from "playwright";
@@ -32,13 +33,22 @@ export async function serveDist(dir, base = "/blog/") {
     }
     const status = file ? 200 : 404;
     file ??= path.join(root, "404.html");
-    res.writeHead(status, {
-      "Content-Type": TYPES[path.extname(file)] ?? "application/octet-stream",
+    const type = TYPES[path.extname(file)] ?? "application/octet-stream";
+    let body = await readFile(file);
+    const headers = {
+      "Content-Type": type,
       // GitHub Pages sends this on every file; the admin's sandboxed
       // (opaque-origin) preview relies on it to load KaTeX fonts.
       "Access-Control-Allow-Origin": "*",
-    });
-    res.end(await readFile(file));
+      // Pages compresses text, so measurements (Lighthouse) see real sizes.
+      Vary: "Accept-Encoding",
+    };
+    if (/text|javascript|json|xml|svg/.test(type) && /\bgzip\b/.test(req.headers["accept-encoding"] ?? "")) {
+      body = gzipSync(body);
+      headers["Content-Encoding"] = "gzip";
+    }
+    res.writeHead(status, headers);
+    res.end(body);
   });
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   const { port } = server.address();

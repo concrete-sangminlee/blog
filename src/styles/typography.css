@@ -398,3 +398,27 @@
 .prose .expressive-code {
   margin: 1.75rem 0;
 }
+
+/* Toast shown when a section link is copied (PostLayout). */
+.copy-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(1.5rem + env(safe-area-inset-bottom));
+  z-index: 10002;
+  padding: 0.55rem 1rem;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  background: var(--bg-surface-hover);
+  border: 1px solid var(--border-hover);
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transform: translate(-50%, 0.5rem);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+
+.copy-toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
