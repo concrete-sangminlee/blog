@@ -23,6 +23,19 @@ export interface RemoteFile {
   text: string;
 }
 
+export interface PutResult {
+  /** Blob SHA of the written file (the next update must send it back). */
+  sha: string;
+  commitSha: string;
+  commitUrl: string;
+}
+
+export interface DeployRun {
+  status: "queued" | "in_progress" | "completed" | "waiting" | "requested" | "pending";
+  conclusion: "success" | "failure" | "cancelled" | "skipped" | "timed_out" | "action_required" | null;
+  html_url: string;
+}
+
 export class GitHubError extends Error {
   override name = "GitHubError";
   constructor(
@@ -160,24 +173,37 @@ export class GitHubClient {
    * Create (no `sha`) or update (with the `sha` that was loaded) a file.
    * GitHub rejects the write if the file changed in the meantime.
    */
-  putFile(path: string, text: string, message: string, sha?: string): Promise<{ sha: string; commitUrl: string }> {
+  putFile(path: string, text: string, message: string, sha?: string): Promise<PutResult> {
     return this.#put(path, utf8ToBase64(text), message, sha);
   }
 
   /** Create a binary file (an image). Fails with a conflict if it exists. */
-  putBinary(path: string, bytes: Uint8Array, message: string): Promise<{ sha: string; commitUrl: string }> {
+  putBinary(path: string, bytes: Uint8Array, message: string): Promise<PutResult> {
     return this.#put(path, bytesToBase64(bytes), message);
   }
 
-  async #put(path: string, content: string, message: string, sha?: string): Promise<{ sha: string; commitUrl: string }> {
-    const result = await this.#request<{ content: { sha: string }; commit: { html_url: string } }>(
+  async #put(path: string, content: string, message: string, sha?: string): Promise<PutResult> {
+    const result = await this.#request<{ content: { sha: string }; commit: { sha: string; html_url: string } }>(
       `/repos/${this.#repo.owner}/${this.#repo.name}/contents/${encodePath(path)}`,
       {
         method: "PUT",
         body: JSON.stringify({ message, content, branch: this.#repo.branch, ...(sha ? { sha } : {}) }),
       },
     );
-    return { sha: result.content.sha, commitUrl: result.commit.html_url };
+    return { sha: result.content.sha, commitSha: result.commit.sha, commitUrl: result.commit.html_url };
+  }
+
+  /**
+   * The Pages deploy run triggered by a commit, or null while GitHub hasn't
+   * queued it yet. Needs the token's optional "Actions: read" permission;
+   * without it GitHub answers 403 and the caller stops asking.
+   */
+  async getDeployRun(commitSha: string): Promise<DeployRun | null> {
+    const data = await this.#request<{ workflow_runs: (DeployRun & { path: string })[] }>(
+      `/repos/${this.#repo.owner}/${this.#repo.name}/actions/runs?head_sha=${encodeURIComponent(commitSha)}&event=push&per_page=10`,
+    );
+    const run = data.workflow_runs.find((r) => r.path.endsWith("/deploy.yml")) ?? null;
+    return run && { status: run.status, conclusion: run.conclusion, html_url: run.html_url };
   }
 
   async deleteFile(path: string, sha: string, message: string): Promise<void> {

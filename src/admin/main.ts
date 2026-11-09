@@ -70,6 +70,7 @@ const ui = {
   auditSummary: $("audit-summary"),
   auditList: $<HTMLUListElement>("audit-list"),
   editorStatus: $("editor-status"),
+  deployStatus: $("deploy-status"),
   deleteBtn: $<HTMLButtonElement>("delete-btn"),
   previewBtn: $<HTMLButtonElement>("preview-btn"),
   saveBtn: $<HTMLButtonElement>("save-btn"),
@@ -463,6 +464,7 @@ async function openEditor(path: string | null) {
     body = "";
   }
 
+  stopDeployWatch();
   editor = { path, sha: remote?.sha ?? null, original: data, baseline: "", slugTouched: false };
   pending.clear();
   renderPending();
@@ -699,6 +701,72 @@ ui.body.addEventListener("keydown", (event) => {
   event.preventDefault();
 });
 
+/* Deploy status: follow the Pages run for the commit just saved. */
+
+let deployWatch: AbortController | null = null;
+const DEPLOY_TIMEOUT_MS = 15 * 60 * 1000;
+
+function showDeploy(parts: (Node | string)[], tone: Tone = "info", pulse = false) {
+  ui.deployStatus.hidden = false;
+  ui.deployStatus.dataset["tone"] = tone;
+  const dot = el("span", { className: `deploy-dot${pulse ? " pulse" : ""}`, ariaHidden: "true" });
+  ui.deployStatus.replaceChildren(dot, ...parts);
+}
+
+function stopDeployWatch() {
+  deployWatch?.abort();
+  deployWatch = null;
+  ui.deployStatus.hidden = true;
+  ui.deployStatus.replaceChildren();
+}
+
+async function watchDeploy(commitSha: string, postUrl: string | null) {
+  if (!client) return;
+  deployWatch?.abort();
+  const watch = new AbortController();
+  deployWatch = watch;
+  const started = Date.now();
+  const sleep = (ms: number) =>
+    new Promise<void>((resolve) => {
+      const timer = window.setTimeout(resolve, ms);
+      watch.signal.addEventListener("abort", () => (window.clearTimeout(timer), resolve()), { once: true });
+    });
+
+  showDeploy(["배포 대기 중…"], "info", true);
+  for (let attempt = 0; !watch.signal.aborted; attempt++) {
+    let run;
+    try {
+      run = await client.getDeployRun(commitSha);
+    } catch (error) {
+      if (watch.signal.aborted) return;
+      if (error instanceof GitHubError && (error.status === 403 || error.status === 404)) {
+        showDeploy(["배포 상태를 보려면 토큰에 Actions 읽기 권한을 추가하세요. (배포는 평소처럼 진행됩니다)"]);
+      } else {
+        showDeploy([`배포 상태를 확인하지 못했습니다: ${errorMessage(error)}`], "error");
+      }
+      return;
+    }
+    if (watch.signal.aborted) return;
+    const log = run ? el("a", { href: run.html_url, target: "_blank", rel: "noopener noreferrer" }, "진행 기록") : null;
+    if (run?.status === "completed") {
+      if (run.conclusion === "success") {
+        const view = postUrl ? el("a", { href: postUrl, target: "_blank", rel: "noopener noreferrer" }, "사이트에서 보기") : null;
+        showDeploy(["배포 완료. ", ...(view ? [view, " · "] : []), log as HTMLAnchorElement], "success");
+      } else {
+        showDeploy([`배포 실패 (${run.conclusion ?? "알 수 없음"}). 글은 저장됐지만 사이트에는 반영되지 않았습니다. `, log as HTMLAnchorElement], "error");
+      }
+      return;
+    }
+    if (Date.now() - started > DEPLOY_TIMEOUT_MS) {
+      showDeploy(["배포가 오래 걸립니다. ", ...(log ? [log] : [])], "error");
+      return;
+    }
+    showDeploy([run ? "배포 중… 검사와 빌드에 보통 1~2분 걸립니다. " : "배포 대기 중… ", ...(log ? [log] : [])], "info", true);
+    // Quick first checks while GitHub queues the run, then every 10 s.
+    await sleep(attempt < 3 ? 3000 : 10_000);
+  }
+}
+
 /* Save / delete */
 
 let saving = false;
@@ -756,6 +824,7 @@ async function save() {
     posts = [summary, ...posts.filter((post) => post.file.path !== path)];
 
     const isDraft = ui.draft.checked;
+    void watchDeploy(result.commitSha, isDraft ? null : `${SITE_BASE}/${path.split("/").pop()?.replace(/\.mdx?$/, "")}/`);
     setStatus(
       ui.editorStatus,
       `${created ? "만들었습니다" : "저장했습니다"}. ${isDraft ? "초안이라 사이트에는 보이지 않습니다." : `배포가 끝나면 ${SITE_BASE}/${path.split("/").pop()?.replace(/\.mdx?$/, "")}/ 에 반영됩니다.`}`,

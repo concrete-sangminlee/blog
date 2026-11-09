@@ -145,3 +145,35 @@ const readingMinutes = getReadingMinutes(body);
     border-radius: 0.5rem;
   }
 </style>
+
+<script>
+  // Clicking a section's "#" permalink still jumps to it, and also copies
+  // the full URL so it can be pasted straight into a message or a paper.
+  // Registered once: module scripts survive ClientRouter navigations.
+  function toast(message: string) {
+    let el = document.getElementById("copy-toast");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "copy-toast";
+      el.className = "copy-toast";
+      el.setAttribute("role", "status");
+      document.body.append(el);
+    }
+    el.textContent = message;
+    el.classList.add("show");
+    window.clearTimeout(Number(el.dataset["timer"]));
+    el.dataset["timer"] = String(window.setTimeout(() => el?.classList.remove("show"), 1800));
+  }
+
+  document.addEventListener("click", (event) => {
+    const anchor = (event.target as Element | null)?.closest<HTMLAnchorElement>(".prose .heading-anchor");
+    if (!anchor || event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
+    const url = new URL(anchor.getAttribute("href") ?? "", location.href).href;
+    navigator.clipboard?.writeText(url).then(
+      () => toast("섹션 링크를 복사했습니다"),
+      () => {
+        /* clipboard blocked: the jump still happens */
+      },
+    );
+  });
+</script>

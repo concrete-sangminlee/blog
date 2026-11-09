@@ -30,7 +30,7 @@ const newTokenUrl =
   `?name=${encodeURIComponent("Blog admin")}` +
   "&description=" +
   encodeURIComponent(`${REPO.owner}/${REPO.name} 글 작성용`) +
-  `&target_name=${REPO.owner}&expires_in=90&contents=write`;
+  `&target_name=${REPO.owner}&expires_in=90&contents=write&actions=read`;
 ---
 
 <!doctype html>
@@ -84,6 +84,7 @@ const newTokenUrl =
           </li>
           <li><strong>Repository access</strong>: Only select repositories → <code>{REPO.name}</code></li>
           <li><strong>Permissions</strong>: Contents → <em>Read and write</em> (Metadata는 자동)</li>
+          <li>선택: Actions → <em>Read-only</em>를 주면 저장 후 배포 진행 상황을 보여 줍니다.</li>
           <li>만료 기한은 짧게(예: 90일) 두는 편이 안전합니다.</li>
         </ol>
         <p class="muted">
@@ -204,7 +205,10 @@ const newTokenUrl =
       </form>
 
       <footer class="editor-footer">
-        <p id="editor-status" class="status" role="status" aria-live="polite"></p>
+        <div class="footer-status">
+          <p id="editor-status" class="status" role="status" aria-live="polite"></p>
+          <p id="deploy-status" class="status small" aria-live="polite" hidden></p>
+        </div>
         <div class="bar-actions">
           <button type="button" id="delete-btn" class="btn btn-danger btn-sm" hidden>삭제</button>
           <button type="button" id="preview-btn" class="btn btn-ghost">미리보기</button>
@@ -336,6 +340,11 @@ const newTokenUrl =
   .admin .status { min-height: 1.4em; font-size: 0.82rem; color: var(--text-secondary); }
   .admin .status[data-tone="error"] { color: #f87171; }
   .admin .status[data-tone="success"] { color: #4ade80; }
+  .admin .status a { color: inherit; text-decoration: underline; text-underline-offset: 0.2em; }
+  .admin .footer-status { display: grid; gap: 0.15rem; min-width: 0; }
+  .admin .deploy-dot { display: inline-block; width: 0.5rem; height: 0.5rem; margin-right: 0.45rem; border-radius: 50%; background: var(--accent); vertical-align: 0.05em; }
+  .admin .deploy-dot.pulse { animation: deploy-pulse 1.2s ease-in-out infinite; }
+  @keyframes deploy-pulse { 50% { opacity: 0.3; } }
 
   /* Login */
   .admin .login { max-width: 460px; padding-top: 14vh; }

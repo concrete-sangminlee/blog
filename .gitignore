@@ -7,3 +7,4 @@ dist-fixture/
 *.log
 .env
 .env.*
+lighthouse-reports/

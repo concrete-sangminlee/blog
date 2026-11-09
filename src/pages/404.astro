@@ -2,6 +2,14 @@
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import PageIntro from "@/components/PageIntro.astro";
 import { href } from "@/utils/paths";
+import { formatDateShort } from "@/lib/dates";
+import { getAllPosts } from "@/utils/posts";
+
+const posts = await getAllPosts();
+const recent = posts.slice(0, 3);
+// Titles and slugs for the client-side "did you mean" lookup. JSON in a
+// non-executable script tag; "<" escaped so a title can't close it.
+const index = JSON.stringify(posts.map((post) => ({ id: post.id, title: post.data.title }))).replace(/</g, "\\u003c");
 ---
 
 <BaseLayout title="404 · 페이지를 찾을 수 없습니다" description="페이지를 찾을 수 없습니다" noIndex>
@@ -13,6 +21,9 @@ import { href } from "@/utils/paths";
       description="찾으시는 페이지가 존재하지 않거나 이동되었습니다."
       centered
     />
+
+    <p id="did-you-mean" class="did-you-mean" hidden></p>
+
     <nav class="mt-8 flex flex-wrap items-center justify-center gap-3" aria-label="복구 링크">
       <a href={href("/")} class="btn-accent">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -22,7 +33,23 @@ import { href } from "@/utils/paths";
       </a>
       <a href={href("/posts/")} class="btn-ghost">전체 글</a>
     </nav>
+
+    {recent.length > 0 && (
+      <section class="recent" aria-labelledby="recent-heading">
+        <h2 id="recent-heading" class="recent-title">최근 글</h2>
+        <ul>
+          {recent.map((post) => (
+            <li>
+              <a href={href(`/${post.id}/`)}>{post.data.title}</a>
+              <time datetime={post.data.pubDate.toISOString()}>{formatDateShort(post.data.pubDate)}</time>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
   </section>
+
+  <script type="application/json" id="post-index" set:html={index} />
 </BaseLayout>
 
 <style>
@@ -32,4 +59,91 @@ import { href } from "@/utils/paths";
     flex-direction: column;
     justify-content: center;
   }
+
+  .did-you-mean {
+    margin: 0 auto;
+    max-width: 36rem;
+    padding: 0.85rem 1.1rem;
+    text-align: center;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-hover);
+    border-radius: 0.5rem;
+    background: var(--bg-surface);
+  }
+
+  .did-you-mean :global(a) {
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .recent {
+    width: 100%;
+    max-width: 36rem;
+    margin: 3.5rem auto 0;
+  }
+
+  .recent-title {
+    margin-bottom: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .recent ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .recent li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.8rem 0.25rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .recent a {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .recent a:hover {
+    color: var(--accent);
+  }
+
+  .recent time {
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
 </style>
+
+<script>
+  import { closestPost, requestedSlug, type PostRef } from "@/lib/suggest";
+
+  function suggest() {
+    const target = document.getElementById("did-you-mean");
+    const data = document.getElementById("post-index")?.textContent;
+    if (!target || !data) return;
+    const base = import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
+    const match = closestPost(requestedSlug(location.pathname, base), JSON.parse(data) as PostRef[]);
+    if (!match) return;
+    const link = document.createElement("a");
+    link.href = `${base}${match.id}/`;
+    link.textContent = match.title;
+    target.replaceChildren("혹시 이 글을 찾으셨나요? ", link);
+    target.hidden = false;
+  }
+
+  suggest();
+  document.addEventListener("astro:after-swap", suggest);
+</script>

@@ -2,6 +2,7 @@ import { defineConfig } from "astro/config";
 import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
 import expressiveCode from "astro-expressive-code";
+import { pluginLineNumbers } from "@expressive-code/plugin-line-numbers";
 import tailwindcss from "@tailwindcss/vite";
 import { rehypeHeadingIds, unified } from "@astrojs/markdown-remark";
 import remarkMath from "remark-math";
@@ -36,13 +37,18 @@ export default defineConfig({
       // The site is dark-only, so ship a single code theme instead of a
       // light/dark pair whose light half could never be shown.
       themes: ["vitesse-dark"],
-      plugins: [codeBlockLabels()],
+      // Line numbers are opt-in per block: ```python showLineNumbers
+      plugins: [pluginLineNumbers(), codeBlockLabels()],
+      defaultProps: { showLineNumbers: false },
       styleOverrides: {
         borderRadius: "0.5rem",
         codePaddingBlock: "1rem",
         codePaddingInline: "1.25rem",
         codeFontFamily: "var(--font-mono)",
         uiFontFamily: "var(--font-body)",
+        // The theme's translucent gutter colour is ~2.7:1 on the code
+        // background; this keeps line numbers above WCAG AA (5.5:1).
+        gutterForeground: "#8f8a83",
       },
     }),
     mdx(),

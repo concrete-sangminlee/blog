@@ -98,6 +98,9 @@ function webpSize(buf) {
 let repo;
 let commits;
 let shaCounter;
+/** How the fake Actions API answers: "success" | "failure" | "forbidden". */
+let deployMode;
+let deployPolls;
 
 function graphql(body) {
   const { query, variables } = body;
@@ -123,6 +126,27 @@ async function installFakeGitHub(page) {
     if (url.pathname === "/graphql") {
       return route.fulfill({ json: graphql(request.postDataJSON()) });
     }
+    if (url.pathname === "/repos/concrete-sangminlee/blog/actions/runs") {
+      if (deployMode === "forbidden") {
+        return route.fulfill({ status: 403, json: { message: "Resource not accessible by personal access token" } });
+      }
+      const sha = url.searchParams.get("head_sha");
+      deployPolls++;
+      // Not queued yet, then running, then done.
+      const runs =
+        deployPolls === 1
+          ? []
+          : [
+              { path: ".github/workflows/ci.yml", status: "completed", conclusion: "success", html_url: "https://github.com/x/ci" },
+              {
+                path: ".github/workflows/deploy.yml",
+                status: deployPolls === 2 ? "in_progress" : "completed",
+                conclusion: deployPolls === 2 ? null : deployMode,
+                html_url: `https://github.com/x/runs/${sha}`,
+              },
+            ];
+      return route.fulfill({ json: { workflow_runs: runs } });
+    }
     const match = url.pathname.match(/^\/repos\/concrete-sangminlee\/blog\/contents\/(.+)$/);
     if (!match) return route.fulfill({ status: 404, json: { message: "Not Found" } });
     const path = decodeURIComponent(match[1]);
@@ -138,7 +162,7 @@ async function installFakeGitHub(page) {
       const sha = `sha${++shaCounter}`;
       repo.set(path, { text, sha });
       commits.push({ method: "PUT", path, message: payload.message, text, bytes, branch: payload.branch });
-      return route.fulfill({ json: { content: { sha }, commit: { html_url: "https://github.com/x/commit/1" } } });
+      return route.fulfill({ json: { content: { sha }, commit: { sha: `commit-${sha}`, html_url: "https://github.com/x/commit/1" } } });
     }
     if (request.method() === "DELETE") {
       if (!existing || payload.sha !== existing.sha) return route.fulfill({ status: 409, json: { message: "sha mismatch" } });
@@ -175,6 +199,8 @@ describe("admin", () => {
     repo = new Map([[`${DIR}/eureka.mdx`, { text: KOREAN_POST, sha: "sha0" }]]);
     commits = [];
     shaCounter = 0;
+    deployMode = "success";
+    deployPolls = 0;
     const context = await browser.newContext();
     page = await context.newPage();
     problems = [];
@@ -369,6 +395,39 @@ describe("admin", () => {
     assert.equal(await frame.locator(".katex-display").count(), 1);
     assert.match(await frame.locator("img").first().getAttribute("src"), /^data:image\/(webp|png);base64,/);
     assert.deepEqual(problems, []);
+  });
+
+  it("follows the deploy of the saved commit until it is live", async () => {
+    await openPost(page);
+    await page.uncheck("#ed-draft");
+    await page.check("#ed-verified");
+    const long = ["## 하나", "가".repeat(400), "## 둘", "나".repeat(400), "## 셋", "다".repeat(200)].join("\n\n");
+    await page.fill("#ed-body", long);
+    await page.click("#save-btn");
+    await page.locator('#deploy-status[data-tone="success"]').waitFor({ timeout: 20_000 });
+    const status = page.locator("#deploy-status");
+    assert.match(await status.textContent(), /배포 완료/);
+    assert.equal(await status.locator("a", { hasText: "사이트에서 보기" }).getAttribute("href"), "/blog/eureka/");
+    assert.equal(await status.locator("a", { hasText: "진행 기록" }).getAttribute("href"), "https://github.com/x/runs/commit-sha1");
+    assert.ok(deployPolls >= 3, "polled through queued → running → done");
+  });
+
+  it("reports a failed deploy with a link to its log", async () => {
+    deployMode = "failure";
+    await openPost(page);
+    await page.fill("#ed-desc", "배포가 실패하는 경우를 확인하기 위한 설명 문장입니다.");
+    await page.click("#save-btn");
+    await page.locator('#deploy-status[data-tone="error"]').waitFor({ timeout: 20_000 });
+    assert.match(await page.locator("#deploy-status").textContent(), /배포 실패/);
+  });
+
+  it("explains how to see deploy status when the token can't read Actions", async () => {
+    deployMode = "forbidden";
+    await openPost(page);
+    await page.fill("#ed-desc", "권한이 없는 토큰으로 저장하는 경우를 확인하는 설명입니다.");
+    await page.click("#save-btn");
+    await page.locator("#deploy-status", { hasText: "Actions 읽기 권한" }).waitFor();
+    assert.equal(commits.length, 1, "the save itself still succeeded");
   });
 
   it("keeps the token out of persistent storage unless asked", async () => {
