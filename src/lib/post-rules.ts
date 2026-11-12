@@ -7,6 +7,7 @@
  * checks) and the unit tests, so every entry point enforces the same
  * thing. Framework-free and Node-type-strip friendly; see frontmatter.ts.
  */
+import { slug as githubSlug } from "github-slugger";
 import { FrontmatterError, parsePost, type FrontmatterData } from "./frontmatter.ts";
 
 export const POST_LIMITS = {
@@ -79,6 +80,43 @@ export function toOffsetIsoString(date: Date = new Date()): string {
     `T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}` +
     `${sign}${pad(offsetMinutes / 60)}:${pad(offsetMinutes % 60)}`
   );
+}
+
+/**
+ * The id (URL slug) Astro's glob loader gives a post: a `slug` frontmatter
+ * key wins, else each path segment of the file name through github-slugger,
+ * exactly as astro/dist/content/utils.js getContentEntryIdAndSlug does.
+ *
+ *   postIdFromPath("My Post.md")        -> "my-post"
+ *   postIdFromPath("2026/note.mdx")     -> "2026/note"
+ */
+export function postIdFromPath(relativePath: string, frontmatterSlug?: unknown): string {
+  if (typeof frontmatterSlug === "string" && frontmatterSlug) return frontmatterSlug;
+  return relativePath
+    .replace(/\\/g, "/")
+    .replace(/\.[^./]+$/, "")
+    .split("/")
+    .map((segment) => githubSlug(segment))
+    .join("/")
+    .replace(/\/index$/, "");
+}
+
+/** Top-level paths the site already uses; a post with one of these ids is never built. */
+export const RESERVED_POST_IDS = ["about", "posts", "admin", "og", "images", "404"] as const;
+
+/**
+ * Why a post id can't be published, or null when it is fine. Posts are
+ * served by the single-segment route src/pages/[slug].astro.
+ */
+export function postIdProblem(id: string): string | null {
+  if (!id) return "the file name has no characters usable in a URL";
+  if (id.includes("/")) {
+    return `posts can't live in sub-folders (would be /${id}/); move the file directly into the blog folder`;
+  }
+  if ((RESERVED_POST_IDS as readonly string[]).includes(id)) {
+    return `the address /${id}/ is already used by the site; choose another file name or slug`;
+  }
+  return null;
 }
 
 const HAS_OFFSET_RE = /(?:Z|[+-]\d{2}:?\d{2})$/;
@@ -292,6 +330,33 @@ export function auditPost(source: string, options: AuditOptions = {}): Finding[]
       }
     }
   });
+
+  // remark-math pairs ANY two "$" in a paragraph, so "$2에서 $3" renders
+  // "2에서 " as math and the dollar signs vanish. Math this audit already
+  // recognised was masked above; whatever "$" remain are prices or typos.
+  let paragraphStart = -1;
+  let dollars = 0;
+  const flushParagraph = () => {
+    if (dollars >= 2) {
+      add(
+        "error",
+        paragraphStart + 1 + offset,
+        "stray-dollar",
+        'two or more "$" in one paragraph will be read as math: write \\$ for a dollar sign, or keep inline math as $x$ on one line',
+      );
+    }
+    paragraphStart = -1;
+    dollars = 0;
+  };
+  proseLines.forEach((line, index) => {
+    if (line.trim() === "" || /^#{1,6}\s/.test(line)) {
+      flushParagraph();
+      return;
+    }
+    if (paragraphStart < 0) paragraphStart = index;
+    dollars += (line.match(/(?<!\\)\$/g) ?? []).length;
+  });
+  flushParagraph();
 
   if (data["math"] !== true && hasMathSyntax(body)) {
     add("warning", 0, "math", "body contains $...$ math but math: true is not set");

@@ -25,9 +25,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -38,7 +38,7 @@ jobs:
       # build time (src/utils/og-fonts.ts). Restored after `npm ci`, which
       # wipes node_modules.
       - name: Restore social-card fonts
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: node_modules/.cache/og-fonts
           key: og-fonts-${{ hashFiles('src/utils/og-fonts.ts') }}
@@ -66,7 +66,7 @@ jobs:
         run: npm run check:dist
 
       - name: Upload builds for end-to-end tests
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: builds
           path: |
@@ -76,7 +76,7 @@ jobs:
 
       - name: Upload GitHub Pages artifact
         if: inputs.upload-pages
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: dist
 
@@ -86,16 +86,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
 
       - run: npm ci
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: builds
 
@@ -112,7 +112,7 @@ jobs:
 
       - name: Upload Lighthouse reports
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: lighthouse-reports
           path: lighthouse-reports

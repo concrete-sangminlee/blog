@@ -9,6 +9,12 @@ updates:
       day: monday
       timezone: Asia/Seoul
     open-pull-requests-limit: 5
+    ignore:
+      # `astro check` (@astrojs/check) only supports TypeScript 5 and 6, so
+      # a TypeScript 7 bump can't pass CI. Drop this once @astrojs/check's
+      # peerDependencies allow ^7.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
     groups:
       astro:
         patterns: ["astro", "@astrojs/*", "astro-*"]

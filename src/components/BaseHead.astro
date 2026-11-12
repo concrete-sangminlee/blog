@@ -43,11 +43,20 @@ const canonicalURL = new URL(Astro.url.pathname, site);
 const homeURL = new URL(href("/"), site).toString();
 const aboutURL = new URL(href("/about/"), site).toString();
 const socialImageURL = new URL(image ?? getDefaultSocialImage(), site);
-const socialImageType = socialImageURL.pathname.endsWith(".svg")
-  ? "image/svg+xml"
-  : socialImageURL.pathname.match(/\.jpe?g$/)
-    ? "image/jpeg"
-    : "image/png";
+const IMAGE_TYPES: Record<string, string> = {
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  webp: "image/webp",
+  gif: "image/gif",
+  avif: "image/avif",
+  svg: "image/svg+xml",
+};
+const socialImageExt = socialImageURL.pathname.split(".").pop()?.toLowerCase() ?? "";
+const socialImageType = IMAGE_TYPES[socialImageExt];
+// Only the generated cards are known to be 1200×630; an author's own cover
+// image (e.g. a 1600 px WebP from the admin) must not claim that size.
+const isGeneratedCard = socialImageURL.pathname.startsWith(href("/og/"));
 const socialImageAlt = imageAlt ?? `${title} 대표 이미지`;
 const fullTitle = title === SITE.title ? title : `${title} | ${SITE.title}`;
 // Open Graph wants language_TERRITORY ("ko_KR"), not a BCP 47 tag.
@@ -84,8 +93,7 @@ const graph =
           image: {
             "@type": "ImageObject",
             url: socialImageURL.toString(),
-            width: SOCIAL_IMAGE_WIDTH,
-            height: SOCIAL_IMAGE_HEIGHT,
+            ...(isGeneratedCard && { width: SOCIAL_IMAGE_WIDTH, height: SOCIAL_IMAGE_HEIGHT }),
           },
           ...(publishedTime && { datePublished: publishedTime.toISOString() }),
           ...((modifiedTime ?? publishedTime) && {
@@ -145,9 +153,13 @@ const jsonLd = JSON.stringify({ "@context": "https://schema.org", "@graph": grap
     <meta property="og:description" content={description} />
     <meta property="og:image" content={socialImageURL} />
     <meta property="og:image:secure_url" content={socialImageURL} />
-    <meta property="og:image:type" content={socialImageType} />
-    <meta property="og:image:width" content={SOCIAL_IMAGE_WIDTH.toString()} />
-    <meta property="og:image:height" content={SOCIAL_IMAGE_HEIGHT.toString()} />
+    {socialImageType && <meta property="og:image:type" content={socialImageType} />}
+    {isGeneratedCard && (
+      <>
+        <meta property="og:image:width" content={SOCIAL_IMAGE_WIDTH.toString()} />
+        <meta property="og:image:height" content={SOCIAL_IMAGE_HEIGHT.toString()} />
+      </>
+    )}
     <meta property="og:image:alt" content={socialImageAlt} />
     <meta property="og:locale" content={ogLocale} />
     <meta property="og:site_name" content={SITE.title} />

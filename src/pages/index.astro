@@ -10,7 +10,11 @@ import { href } from "@/utils/paths";
 
 const allPosts = await getAllPosts();
 const featuredPosts = await getFeaturedPosts();
-const featuredIds = new Set(featuredPosts.map((post) => post.id));
+// Only the featured posts actually shown are taken out of "recent"; any
+// beyond the first three fall back into the recent list instead of
+// disappearing from the home page.
+const shownFeatured = featuredPosts.slice(0, 3);
+const featuredIds = new Set(shownFeatured.map((post) => post.id));
 const recentPosts = allPosts.filter((post) => !featuredIds.has(post.id)).slice(0, 8);
 ---
 
@@ -33,11 +37,11 @@ const recentPosts = allPosts.filter((post) => !featuredIds.has(post.id)).slice(0
     )}
   </section>
 
-  {featuredPosts.length > 0 && (
+  {shownFeatured.length > 0 && (
     <section class="content-section" aria-labelledby="home-featured">
       <SectionHeader headingId="home-featured" title="추천 글" />
       <div class="space-y-1">
-        {featuredPosts.slice(0, 3).map((post, i) => (
+        {shownFeatured.map((post, i) => (
           <PostCard post={post} index={i} />
         ))}
       </div>

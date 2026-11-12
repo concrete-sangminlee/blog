@@ -1,4 +1,5 @@
 import { getCollection, type CollectionEntry } from "astro:content";
+import { postIdProblem } from "@/lib/post-rules";
 
 export type BlogPost = CollectionEntry<"blog">;
 
@@ -22,7 +23,15 @@ export function getAllPosts(): Promise<readonly BlogPost[]> {
   // related posts): compute it once instead of once per page. Dev keeps
   // reading fresh so edits show up immediately.
   if (cached) return cached;
-  const posts = getCollection("blog", isPublished).then((list) => Object.freeze(list.sort(byNewest)));
+  const posts = getCollection("blog", isPublished).then((list) => {
+    // Fail with the file name instead of Astro's "Missing parameter: slug"
+    // (nested file) or a post that silently never gets a page (reserved id).
+    for (const post of list) {
+      const problem = postIdProblem(post.id);
+      if (problem) throw new Error(`${post.filePath ?? post.id}: ${problem}`);
+    }
+    return Object.freeze(list.sort(byNewest));
+  });
   if (import.meta.env.PROD) cached = posts;
   return posts;
 }
@@ -44,11 +53,13 @@ export function relatedPosts(
   post: BlogPost,
   all: readonly BlogPost[],
   limit = 3,
+  /** Ids already linked elsewhere (prev/next); excluded before the limit. */
+  exclude: ReadonlySet<string> = new Set(),
 ): BlogPost[] {
   const tags = new Set(post.data.tags.map((tag) => tag.toLowerCase()));
   if (tags.size === 0) return [];
   return all
-    .filter((other) => other.id !== post.id)
+    .filter((other) => other.id !== post.id && !exclude.has(other.id))
     .map((other) => ({
       other,
       score: other.data.tags.filter((tag) => tags.has(tag.toLowerCase())).length,

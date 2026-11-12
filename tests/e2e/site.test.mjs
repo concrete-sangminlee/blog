@@ -46,6 +46,21 @@ describe("fixture build output", () => {
     assert.match(html, /<figcaption>그림 1\./);
   });
 
+  it("collects heading ids and TOC text before KaTeX renders them", async () => {
+    const html = await read("column-buckling-notes/index.html");
+    // "### $K$ 값이 뜻하는 것": TeX source, not KaTeX's three copies ("KKK").
+    assert.match(html, /<h3 id="k-값이-뜻하는-것">/);
+    assert.match(html, /data-toc-slug="k-값이-뜻하는-것"[^>]*>\s*K 값이 뜻하는 것\s*</);
+    assert.match(html, /aria-label="‘K 값이 뜻하는 것’ 섹션 링크"/);
+    assert.doesNotMatch(html, /KKK/);
+  });
+
+  it("loads KaTeX CSS when remark-math parsed math, even without math: true", async () => {
+    // plain-markdown-post has math: false and no math; the others do.
+    assert.match(await read("column-buckling-notes/index.html"), /katex[^"]*\.css/);
+    assert.doesNotMatch(await read("plain-markdown-post/index.html"), /katex[^"]*\.css/);
+  });
+
   it("shows dates in Korea time even when built in UTC", async () => {
     // pubDate 2026-01-20T08:00+09:00 is still January 19th in UTC.
     assert.match(await read("plain-markdown-post/index.html"), /2026년 1월 20일/);
@@ -145,6 +160,28 @@ describe("fixture site in a browser", () => {
       await page.context().close();
     }
     assert.deepEqual(failures, []);
+  });
+
+  it("numbers ordered lists and footnotes, including lists nested in bullets", async () => {
+    const { page } = await open("/blog/column-buckling-notes/");
+    const styles = await page.evaluate(() =>
+      [...document.querySelectorAll(".prose ol")].map((ol) => {
+        const li = ol.querySelector("li");
+        return {
+          list: getComputedStyle(ol).listStyleType,
+          before: li ? getComputedStyle(li, "::before").content : "",
+        };
+      }),
+    );
+    assert.ok(styles.length > 0);
+    for (const s of styles) {
+      assert.equal(s.list, "decimal");
+      assert.notEqual(s.before, '"-"', "nested ordered items must not get the bullet dash");
+    }
+    await page.goto(page.url().replace("column-buckling-notes", "structural-analysis-notes"));
+    const footnotes = await page.evaluate(() => getComputedStyle(document.querySelector(".footnotes ol")).listStyleType);
+    assert.equal(footnotes, "decimal");
+    await page.context().close();
   });
 
   it("highlights the current section in the table of contents", async () => {

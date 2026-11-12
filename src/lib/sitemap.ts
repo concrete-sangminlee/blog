@@ -8,6 +8,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { parsePost } from "./frontmatter.ts";
+import { postIdFromPath } from "./post-rules.ts";
 
 const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -38,11 +39,7 @@ export function postLastModified(contentDir: string, base: string): Map<string, 
       if (data["draft"] === true) continue;
       const modified = toDate(data["updatedDate"]) ?? toDate(data["pubDate"]);
       if (!modified) continue;
-      // Astro's glob loader: `slug` frontmatter wins, else the path stem.
-      const id =
-        typeof data["slug"] === "string"
-          ? data["slug"]
-          : rel.replace(/\.mdx?$/, "").split(path.sep).join("/").toLowerCase();
+      const id = postIdFromPath(rel.split(path.sep).join("/"), data["slug"]);
       dates.set(`${prefix}${encodeURI(id)}/`, modified);
     } catch {
       /* the audit reports unreadable posts */
