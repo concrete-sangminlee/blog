@@ -181,7 +181,8 @@ function card(options: SocialCardOptions): Node {
               ),
             ),
           ),
-          h("div", { display: "flex", fontSize: 22, fontWeight: 400, color: palette.muted }, options.footer),
+          // flexShrink 0: long tags must not squeeze the date onto two lines.
+          h("div", { display: "flex", flexShrink: 0, fontSize: 22, fontWeight: 400, color: palette.muted }, options.footer),
         ],
       ),
     ],
@@ -195,13 +196,30 @@ export function renderSocialCardSvg(options: SocialCardOptions): Promise<string>
   const key = JSON.stringify(options);
   let svg = svgCache.get(key);
   if (!svg) {
-    svg = loadFonts().then((fonts) =>
-      satori(card(options) as Parameters<typeof satori>[0], {
-        width: SOCIAL_IMAGE_WIDTH,
-        height: SOCIAL_IMAGE_HEIGHT,
-        fonts,
-      }),
-    );
+    const missing = new Set<string>();
+    svg = loadFonts()
+      .then((fonts) =>
+        satori(card(options) as Parameters<typeof satori>[0], {
+          width: SOCIAL_IMAGE_WIDTH,
+          height: SOCIAL_IMAGE_HEIGHT,
+          fonts,
+          // satori asks for a fallback whenever the card font lacks a glyph
+          // (Hanja, emoji, symbols such as ∇). Those would render as boxes,
+          // so record them and tell the author at build time.
+          loadAdditionalAsset: async (_code: string, segment: string) => {
+            missing.add(segment);
+            return [];
+          },
+        }),
+      )
+      .then((result) => {
+        if (missing.size > 0) {
+          console.warn(
+            `[social-card] "${options.title}": the card font has no glyphs for ${[...missing].map((s) => `"${s}"`).join(", ")}; they will show as boxes on the card and list thumbnail.`,
+          );
+        }
+        return result;
+      });
     svgCache.set(key, svg);
   }
   return svg;

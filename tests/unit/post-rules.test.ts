@@ -5,6 +5,8 @@ import {
   hasErrors,
   hasMathSyntax,
   maskCode,
+  postIdFromPath,
+  postIdProblem,
   slugify,
   toOffsetIsoString,
   type Finding,
@@ -180,5 +182,41 @@ describe("auditPost", () => {
       found.filter((f) => f.rule === "required-key").map((f) => f.message),
       ["description", "pubDate", "tags", "draft", "verified", "featured"].map((k) => `missing ${k} in frontmatter`),
     );
+  });
+});
+
+describe("post ids", () => {
+  it("matches Astro's glob loader (github-slugger per segment)", () => {
+    assert.equal(postIdFromPath("My Post With Spaces.md"), "my-post-with-spaces");
+    assert.equal(postIdFromPath("한글 제목_글.v2.mdx"), "한글-제목_글v2");
+    assert.equal(postIdFromPath("2026/note.mdx"), "2026/note");
+    assert.equal(postIdFromPath("guide/index.md"), "guide");
+    assert.equal(postIdFromPath("anything.md", "custom-slug"), "custom-slug");
+  });
+
+  it("rejects ids the [slug] route can't serve", () => {
+    assert.equal(postIdProblem("structural-analysis-notes"), null);
+    assert.match(postIdProblem("2026/note") ?? "", /sub-folders/);
+    for (const id of ["about", "posts", "admin", "og", "images", "404"]) {
+      assert.match(postIdProblem(id) ?? "", /already used/, id);
+    }
+    assert.match(postIdProblem("") ?? "", /no characters/);
+  });
+});
+
+describe("stray dollar signs", () => {
+  const strays = (body: string) =>
+    auditPost(post(`${LONG_BODY}\n\n${body}`), { now: NOW }).filter((f) => f.rule === "stray-dollar");
+
+  it("flags two prices in one paragraph (remark-math would eat them)", () => {
+    assert.equal(strays("GPU 대여비는 시간당 $2에서 $3 정도다.").length, 1);
+    assert.equal(strays("입력은 $3,\n출력은 $15이다.").length, 1, "soft line breaks stay in the paragraph");
+  });
+
+  it("accepts math, escaped dollars and lone prices", () => {
+    assert.deepEqual(strays("응력 $\\sigma$ 와 변형률 $\\varepsilon$ 의 관계"), []);
+    assert.deepEqual(strays("시간당 \\$2에서 \\$3 정도다."), []);
+    assert.deepEqual(strays("가격은 $5 이다.\n\n다른 문단은 $7 이다."), []);
+    assert.deepEqual(strays("```bash\necho $HOME $PATH\n```"), []);
   });
 });

@@ -8,6 +8,7 @@ import { rehypeHeadingIds, unified } from "@astrojs/markdown-remark";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import rehypeProse from "./src/lib/markdown/rehype-prose.ts";
+import remarkMathFlag from "./src/lib/markdown/remark-math-flag.ts";
 import { codeBlockLabels } from "./src/lib/markdown/ec-code-labels.ts";
 import { postLastModified } from "./src/lib/sitemap.ts";
 
@@ -69,10 +70,12 @@ export default defineConfig({
   },
   markdown: {
     processor: unified({
-      remarkPlugins: [remarkMath],
-      // rehypeHeadingIds is listed explicitly so ids (and the TOC's heading
-      // text) are fixed before rehypeProse appends permalink anchors.
-      rehypePlugins: [rehypeKatex, rehypeHeadingIds, rehypeProse],
+      remarkPlugins: [remarkMath, remarkMathFlag],
+      // Heading ids and TOC text are collected BEFORE KaTeX runs, so a
+      // heading such as "## $K$ 값" yields "K 값" rather than KaTeX's
+      // MathML + annotation + HTML copies ("KKK 값"). rehypeProse runs last
+      // and reuses the collected text for its permalink labels.
+      rehypePlugins: [rehypeHeadingIds, rehypeKatex, rehypeProse],
       remarkRehype: {
         footnoteLabel: "각주",
         footnoteBackLabel: (referenceIndex: number, rereferenceIndex: number) =>

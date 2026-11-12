@@ -72,6 +72,13 @@
 
 .prose h3 { font-size: 1.3rem; font-weight: 600; }
 .prose h4 { font-size: 1.1rem; font-weight: 600; }
+.prose h5,
+.prose h6 {
+  margin: 2rem 0 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
 .prose p {
   margin-bottom: 1.5rem;
   /* Avoid single-word orphans on the last line of a paragraph. */
@@ -95,12 +102,14 @@
   margin-bottom: 1.5rem;
 }
 
-.prose ul li {
+/* Direct children only: an <ol> nested inside a bullet item keeps its
+   numbers instead of inheriting the dash. */
+.prose ul > li {
   position: relative;
   margin-bottom: 0.5rem;
 }
 
-.prose ul li::before {
+.prose ul > li::before {
   content: "-";
   position: absolute;
   left: -1.5rem;
@@ -108,7 +117,10 @@
   font-weight: 400;
 }
 
+/* Tailwind's preflight sets list-style: none on every <ol>; numbered
+   steps and footnotes need their numbers back. */
 .prose ol {
+  list-style: decimal;
   padding-left: 1.5rem;
   margin-bottom: 1.5rem;
 }

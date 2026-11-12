@@ -10,7 +10,7 @@
  */
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
-import { auditPost, slugify } from "../src/lib/post-rules.ts";
+import { auditPost, postIdFromPath, postIdProblem } from "../src/lib/post-rules.ts";
 import { parsePost } from "../src/lib/frontmatter.ts";
 
 // `--flag` and `--flag=value`; `--show-warnings=true` keeps working too.
@@ -53,13 +53,15 @@ for (const file of files) {
 
   // Astro derives the URL from the file path (or a `slug` key); two posts
   // that slug to the same id would silently overwrite each other.
-  let id = path.relative(BLOG_DIR, file).replace(/\.mdx?$/, "").split(path.sep).map(slugify).join("/");
+  let slug;
   try {
-    const { data } = parsePost(source);
-    if (typeof data.slug === "string") id = data.slug;
+    slug = parsePost(source).data.slug;
   } catch {
     /* already reported */
   }
+  const id = postIdFromPath(path.relative(BLOG_DIR, file).split(path.sep).join("/"), slug);
+  const problem = postIdProblem(id);
+  if (problem) errors.push(`${rel}: ${problem} [post-id]`);
   if (seen.has(id)) errors.push(`${rel}: URL /${id}/ collides with ${seen.get(id)} [duplicate-slug]`);
   else seen.set(id, rel);
 }

@@ -1,6 +1,14 @@
 import { REPO } from "@/data/site.config";
 import { FrontmatterError, parsePost, serializePost, type FrontmatterData } from "@/lib/frontmatter";
-import { auditPost, hasErrors, POST_LIMITS, slugify, toOffsetIsoString, type Finding } from "@/lib/post-rules";
+import {
+  auditPost,
+  hasErrors,
+  POST_LIMITS,
+  RESERVED_POST_IDS,
+  slugify,
+  toOffsetIsoString,
+  type Finding,
+} from "@/lib/post-rules";
 import { getReadingMinutes } from "@/lib/reading-time";
 import { bytesToBase64 } from "@/lib/encoding";
 import { GitHubClient, GitHubError, type RemoteFile } from "./github";
@@ -546,6 +554,9 @@ function slugFindings(): Finding[] {
   const finding = (message: string): Finding => ({ severity: "error", line: 0, rule: "slug", message });
   if (!slug) return [finding("주소(slug)가 비어 있습니다. 한글·영문·숫자가 필요합니다.")];
   if (slug !== slugify(slug)) return [finding("주소에는 소문자, 숫자, 한글, 하이픈만 쓸 수 있습니다.")];
+  if ((RESERVED_POST_IDS as readonly string[]).includes(slug)) {
+    return [finding(`/${slug}/ 주소는 사이트가 이미 쓰고 있습니다. 다른 주소를 정해 주세요.`)];
+  }
   if (posts.some((post) => post.file.path === targetPath(slug))) {
     return [finding("같은 주소의 글이 이미 있습니다.")];
   }

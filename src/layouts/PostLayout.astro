@@ -12,8 +12,7 @@ import { getAllPosts, relatedPosts, type BlogPost } from "@/utils/posts";
 import { getPostSocialImage, getPostSocialImageAlt } from "@/utils/social-image";
 import { formatDateLong } from "@/lib/dates";
 import { getReadingMinutes } from "@/lib/reading-time";
-import { hasMathSyntax } from "@/lib/post-rules";
-import { FOOTNOTE_LABEL_ID } from "@/lib/markdown/rehype-prose";
+import { FOOTNOTE_LABEL_ID, headingDisplayText } from "@/lib/markdown/rehype-prose";
 
 interface Props {
   post: BlogPost;
@@ -23,7 +22,7 @@ const { post } = Astro.props;
 const { title, description, pubDate, updatedDate, tags, math, draft } = post.data;
 const body = post.body ?? "";
 
-const { Content, headings } = await render(post);
+const { Content, headings, remarkPluginFrontmatter } = await render(post);
 const socialImage = getPostSocialImage(post);
 const socialImageAlt = getPostSocialImageAlt(post);
 
@@ -31,16 +30,20 @@ const allPosts = await getAllPosts();
 const idx = allPosts.findIndex((p) => p.id === post.id);
 const prevPost = idx >= 0 && idx < allPosts.length - 1 ? (allPosts[idx + 1] ?? null) : null;
 const nextPost = idx > 0 ? (allPosts[idx - 1] ?? null) : null;
-const related = relatedPosts(post, allPosts).filter(
-  (p) => p.id !== prevPost?.id && p.id !== nextPost?.id,
+const related = relatedPosts(
+  post,
+  allPosts,
+  3,
+  new Set([prevPost?.id, nextPost?.id].filter((id): id is string => Boolean(id))),
 );
 
-const tocHeadings = headings.filter(
-  (h) => h.depth >= 2 && h.depth <= 3 && h.slug !== FOOTNOTE_LABEL_ID,
-);
-// Load KaTeX styles whenever the body actually contains math, even if the
-// author forgot `math: true`; otherwise formulas render as raw glyph soup.
-const needsMath = math || hasMathSyntax(body);
+const tocHeadings = headings
+  .filter((h) => h.depth >= 2 && h.depth <= 3 && h.slug && h.slug !== FOOTNOTE_LABEL_ID)
+  .map((h) => ({ ...h, text: headingDisplayText(h.text, post.filePath) }));
+// Load KaTeX styles whenever remark-math actually parsed math in the body
+// (src/lib/markdown/remark-math-flag.ts), even if the author forgot
+// `math: true`; otherwise formulas render as raw glyph soup.
+const needsMath = math || remarkPluginFrontmatter["hasMath"] === true;
 const readingMinutes = getReadingMinutes(body);
 ---
 
