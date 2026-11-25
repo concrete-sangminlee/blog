@@ -17,7 +17,11 @@ updates:
         update-types: ["version-update:semver-major"]
     groups:
       astro:
-        patterns: ["astro", "@astrojs/*", "astro-*"]
+        patterns: ["astro", "@astrojs/*"]
+      # astro-expressive-code and its plugins must move in lockstep: a split
+      # update leaves two copies of @expressive-code/core in the build.
+      expressive-code:
+        patterns: ["astro-expressive-code", "@expressive-code/*"]
       markdown:
         patterns: ["remark-*", "rehype-*", "katex", "unist-*", "hast-*", "@types/hast", "marked", "yaml"]
       tooling:
