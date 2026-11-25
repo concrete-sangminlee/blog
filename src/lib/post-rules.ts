@@ -139,19 +139,38 @@ export interface Finding {
 export function maskCode(body: string): { prose: string; unclosedFenceLine: number | null } {
   const lines = body.split("\n");
   let fence: { marker: string; line: number } | null = null;
+  // Fences may sit inside blockquotes ("> ```") and list items (indented).
+  const FENCE_OPEN = /^(?:[ \t]*>)*[ \t]*(`{3,}|~{3,})/;
+  const FENCE_CLOSE = /^(?:[ \t]*>)*[ \t]*(`{3,}|~{3,})\s*$/;
+  const LIST_ITEM = /^[ \t]*(?:[-*+]|\d+[.)])[ \t]/;
+  let inList = false;
+  let previousBlank = true;
+  let inIndentedCode = false;
   const out = lines.map((line, index) => {
-    const open = line.match(/^ {0,3}(`{3,}|~{3,})/);
     if (fence) {
-      const close = line.match(/^ {0,3}(`{3,}|~{3,})\s*$/);
+      const close = line.match(FENCE_CLOSE);
       if (close?.[1] && close[1][0] === fence.marker[0] && close[1].length >= fence.marker.length) {
         fence = null;
       }
       return "";
     }
+    const open = line.match(FENCE_OPEN);
     if (open?.[1]) {
       fence = { marker: open[1], line: index };
       return "";
     }
+
+    const blank = line.trim() === "";
+    if (LIST_ITEM.test(line)) inList = true;
+    else if (!blank && !/^[ \t]/.test(line)) inList = false;
+    // CommonMark indented code: 4+ spaces (or a tab) after a blank line,
+    // outside a list (where indentation means continuation instead).
+    const indented = /^(?: {4}|\t)/.test(line);
+    inIndentedCode = !inList && indented && (previousBlank || inIndentedCode);
+    previousBlank = blank;
+    if (inIndentedCode) return "";
+    if (blank) inIndentedCode = false;
+
     return line.replace(/(`+)(?:(?!\1)[\s\S])*?\1/g, (m) => " ".repeat(m.length));
   });
   const unclosed = fence as { marker: string; line: number } | null;
@@ -175,9 +194,22 @@ function asString(value: unknown): string | null {
   return typeof value === "string" ? value : null;
 }
 
+/**
+ * Read a frontmatter date the way Astro's YAML parser does in CI: an
+ * offset-less date or date-time is UTC. (`new Date("2026-11-25 08:30")`
+ * would use the machine's zone, so the admin in KST and CI in UTC could
+ * disagree about whether a post is in the future.)
+ */
 function parseDate(value: unknown): Date | null {
-  if (typeof value !== "string" && !(value instanceof Date)) return null;
-  const date = value instanceof Date ? value : new Date(value);
+  if (value instanceof Date) return Number.isNaN(value.valueOf()) ? null : value;
+  if (typeof value !== "string") return null;
+  let text = value.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(text)) text += "T00:00:00Z";
+  else if (/^\d{4}-\d{2}-\d{2}[T ]\d/.test(text)) {
+    text = text.replace(" ", "T");
+    if (!HAS_OFFSET_RE.test(text)) text += "Z";
+  }
+  const date = new Date(text);
   return Number.isNaN(date.valueOf()) ? null : date;
 }
 
@@ -219,8 +251,40 @@ export function auditPost(source: string, options: AuditOptions = {}): Finding[]
     }
   }
 
+  // Types the content schema enforces; without these a post passes the
+  // audit (and the admin's pre-save check) and then fails the build.
+  for (const key of ["draft", "verified", "featured", "math"]) {
+    if (data[key] !== undefined && typeof data[key] !== "boolean") {
+      add("error", 1, "type", `${key} must be true or false (found ${JSON.stringify(data[key])})`);
+    }
+  }
+  for (const key of ["title", "description"]) {
+    if (data[key] !== undefined && data[key] !== null && typeof data[key] !== "string") {
+      add("error", 1, "type", `${key} must be text in quotes (found ${JSON.stringify(data[key])})`);
+    }
+  }
+  const image = data["image"];
+  if (image !== undefined) {
+    const ok =
+      image !== null &&
+      typeof image === "object" &&
+      !Array.isArray(image) &&
+      typeof image["url"] === "string" &&
+      image["url"].trim() !== "" &&
+      typeof image["alt"] === "string" &&
+      image["alt"].trim() !== "";
+    if (!ok) add("error", 1, "image", "image needs both a url and an alt text");
+    else {
+      const url = String((image as Record<string, unknown>)["url"]);
+      if (url.startsWith("/") && !url.startsWith("//") && url !== base && !url.startsWith(`${base}/`)) {
+        add("error", 1, "base-path", `image url ${url} skips the site base "${base}/" and will 404`);
+      }
+    }
+  }
+
   const isDraft = data["draft"] === true;
-  if (data["draft"] === false && data["verified"] !== true) {
+  // Anything but draft: true is published as far as the gate is concerned.
+  if (!isDraft && data["verified"] !== true) {
     add("error", 1, "verified", "published posts must set verified: true");
   }
 
@@ -261,7 +325,7 @@ export function auditPost(source: string, options: AuditOptions = {}): Finding[]
   if (pub && pub.valueOf() > now) {
     add("error", 1, "pub-date", `pubDate ${String(data["pubDate"])} is in the future`);
   }
-  if (typeof data["pubDate"] === "string" && /T/.test(data["pubDate"]) && !HAS_OFFSET_RE.test(data["pubDate"])) {
+  if (typeof data["pubDate"] === "string" && /\d[T ]\d/.test(data["pubDate"]) && !HAS_OFFSET_RE.test(data["pubDate"].trim())) {
     add("warning", 1, "pub-date", "pubDate has a time but no UTC offset (e.g. +09:00); YAML reads it as UTC");
   }
   const updated = parseDate(data["updatedDate"]);
@@ -334,27 +398,46 @@ export function auditPost(source: string, options: AuditOptions = {}): Finding[]
   // remark-math pairs ANY two "$" in a paragraph, so "$2에서 $3" renders
   // "2에서 " as math and the dollar signs vanish. Math this audit already
   // recognised was masked above; whatever "$" remain are prices or typos.
+  // Each list item and each table cell is its own inline context; link
+  // destinations, autolinks and HTML comments are never parsed as math.
+  const dollarText = prose
+    .replace(/<!--[\s\S]*?-->/g, (m) => m.replace(/[^\n]/g, " "))
+    .split("\n")
+    .map((line) =>
+      line
+        .replace(/\]\([^)]*\)/g, "]()")
+        .replace(/<https?:[^>]*>/g, " ")
+        .replace(/https?:\/\/\S+/g, " ")
+        .replace(/^(?:[ \t]*>)+/, ""),
+    );
   let paragraphStart = -1;
   let dollars = 0;
+  const countDollars = (text: string) => (text.match(/(?<!\\)\$/g) ?? []).length;
+  const report = (line: number) =>
+    add(
+      "error",
+      line + 1 + offset,
+      "stray-dollar",
+      'two or more "$" in one paragraph will be read as math: write \\$ for a dollar sign, or keep inline math as $x$ on one line',
+    );
   const flushParagraph = () => {
-    if (dollars >= 2) {
-      add(
-        "error",
-        paragraphStart + 1 + offset,
-        "stray-dollar",
-        'two or more "$" in one paragraph will be read as math: write \\$ for a dollar sign, or keep inline math as $x$ on one line',
-      );
-    }
+    if (dollars >= 2) report(paragraphStart);
     paragraphStart = -1;
     dollars = 0;
   };
-  proseLines.forEach((line, index) => {
+  dollarText.forEach((line, index) => {
     if (line.trim() === "" || /^#{1,6}\s/.test(line)) {
       flushParagraph();
       return;
     }
+    if (/^\s*\|/.test(line)) {
+      flushParagraph();
+      if (line.split("|").some((cell) => countDollars(cell) >= 2)) report(index);
+      return;
+    }
+    if (/^[ \t]*(?:[-*+]|\d+[.)])[ \t]/.test(line)) flushParagraph();
     if (paragraphStart < 0) paragraphStart = index;
-    dollars += (line.match(/(?<!\\)\$/g) ?? []).length;
+    dollars += countDollars(line);
   });
   flushParagraph();
 

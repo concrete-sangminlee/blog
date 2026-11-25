@@ -1,3 +1,9 @@
+# Note: crawlers only read robots.txt at the origin root
+# (https://concrete-sangminlee.github.io/robots.txt), which this project
+# site does not control, so the rules below are inert at /blog/robots.txt.
+# The admin is kept out of search by its own <meta name="robots"
+# content="noindex, nofollow">; submit /blog/sitemap-index.xml in Google
+# Search Console for discovery.
 User-agent: *
 Allow: /
 Disallow: /blog/admin/

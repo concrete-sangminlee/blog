@@ -26,3 +26,14 @@ describe("extractExternalLinks", () => {
     assert.deepEqual(extractExternalLinks(body).map((l) => l.url), ["https://end.example/path"]);
   });
 });
+
+describe("extractExternalLinks with parentheses", () => {
+  it("keeps balanced parentheses that are part of the URL", () => {
+    const body = "[보](https://en.wikipedia.org/wiki/Beam_(structure)) 와 https://en.wikipedia.org/wiki/Truss_(disambiguation) 참고 (https://example.com/a).";
+    assert.deepEqual(extractExternalLinks(body).map((l) => l.url), [
+      "https://en.wikipedia.org/wiki/Beam_(structure)",
+      "https://en.wikipedia.org/wiki/Truss_(disambiguation)",
+      "https://example.com/a",
+    ]);
+  });
+});

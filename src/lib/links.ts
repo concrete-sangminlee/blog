@@ -10,11 +10,13 @@ export function extractExternalLinks(body: string, lineOffset = 0): { url: strin
   const { prose } = maskCode(body);
   const seen = new Map<string, number>();
   const patterns = [
-    /\]\(\s*<?(https?:\/\/[^\s)>]+)/g, // [text](url) and ![alt](url)
+    // Balanced parentheses are part of a URL (Beam_(structure)), as in
+    // CommonMark link destinations and GFM autolinks.
+    /\]\(\s*<?(https?:\/\/(?:[^\s()<>]|\([^\s()<>]*\))+)/g, // [text](url) and ![alt](url)
     /^\s*\[[^\]]+\]:\s*<?(https?:\/\/\S+?)>?(?:\s|$)/gm, // [ref]: url
     /<(https?:\/\/[^>\s]+)>/g, // <https://…>
     /\b(?:href|src)=["'](https?:\/\/[^"']+)["']/g, // MDX/HTML attributes
-    /(?<![("'<\[=])\b(https?:\/\/[^\s<>()"'`\]]+)/g, // bare URLs (GFM autolink)
+    /(?<!\]\()(?<!["'<\[=])\b(https?:\/\/(?:[^\s<>()"'`\]]|\([^\s<>()"'`\]]*\))+)/g, // bare URLs (GFM autolink)
   ];
   prose.split("\n").forEach((text, index) => {
     for (const pattern of patterns) {

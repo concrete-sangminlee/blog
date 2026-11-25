@@ -4,6 +4,7 @@ import {
   auditPost,
   hasErrors,
   POST_LIMITS,
+  postIdFromPath,
   RESERVED_POST_IDS,
   slugify,
   toOffsetIsoString,
@@ -43,7 +44,6 @@ const views = {
 const ui = {
   loginForm: $<HTMLFormElement>("login-form"),
   tokenInput: $<HTMLInputElement>("token-input"),
-  rememberInput: $<HTMLInputElement>("remember-input"),
   loginStatus: $("login-status"),
   whoami: $("whoami"),
   logoutBtn: $<HTMLButtonElement>("logout-btn"),
@@ -114,25 +114,17 @@ function el<K extends keyof HTMLElementTagNameMap>(
 
 /* ── Session ─────────────────────────────────────────────────────────── */
 
-function storedToken(): string | null {
-  try {
-    return sessionStorage.getItem(TOKEN_KEY) ?? localStorage.getItem(TOKEN_KEY);
-  } catch {
-    return null;
-  }
-}
+/*
+ * The token lives in memory only. Web Storage is shared by the whole
+ * concrete-sangminlee.github.io origin: every post page (which runs
+ * Disqus's third-party script) and every other Pages project of the
+ * account could read it there. Browsers' password managers can still
+ * remember it (the field is a current-password field), and they only fill
+ * it into this page.
+ */
 
-function storeToken(token: string, remember: boolean) {
-  try {
-    sessionStorage.setItem(TOKEN_KEY, token);
-    if (remember) localStorage.setItem(TOKEN_KEY, token);
-    else localStorage.removeItem(TOKEN_KEY);
-  } catch {
-    /* storage unavailable: the token lives in memory for this tab only */
-  }
-}
-
-function clearToken() {
+/** Remove tokens that older versions of the admin kept in Web Storage. */
+function purgeStoredTokens() {
   try {
     sessionStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(TOKEN_KEY);
@@ -143,7 +135,7 @@ function clearToken() {
 
 let client: GitHubClient | null = null;
 
-async function signIn(token: string, remember: boolean): Promise<boolean> {
+async function signIn(token: string): Promise<boolean> {
   const candidate = new GitHubClient(token, REPO);
   try {
     const me = await candidate.whoAmI();
@@ -152,19 +144,16 @@ async function signIn(token: string, remember: boolean): Promise<boolean> {
       return false;
     }
     client = candidate;
-    storeToken(token, remember);
     ui.whoami.textContent = `${me.login} · ${REPO.owner}/${REPO.name}@${REPO.branch}`;
     return true;
   } catch (error) {
     setStatus(ui.loginStatus, errorMessage(error), "error");
-    if (error instanceof GitHubError && error.isAuth) clearToken();
     return false;
   }
 }
 
 function signOut() {
   if (!confirmDiscard()) return;
-  clearToken();
   client = null;
   posts = [];
   ui.tokenInput.value = "";
@@ -181,7 +170,7 @@ ui.loginForm.addEventListener("submit", async (event) => {
     return;
   }
   setStatus(ui.loginStatus, "확인 중…");
-  if (await signIn(token, ui.rememberInput.checked)) {
+  if (await signIn(token)) {
     ui.tokenInput.value = "";
     await openList();
   }
@@ -425,6 +414,12 @@ function composeForCompare(): string {
 }
 
 function confirmDiscard(): boolean {
+  // Leaving while a save is in flight would let its result land on
+  // whichever post is open by then.
+  if (saving) {
+    setStatus(ui.editorStatus, "저장이 끝날 때까지 기다려 주세요.", "error");
+    return false;
+  }
   return !isDirty() || confirm("저장하지 않은 변경 사항이 있습니다. 나가시겠습니까?");
 }
 
@@ -509,7 +504,9 @@ async function openEditor(path: string | null) {
 
 ui.backBtn.addEventListener("click", () => {
   if (!confirmDiscard()) return;
-  if (editor) clearAutosave(editor.path);
+  // The autosave is kept on purpose: after a conflict the UI tells the
+  // author to reopen the post and compare. It is cleared by a successful
+  // save or by declining the restore prompt.
   editor = null;
   void openList();
 });
@@ -557,28 +554,68 @@ function slugFindings(): Finding[] {
   if ((RESERVED_POST_IDS as readonly string[]).includes(slug)) {
     return [finding(`/${slug}/ 주소는 사이트가 이미 쓰고 있습니다. 다른 주소를 정해 주세요.`)];
   }
-  if (posts.some((post) => post.file.path === targetPath(slug))) {
+  // Compare post ids, not file paths: an existing foo.md owns /foo/ too.
+  if (posts.some((post) => postIdFromPath(post.file.name) === slug)) {
     return [finding("같은 주소의 글이 이미 있습니다.")];
   }
   return [];
 }
 
+/** Which form field an audit rule is about, for aria-invalid and focus. */
+function fieldFor(finding: Finding): HTMLElement {
+  switch (finding.rule) {
+    case "slug":
+      return ui.slug;
+    case "title-length":
+      return ui.title;
+    case "description-length":
+      return ui.desc;
+    case "tags":
+      return ui.tags;
+    case "pub-date":
+    case "updated-date":
+      return ui.pubDate;
+    case "verified":
+      return ui.verified;
+    case "image":
+      return ui.imageUrl;
+    default:
+      return ui.body;
+  }
+}
+
+const auditedFields = () => [ui.slug, ui.title, ui.desc, ui.tags, ui.pubDate, ui.verified, ui.imageUrl, ui.body];
+
 function renderAudit(findings: Finding[]) {
   const errors = findings.filter((f) => f.severity === "error").length;
   const warnings = findings.length - errors;
-  ui.auditSummary.textContent =
-    findings.length === 0 ? "문제 없음" : `오류 ${errors}개 · 확인 ${warnings}개`;
-  ui.slug.setAttribute("aria-invalid", String(findings.some((f) => f.rule === "slug")));
+  // Only the one-line summary is a live region, and it is only rewritten
+  // when the counts change: re-announcing the whole list on every
+  // keystroke drowned out screen-reader users typing in the editor.
+  const summary = findings.length === 0 ? "문제 없음" : `오류 ${errors}개 · 확인 ${warnings}개`;
+  if (ui.auditSummary.textContent !== summary) ui.auditSummary.textContent = summary;
+  const invalid = new Set(findings.filter((f) => f.severity === "error").map(fieldFor));
+  for (const field of auditedFields()) field.setAttribute("aria-invalid", String(invalid.has(field)));
   ui.auditList.replaceChildren(
     ...findings.map((f) =>
       el(
         "li",
-        { dataset: { severity: f.severity } },
-        f.line > 0 ? el("span", { className: "line" }, `${f.line}행`) : null,
+        // Rule messages are English; let screen readers switch voice.
+        { dataset: { severity: f.severity }, ...(f.rule === "slug" ? {} : { lang: "en" }) },
+        f.line > 0 ? el("span", { className: "line", lang: "ko" }, `${f.line}행`) : null,
         f.message,
       ),
     ),
   );
+}
+
+/** After a refused save, take the author to the first field to fix. */
+function focusFirstInvalid(findings: Finding[]) {
+  const first = findings.find((f) => f.severity === "error");
+  if (!first) return;
+  const field = fieldFor(first);
+  if (field === ui.imageUrl) ui.imageGroup.open = true;
+  field.focus();
 }
 
 ui.form.addEventListener("input", (event) => {
@@ -595,6 +632,17 @@ const pending = new Map<string, PreparedImage>();
 function imageFolder(): string {
   if (editor?.path) return editor.path.split("/").pop()?.replace(/\.mdx?$/, "") ?? "drafts";
   return ui.slug.value.trim() || "drafts";
+}
+
+/** Site-local image URLs (`/blog/images/...`) a post body points at. */
+function referencedImagePaths(text: string): string[] {
+  const prefix = `${SITE_BASE}/images/`;
+  const found = new Set<string>();
+  for (const match of text.matchAll(/\]\(\s*<?([^)\s>]+)|\bsrc=["']([^"']+)["']/g)) {
+    const url = (match[1] ?? match[2] ?? "").split(/[?#]/)[0] ?? "";
+    if (url.startsWith(prefix)) found.add(decodeURI(url));
+  }
+  return [...found];
 }
 
 function referencedPending(text: string): PreparedImage[] {
@@ -760,7 +808,9 @@ async function watchDeploy(commitSha: string, postUrl: string | null) {
     if (watch.signal.aborted) return;
     const log = run ? el("a", { href: run.html_url, target: "_blank", rel: "noopener noreferrer" }, "진행 기록") : null;
     if (run?.status === "completed") {
-      if (run.conclusion === "success") {
+      if (run.conclusion === "cancelled") {
+        showDeploy(["이 배포는 바로 뒤에 저장한 내용의 배포로 대체되었습니다. ", log as HTMLAnchorElement]);
+      } else if (run.conclusion === "success") {
         const view = postUrl ? el("a", { href: postUrl, target: "_blank", rel: "noopener noreferrer" }, "사이트에서 보기") : null;
         showDeploy(["배포 완료. ", ...(view ? [view, " · "] : []), log as HTMLAnchorElement], "success");
       } else {
@@ -786,13 +836,23 @@ async function save() {
   if (!client || !editor || saving) return;
   const { text, slug } = composePost();
   const findings = [...auditPost(text, { base: SITE_BASE }), ...slugFindings()];
+  const targetFile = editor.path ?? targetPath(slug);
+  if (!hasErrors(findings) && targetFile.endsWith(".mdx")) {
+    // MDX rejects some Markdown habits (<!-- -->, <br>, <url>); the build
+    // would fail on them. The parser is loaded only when saving.
+    const { checkMdxSyntax } = await import("@/lib/mdx-syntax");
+    const { body, bodyStartLine } = parsePost(text);
+    findings.push(...(await checkMdxSyntax(body, bodyStartLine - 1)));
+  }
   if (hasErrors(findings)) {
     renderAudit(findings);
     setStatus(ui.editorStatus, "점검 오류를 먼저 고쳐 주세요. 그대로 커밋하면 배포가 실패합니다.", "error");
+    focusFirstInvalid(findings);
     return;
   }
 
-  const path = editor.path ?? targetPath(slug);
+  const session = editor;
+  const path = session.path ?? targetPath(slug);
   const title = ui.title.value.trim();
   saving = true;
   ui.saveBtn.disabled = true;
@@ -800,6 +860,22 @@ async function save() {
   try {
     // Images first: if one fails, the post isn't committed pointing at a
     // file that doesn't exist. Only images still referenced are uploaded.
+    // Images referenced but neither waiting in this tab nor in the repo
+    // (e.g. after restoring an autosave: image bytes aren't autosaved)
+    // would make a published post fail the deploy's link check.
+    const unknown = referencedImagePaths(text).filter((url) => !pending.has(url));
+    if (unknown.length > 0) {
+      setStatus(ui.editorStatus, "이미지를 확인하는 중…");
+      const missing = await client.missingFiles(unknown.map((url) => `public${url.slice(SITE_BASE.length)}`));
+      if (missing.length > 0) {
+        setStatus(
+          ui.editorStatus,
+          `저장소에 없는 이미지를 가리킵니다: ${missing.map((p) => p.replace(/^public/, SITE_BASE)).join(", ")}. 이미지를 다시 추가해 주세요.`,
+          "error",
+        );
+        return;
+      }
+    }
     const images = referencedPending(text);
     for (const [index, image] of images.entries()) {
       setStatus(ui.editorStatus, `이미지 올리는 중… (${index + 1}/${images.length})`);
@@ -816,10 +892,13 @@ async function save() {
     const result = await client.putFile(
       path,
       text,
-      editor.path ? `Update: ${title}` : `New post: ${title}`,
-      editor.sha ?? undefined,
+      session.path ? `Update: ${title}` : `New post: ${title}`,
+      session.sha ?? undefined,
     );
-    clearAutosave(editor.path);
+    clearAutosave(session.path);
+    const summary = summarize({ path, name: path.split("/").pop() ?? path, sha: result.sha, text });
+    posts = [summary, ...posts.filter((post) => post.file.path !== path)];
+    if (editor !== session) return; // defensive: never write into another post's editor
     const created = !editor.path;
     editor.path = path;
     editor.sha = result.sha;
@@ -830,9 +909,6 @@ async function save() {
     ui.deleteBtn.hidden = false;
     ui.touchUpdatedWrap.hidden = false;
     ui.editorHeading.textContent = "글 수정";
-
-    const summary = summarize({ path, name: path.split("/").pop() ?? path, sha: result.sha, text });
-    posts = [summary, ...posts.filter((post) => post.file.path !== path)];
 
     const isDraft = ui.draft.checked;
     void watchDeploy(result.commitSha, isDraft ? null : `${SITE_BASE}/${path.split("/").pop()?.replace(/\.mdx?$/, "")}/`);
@@ -976,7 +1052,6 @@ function errorMessage(error: unknown): string {
 
 function handleError(error: unknown, target: HTMLElement) {
   if (error instanceof GitHubError && error.isAuth) {
-    clearToken();
     client = null;
     show("login");
     setStatus(ui.loginStatus, errorMessage(error), "error");
@@ -992,16 +1067,6 @@ function handleError(error: unknown, target: HTMLElement) {
 /* Boot */
 
 void (async () => {
-  const token = storedToken();
-  let remembered = false;
-  try {
-    remembered = localStorage.getItem(TOKEN_KEY) !== null;
-  } catch {
-    /* ignore */
-  }
-  if (token && (await signIn(token, remembered))) {
-    await openList();
-  } else {
-    show("login");
-  }
+  purgeStoredTokens();
+  show("login");
 })();

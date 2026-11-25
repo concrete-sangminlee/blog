@@ -12,6 +12,7 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { auditPost, postIdFromPath, postIdProblem } from "../src/lib/post-rules.ts";
 import { parsePost } from "../src/lib/frontmatter.ts";
+import { checkMdxSyntax } from "../src/lib/mdx-syntax.ts";
 
 // `--flag` and `--flag=value`; `--show-warnings=true` keeps working too.
 const args = new Map(
@@ -46,7 +47,16 @@ const seen = new Map();
 for (const file of files) {
   const rel = path.relative(ROOT, file);
   const source = await readFile(file, "utf8");
-  for (const finding of auditPost(source)) {
+  const findings = auditPost(source);
+  if (file.endsWith(".mdx")) {
+    try {
+      const { body, bodyStartLine } = parsePost(source);
+      findings.push(...(await checkMdxSyntax(body, bodyStartLine - 1)));
+    } catch {
+      /* frontmatter errors are already reported */
+    }
+  }
+  for (const finding of findings) {
     const where = finding.line > 0 ? `${rel}:${finding.line}` : rel;
     (finding.severity === "error" ? errors : warnings).push(`${where}: ${finding.message} [${finding.rule}]`);
   }
