@@ -56,6 +56,9 @@ html {
   /* Reserve scrollbar space so short and long pages share one content
      width and navigating between them never shifts the layout sideways. */
   scrollbar-gutter: stable;
+  /* Keep anything scrolled into view (a focused link, a #section) clear of
+     the fixed header, so keyboard focus is never hidden under it. */
+  scroll-padding-top: calc(5rem + env(safe-area-inset-top));
 }
 
 body {
@@ -165,6 +168,8 @@ body::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    /* A delay would still hold staggered cards invisible. */
+    animation-delay: 0s !important;
     scroll-behavior: auto !important;
   }
 }

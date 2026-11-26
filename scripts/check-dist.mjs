@@ -206,7 +206,8 @@ async function checkSitemap() {
     const xml = await readFile(file, "utf8");
     for (const [, loc] of xml.matchAll(/<loc>([^<]+)<\/loc>/g)) {
       const url = new URL(loc);
-      if (/\/(?:admin|404)\b/.test(url.pathname)) fail(path.basename(file), `lists ${loc}`);
+      // Whole path segments only: a post called admin-notes is fine.
+      if (new RegExp(`^${BASE}(?:admin|404)(?:/|\\.html$|$)`).test(url.pathname)) fail(path.basename(file), `lists ${loc}`);
       else if (!(await resolveFile(url.pathname))) fail(path.basename(file), `lists missing page ${loc}`);
     }
   }

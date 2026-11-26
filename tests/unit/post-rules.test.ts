@@ -220,3 +220,65 @@ describe("stray dollar signs", () => {
     assert.deepEqual(strays("```bash\necho $HOME $PATH\n```"), []);
   });
 });
+
+describe("stray dollar signs: contexts remark-math treats separately", () => {
+  const strays = (body: string) =>
+    auditPost(post(`${LONG_BODY}\n\n${body}`), { now: NOW }).filter((f) => f.rule === "stray-dollar");
+
+  it("does not flag prices in separate list items or table cells", () => {
+    assert.deepEqual(strays("- 사과 $5\n- 배 $10"), []);
+    assert.deepEqual(strays("1. 사과 $5\n2. 배 $10"), []);
+    assert.deepEqual(strays("| 품목 | 가격 |\n| --- | --- |\n| 사과 | $5 |\n| 배 | $10 |"), []);
+  });
+
+  it("ignores code in blockquotes, nested lists and indented blocks", () => {
+    assert.deepEqual(strays("> ```bash\n> echo $HOME $PATH\n> ```"), []);
+    assert.deepEqual(strays("1. 환경 변수를 확인한다.\n\n    ```bash\n    echo $HOME $PATH\n    ```"), []);
+    assert.deepEqual(strays("코드:\n\n    echo $HOME $PATH\n"), []);
+  });
+
+  it("ignores link targets and HTML comments", () => {
+    assert.deepEqual(strays("[검색](https://x.com/?a=$1&b=$2)"), []);
+    assert.deepEqual(strays("<!-- TODO $5 and $10 -->"), []);
+  });
+
+  it("still flags two prices inside one list item or one cell", () => {
+    assert.equal(strays("- 시간당 $2에서 $3").length, 1);
+    assert.equal(strays("| 요금 |\n| --- |\n| $2에서 $3 |").length, 1);
+  });
+
+  it("does not flag an em dash inside a fenced block under a list item", () => {
+    const found = auditPost(post(`${LONG_BODY}\n\n- 항목\n\n    \`\`\`\n    a — b\n    \`\`\``), { now: NOW });
+    assert.ok(!found.some((f) => f.rule === "em-dash"));
+  });
+});
+
+describe("dates are read as UTC when they carry no offset, as Astro does", () => {
+  it("gives the same verdict whatever the machine's time zone", () => {
+    // 2026-11-04T00:00Z is NOW; "2026-11-04 08:30" is UTC to Astro: future.
+    for (const pubDate of ["2026-11-04 08:30", "2026-11-04T08:30"]) {
+      const found = auditPost(post(LONG_BODY, { pubDate }), { now: NOW }).map((f) => `${f.severity}:${f.rule}`);
+      assert.ok(found.includes("error:pub-date"), pubDate);
+      assert.ok(found.includes("warning:pub-date"), `${pubDate} warns about the missing offset`);
+    }
+    assert.deepEqual(auditPost(post(LONG_BODY, { pubDate: "2026-11-03" }), { now: NOW }), []);
+  });
+});
+
+describe("frontmatter types the schema enforces", () => {
+  const rulesOf = (overrides: Record<string, unknown>) =>
+    auditPost(post(LONG_BODY, overrides), { now: NOW }).map((f) => `${f.severity}:${f.rule}`);
+
+  it("rejects non-boolean flags and non-text titles", () => {
+    assert.ok(rulesOf({ draft: "false" }).includes("error:type"));
+    assert.ok(rulesOf({ draft: "false", verified: false }).includes("error:verified"), "string draft is still gated");
+    assert.ok(rulesOf({ featured: "yes" }).includes("error:type"));
+    assert.ok(rulesOf({ title: 20261104 }).includes("error:type"));
+  });
+
+  it("requires image url and alt, with the site base", () => {
+    assert.ok(rulesOf({ image: { url: "/blog/images/a.webp", alt: "" } }).includes("error:image"));
+    assert.ok(rulesOf({ image: { url: "/images/a.webp", alt: "그림" } }).includes("error:base-path"));
+    assert.ok(!rulesOf({ image: { url: "/blog/images/a.webp", alt: "그림" } }).some((r) => r.startsWith("error")));
+  });
+});

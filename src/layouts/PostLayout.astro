@@ -97,6 +97,14 @@ const readingMinutes = getReadingMinutes(body);
     </header>
 
     <div class="flex gap-12">
+      {/* First in the DOM so keyboard users reach the TOC before the whole
+          article and comment thread; order-last keeps it on the right. */}
+      {tocHeadings.length > 1 && (
+        <div class="hidden w-56 shrink-0 lg:order-last lg:block">
+          <TableOfContents headings={tocHeadings} variant="sidebar" />
+        </div>
+      )}
+
       <div class="min-w-0 max-w-[720px] flex-1">
         {tocHeadings.length > 1 && (
           <TableOfContents headings={tocHeadings} variant="inline" />
@@ -116,12 +124,6 @@ const readingMinutes = getReadingMinutes(body);
           />
         )}
       </div>
-
-      {tocHeadings.length > 1 && (
-        <div class="hidden w-56 shrink-0 lg:block">
-          <TableOfContents headings={tocHeadings} variant="sidebar" />
-        </div>
-      )}
     </div>
   </article>
 </BaseLayout>
@@ -154,6 +156,8 @@ const readingMinutes = getReadingMinutes(body);
   // the full URL so it can be pasted straight into a message or a paper.
   // Registered once: module scripts survive ClientRouter navigations.
   function toast(message: string) {
+    // The empty live region is rendered by BaseLayout so screen readers
+    // already track it when the message arrives.
     let el = document.getElementById("copy-toast");
     if (!el) {
       el = document.createElement("div");

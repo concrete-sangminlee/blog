@@ -63,7 +63,7 @@ npm run build && npm run preview    # 프로덕션 빌드 확인
 | 명령 | 내용 |
 | --- | --- |
 | `npm run typecheck` | `astro check`: `.astro`와 `.ts` 전체를 strictest 설정으로 검사 |
-| `npm run audit:blog` | 글 감사: frontmatter, 길이, 섹션 수, em dash, `#` 제목, 미래 날짜, `/blog` 빠진 링크, alt 없는 이미지, 닫히지 않은 코드 블록, 한 문단의 `$` 두 개 이상(수식으로 읽혀 사라짐: 가격은 `\$`로), 하위 폴더나 예약된 주소(`about`, `posts`, `admin`, `og`, `images`, `404`), slug 충돌 (`-- --show-warnings`로 경고까지) |
+| `npm run audit:blog` | 글 감사: frontmatter 값의 형식(true/false, 따옴표 문자열, 대표 이미지의 url·alt), `.mdx` 문법(`<!-- -->`, `<br>`, `<https://…>`처럼 MDX가 거부하는 표기),  길이, 섹션 수, em dash, `#` 제목, 미래 날짜, `/blog` 빠진 링크, alt 없는 이미지, 닫히지 않은 코드 블록, 한 문단의 `$` 두 개 이상(수식으로 읽혀 사라짐: 가격은 `\$`로), 하위 폴더나 예약된 주소(`about`, `posts`, `admin`, `og`, `images`, `404`), slug 충돌 (`-- --show-warnings`로 경고까지) |
 | `npm test` | 공유 모듈 단위 테스트 (Node 내장 테스트 러너) |
 | `npm run build:fixture` | `tests/fixtures/blog`의 예시 글로 사이트를 `dist-fixture/`에 빌드 |
 | `npm run check:dist` | 빌드 결과의 내부 링크·앵커, 메타데이터, JSON-LD, 소셜 카드 크기, sitemap, 페이지 용량 예산(gzip: HTML 60KB, CSS 70KB, JS 25KB) 검사 |
@@ -78,6 +78,8 @@ npm run build && npm run preview    # 프로덕션 빌드 확인
 
 `main`에 push하면 GitHub Actions가 CI(위 검사 전부 + 브라우저 테스트)를 돌리고, 통과한 경우에만 GitHub Pages로 배포합니다. Pull request에도 같은 CI가 돕니다. Dependabot이 매주 의존성 업데이트 PR을 묶어서 올립니다.
 
+수식(TeX)에 오타가 있으면 빨간 원문이 그대로 배포되는 대신 빌드가 실패하고, 파일과 줄을 알려 줍니다.
+
 소셜 카드 글꼴에 없는 글자(한자, 이모지, ∇ 같은 기호)가 제목·설명·태그에 있으면 카드에는 네모로 그려지고, 빌드 로그에 `[social-card]` 경고로 어떤 글자인지 나옵니다.
 
 소셜 카드용 Pretendard TTF는 빌드 때 jsDelivr에서 받아 SHA-256으로 검증한 뒤 `node_modules/.cache/og-fonts/`에 캐시합니다. 오프라인에서 빌드하려면 `OG_FONT_DIR`에 같은 파일이 있는 폴더를 지정하세요.
@@ -88,7 +90,7 @@ npm run build && npm run preview    # 프로덕션 빌드 확인
 
 브라우저에서 `/blog/admin/`으로 접속해 GitHub 토큰을 넣으면 글을 쓰고 고칠 수 있습니다. 저장은 GitHub API로 `main`에 바로 커밋됩니다.
 
-- **토큰**: [fine-grained token](https://github.com/settings/personal-access-tokens/new)을 이 저장소에만, `Contents: Read and write` 권한으로 만드는 것을 권장합니다(배포 상태를 보려면 `Actions: Read-only` 추가). 기본은 탭을 닫으면 지워지는 `sessionStorage`이고, "기억하기"를 켜면 `localStorage`에 남습니다.
+- **토큰**: [fine-grained token](https://github.com/settings/personal-access-tokens/new)을 이 저장소에만, `Contents: Read and write` 권한으로 만드는 것을 권장합니다(배포 상태를 보려면 `Actions: Read-only` 추가). 토큰은 탭의 메모리에만 두고 `localStorage`·`sessionStorage`에는 저장하지 않습니다. 이 저장소들은 같은 github.io 출처의 모든 페이지(Disqus 스크립트가 도는 글 페이지 포함)가 읽을 수 있기 때문입니다. 새로고침하면 다시 넣어야 하니 브라우저 비밀번호 관리자에 저장해 두세요.
 - **이미지**: 본문에 붙여넣기, 끌어놓기, "이미지 추가" 버튼으로 넣습니다. 브라우저에서 가로 1600px 이하 WebP로 줄인 뒤 저장할 때 `public/images/<글 주소>/`에 함께 커밋합니다. 파일명은 내용 해시라 같은 이미지를 두 번 올려도 하나만 남습니다. alt가 비어 있으면 저장되지 않으니 `[ ]` 안에 설명을 적으세요. SVG는 이 출처에서 스크립트를 실행할 수 있어 받지 않습니다(PNG로 내보내 올리세요).
 - **배포 상태**: 저장하면 그 커밋의 배포가 "대기 → 진행 → 완료/실패"로 바로 표시되고, 완료되면 사이트 링크가 나옵니다. 토큰에 `Actions: Read-only` 권한이 있어야 보입니다(없어도 배포는 평소처럼 됩니다).
 - **편집**: ⌘/Ctrl+B 굵게, ⌘/Ctrl+I 기울임, ⌘/Ctrl+K 링크, 선택한 글자 위에 URL을 붙여넣으면 링크가 됩니다. 미리보기는 KaTeX 수식과 `<Callout>`·`<Figure>`도 비슷하게 보여 줍니다.

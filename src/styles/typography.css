@@ -16,7 +16,6 @@
   letter-spacing: -0.02em;
   margin-top: 2.5rem;
   margin-bottom: 1rem;
-  scroll-margin-top: calc(5rem + env(safe-area-inset-top));
   /* Distribute words across lines so multi-line headings don't end
      with a lonely short last line. Ignored on older browsers. */
   text-wrap: balance;
@@ -48,9 +47,11 @@
   color: var(--accent);
 }
 
+/* Touch screens can't hover to reveal it; 0.75 keeps the "#" above the
+   3:1 contrast that a control's only visual cue needs (0.45 was 1.9:1). */
 @media (hover: none) {
   .prose .heading-anchor {
-    opacity: 0.45;
+    opacity: 0.75;
   }
 }
 
@@ -297,10 +298,6 @@
 .prose [data-footnote-backref] {
   margin-left: 0.25rem;
   font-family: var(--font-mono);
-}
-
-.prose :is([data-footnote-ref], .footnotes li) {
-  scroll-margin-top: calc(5rem + env(safe-area-inset-top));
 }
 
 /* Figures (see src/components/mdx/Figure.astro) */

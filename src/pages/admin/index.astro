@@ -12,6 +12,9 @@ import { href } from "@/utils/paths";
  * structural: scripts may only come from this origin and network requests
  * may only go to GitHub's API. A post body is previewed inside a sandboxed
  * iframe without script permission, so nothing in a post can read the token.
+ * The token is kept in memory only, never in Web Storage: localStorage and
+ * sessionStorage are shared with every page on this github.io origin,
+ * including post pages that run Disqus's third-party script.
  */
 const csp = [
   "default-src 'none'",
@@ -61,17 +64,17 @@ const newTokenUrl =
           <span class="field-label">GitHub 토큰</span>
           <input
             id="token-input"
+            name="token"
             type="password"
-            autocomplete="off"
+            autocomplete="current-password"
             spellcheck="false"
             placeholder="github_pat_…"
             required
           />
         </label>
-        <label class="check">
-          <input id="remember-input" type="checkbox" />
-          <span>이 브라우저에 기억하기 <small class="muted">(끄면 탭을 닫을 때 지워집니다)</small></span>
-        </label>
+        <!-- Lets a password manager store the token under a stable name. -->
+        <input class="sr-only" type="text" name="username" autocomplete="username" value="blog-admin" readonly tabindex="-1" aria-hidden="true" />
+        <p class="hint">토큰은 이 탭의 메모리에만 있고, 페이지를 닫거나 새로고침하면 사라집니다. 브라우저 비밀번호 관리자에 저장해 두면 편합니다.</p>
         <button type="submit" class="btn btn-primary">시작하기</button>
         <p id="login-status" class="status" role="status" aria-live="polite"></p>
       </form>
@@ -196,8 +199,8 @@ const newTokenUrl =
 
         <aside class="editor-side" aria-labelledby="audit-heading">
           <h2 id="audit-heading" class="side-title">점검</h2>
-          <p id="audit-summary" class="muted small"></p>
-          <ul id="audit-list" class="audit-list" aria-live="polite"></ul>
+          <p id="audit-summary" class="muted small" role="status" aria-live="polite"></p>
+          <ul id="audit-list" class="audit-list" aria-label="점검 결과"></ul>
           <p class="muted small">
             오류가 있으면 저장되지 않습니다. CI의 <code>npm run audit:blog</code>와 같은 규칙입니다.
           </p>

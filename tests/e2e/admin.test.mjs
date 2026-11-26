@@ -101,11 +101,23 @@ let shaCounter;
 /** How the fake Actions API answers: "success" | "failure" | "forbidden". */
 let deployMode;
 let deployPolls;
+/** Milliseconds the fake API waits before answering a PUT. */
+let putDelay;
 
 function graphql(body) {
   const { query, variables } = body;
   if (query.includes("viewerPermission")) {
     return { data: { viewer: { login: "tester" }, repository: { viewerPermission: "WRITE" } } };
+  }
+  if ("e0" in variables) {
+    // missingFiles(): one aliased object() per path.
+    const fields = {};
+    for (const [key, value] of Object.entries(variables)) {
+      if (!/^e\d+$/.test(key)) continue;
+      const file = repo.get(String(value).replace(/^main:/, ""));
+      fields[`f${key.slice(1)}`] = file ? { oid: file.sha } : null;
+    }
+    return { data: { repository: fields } };
   }
   const expr = variables.expr.replace(/^main:/, "");
   if (query.includes("entries")) {
@@ -153,6 +165,7 @@ async function installFakeGitHub(page) {
     const payload = request.postDataJSON();
     const existing = repo.get(path);
     if (request.method() === "PUT") {
+      if (putDelay) await new Promise((resolve) => setTimeout(resolve, putDelay));
       if (existing && payload.sha !== existing.sha) {
         return route.fulfill({ status: 409, json: { message: "sha mismatch" } });
       }
@@ -201,6 +214,7 @@ describe("admin", () => {
     shaCounter = 0;
     deployMode = "success";
     deployPolls = 0;
+    putDelay = 0;
     const context = await browser.newContext();
     page = await context.newPage();
     problems = [];
@@ -210,7 +224,11 @@ describe("admin", () => {
       }
     });
     page.on("pageerror", (error) => problems.push(String(error)));
-    page.on("dialog", (dialog) => void dialog.accept(dialog.type() === "prompt" ? page.__promptAnswer ?? "" : undefined));
+    page.__dialogs = [];
+    page.on("dialog", (dialog) => {
+      page.__dialogs.push(dialog.message());
+      void dialog.accept(dialog.type() === "prompt" ? page.__promptAnswer ?? "" : undefined);
+    });
     // Fonts from the CDN are irrelevant here and may be unreachable in CI sandboxes.
     await page.route("https://cdn.jsdelivr.net/**", (route) => route.fulfill({ status: 200, contentType: "text/css", body: "" }));
     await installFakeGitHub(page);
@@ -296,6 +314,56 @@ describe("admin", () => {
     await page.locator('#editor-status[data-tone="error"]').waitFor();
     assert.match(await page.locator("#editor-status").textContent(), /자동 저장/);
     assert.equal(repo.get(`${DIR}/eureka.mdx`).sha, "sha-other");
+
+    // Following the hint (back to the list, reopen) must offer the autosave.
+    await page.waitForTimeout(1000); // autosave debounce
+    await page.click("#back-btn");
+    await page.locator("#view-list:not([hidden])").waitFor();
+    page.__dialogs.length = 0;
+    await openPost(page);
+    assert.ok(page.__dialogs.some((m) => m.includes("자동 저장된 내용")), "restore prompt offered");
+    assert.equal(await page.inputValue("#ed-desc"), "다른 곳에서 동시에 고친 경우를 확인하는 설명입니다.");
+  });
+
+  it("blocks Markdown that MDX can't parse and points at the field", async () => {
+    await openPost(page);
+    const body = await page.inputValue("#ed-body");
+    await page.fill("#ed-body", `${body}\n\n<!-- 나중에 그림 추가 -->\n`);
+    await page.click("#save-btn");
+    await page.locator('#editor-status[data-tone="error"]').waitFor();
+    assert.match(await page.locator("#audit-list").textContent(), /MDX can't parse/);
+    assert.equal(await page.getAttribute("#ed-body", "aria-invalid"), "true");
+    assert.equal(await page.evaluate(() => document.activeElement?.id), "ed-body");
+    assert.equal(commits.length, 0);
+  });
+
+  it("won't leave the editor while a save is in flight", async () => {
+    putDelay = 1500;
+    await openPost(page);
+    await page.fill("#ed-desc", "저장 중에 목록으로 나가려는 경우를 확인하는 설명입니다.");
+    await page.click("#save-btn");
+    await page.click("#back-btn");
+    assert.match(await page.locator("#editor-status").textContent(), /저장이 끝날 때까지/);
+    assert.equal(await page.locator("#view-editor").isVisible(), true);
+    await page.locator('#editor-status[data-tone="success"]').waitFor();
+    assert.deepEqual(commits.map((c) => c.path), [`${DIR}/eureka.mdx`]);
+  });
+
+  it("refuses to save a post pointing at images that aren't in the repository", async () => {
+    repo.set("public/images/eureka/kept-11111111.webp", { text: "", sha: "img1" });
+    await openPost(page);
+    const body = await page.inputValue("#ed-body");
+    // e.g. an autosave restored after a reload: the image bytes were never uploaded.
+    await page.fill("#ed-body", `${body}\n\n![사라진 사진](/blog/images/eureka/gone-22222222.webp)\n`);
+    await page.click("#save-btn");
+    await page.locator('#editor-status[data-tone="error"]').waitFor();
+    assert.match(await page.locator("#editor-status").textContent(), /gone-22222222\.webp/);
+    assert.equal(commits.length, 0);
+
+    await page.fill("#ed-body", `${body}\n\n![남은 사진](/blog/images/eureka/kept-11111111.webp)\n`);
+    await page.click("#save-btn");
+    await page.locator('#editor-status[data-tone="success"]').waitFor();
+    assert.deepEqual(commits.map((c) => c.path), [`${DIR}/eureka.mdx`]);
   });
 
   it("deletes only after the title is typed back", async () => {
@@ -348,7 +416,8 @@ describe("admin", () => {
     assert.ok((await page.inputValue("#ed-body")).includes(`![단면 사진](${url})`));
 
     await page.click("#save-btn");
-    await page.locator('#editor-status[data-tone="success"]').waitFor();
+    // The status is already green from "추가됨"; wait for the save itself.
+    await page.locator('#editor-status[data-tone="success"]', { hasText: "저장했습니다" }).waitFor();
     assert.deepEqual(commits.map((c) => c.path), [`public${url.replace("/blog", "")}`, `${DIR}/eureka.mdx`]);
     const size = webpSize(commits[0].bytes);
     assert.deepEqual(size, { width: 1600, height: 800 }, "downscaled to 1600px, aspect kept");
@@ -430,8 +499,18 @@ describe("admin", () => {
     assert.equal(commits.length, 1, "the save itself still succeeded");
   });
 
-  it("keeps the token out of persistent storage unless asked", async () => {
+  it("never puts the token in Web Storage, and removes tokens older versions stored", async () => {
+    // Web Storage is shared with every page on the github.io origin, including
+    // post pages running Disqus's third-party script.
     const stored = await page.evaluate(() => [sessionStorage.getItem("blog-admin:token"), localStorage.getItem("blog-admin:token")]);
-    assert.deepEqual(stored, ["test-token", null]);
+    assert.deepEqual(stored, [null, null]);
+    await page.evaluate(() => {
+      localStorage.setItem("blog-admin:token", "legacy");
+      sessionStorage.setItem("blog-admin:token", "legacy");
+    });
+    await page.reload();
+    await page.locator("#view-login:not([hidden])").waitFor();
+    const after = await page.evaluate(() => [sessionStorage.getItem("blog-admin:token"), localStorage.getItem("blog-admin:token")]);
+    assert.deepEqual(after, [null, null]);
   });
 });

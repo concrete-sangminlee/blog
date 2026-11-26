@@ -162,6 +162,22 @@ describe("fixture site in a browser", () => {
     assert.deepEqual(failures, []);
   });
 
+  it("names task-list checkboxes and puts the sidebar TOC before the article in tab order", async () => {
+    const html = await read("structural-analysis-notes/index.html");
+    assert.match(html, /<input type="checkbox" checked disabled aria-label="오일러 베르누이 보로 검증"\/?>/);
+    const { page } = await open("/blog/structural-analysis-notes/", { viewport: { width: 1360, height: 900 } });
+    const order = await page.evaluate(() => {
+      const toc = document.querySelector(".toc-sticky a");
+      const prose = document.querySelector(".prose a");
+      return toc && prose ? toc.compareDocumentPosition(prose) & Node.DOCUMENT_POSITION_FOLLOWING : 0;
+    });
+    assert.ok(order, "TOC links come before the article's links");
+    const tocX = await page.locator(".toc-sticky").boundingBox();
+    const proseX = await page.locator(".prose").boundingBox();
+    assert.ok(tocX.x > proseX.x, "but the TOC is still drawn on the right");
+    await page.context().close();
+  });
+
   it("numbers ordered lists and footnotes, including lists nested in bullets", async () => {
     const { page } = await open("/blog/column-buckling-notes/");
     const styles = await page.evaluate(() =>

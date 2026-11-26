@@ -152,6 +152,22 @@ export class GitHubClient {
       }));
   }
 
+  /** Which of these repository paths do not exist on the branch (one request). */
+  async missingFiles(paths: readonly string[]): Promise<string[]> {
+    if (paths.length === 0) return [];
+    const vars = paths.map((_, i) => `$e${i}: String!`).join(", ");
+    const fields = paths.map((_, i) => `f${i}: object(expression: $e${i}) { oid }`).join("\n");
+    const variables: Record<string, unknown> = { owner: this.#repo.owner, name: this.#repo.name };
+    paths.forEach((p, i) => (variables[`e${i}`] = `${this.#repo.branch}:${p}`));
+    const data = await this.#graphql<{ repository: Record<string, { oid: string } | null> | null }>(
+      `query($owner: String!, $name: String!, ${vars}) {
+        repository(owner: $owner, name: $name) { ${fields} }
+      }`,
+      variables,
+    );
+    return paths.filter((_, i) => !data.repository?.[`f${i}`]);
+  }
+
   /** One file's current text and SHA, or null when it does not exist. */
   async getFile(path: string): Promise<RemoteFile | null> {
     const data = await this.#graphql<{

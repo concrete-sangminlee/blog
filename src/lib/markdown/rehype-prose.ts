@@ -70,6 +70,18 @@ export default function rehypeProse() {
         return;
       }
 
+      // GFM task items render a bare disabled checkbox; name it with the
+      // item's text so screen readers say what is (not) done.
+      if (
+        node.tagName === "input" &&
+        node.properties["type"] === "checkbox" &&
+        parent?.type === "element" &&
+        hasClass(parent, "task-list-item")
+      ) {
+        node.properties["ariaLabel"] ??= toString(parent).trim();
+        return;
+      }
+
       if (node.tagName === "img") {
         node.properties["loading"] ??= "lazy";
         node.properties["decoding"] ??= "async";

@@ -24,7 +24,10 @@ const slug = slugify(title);
 if (!slug) fail("슬러그로 변환할 글자(한글, 영문, 숫자)가 없습니다");
 
 const filepath = path.join(CONTENT_DIR, `${slug}.mdx`);
-if (existsSync(filepath)) fail(`이미 같은 파일이 있습니다: ${path.relative(process.cwd(), filepath)}`);
+for (const ext of [".mdx", ".md"]) {
+  const existing = path.join(CONTENT_DIR, `${slug}${ext}`);
+  if (existsSync(existing)) fail(`같은 주소의 글이 이미 있습니다: ${path.relative(process.cwd(), existing)}`);
+}
 
 mkdirSync(CONTENT_DIR, { recursive: true });
 writeFileSync(
